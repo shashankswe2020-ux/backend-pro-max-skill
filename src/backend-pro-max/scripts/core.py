@@ -449,7 +449,7 @@ def _is_stale(row, max_age_months):
 
 
 def _search_csv(filepath, search_cols, output_cols, query, max_results,
-                *, min_score=0.0, max_age_months=None, expand=True):
+                *, min_score=0.0, max_age_months=None, expand=True, engine="bm25"):
     if not filepath.exists():
         return []
 
@@ -458,7 +458,39 @@ def _search_csv(filepath, search_cols, output_cols, query, max_results,
         return []
 
     effective_query = _expand_query(query) if expand else query
-    ranked = bm25.score(effective_query)
+    bm25_ranked = bm25.score(effective_query)
+
+    # Determine final ranking based on engine choice.
+    if engine in ("hybrid", "semantic"):
+        try:
+            from . import semantic as _sem  # type: ignore[import]
+        except ImportError:
+            try:
+                import semantic as _sem  # type: ignore[import,no-redef]
+            except ImportError:
+                _sem = None
+
+        if _sem is not None and _sem.is_available():
+            cache_key = _sem.build_index(data, search_cols, filepath)
+            if cache_key is not None:
+                embed_ranked = _sem.semantic_search(query, cache_key, top_k=max(20, max_results * 4))
+                if engine == "semantic":
+                    ranked = embed_ranked
+                else:
+                    # hybrid: RRF merge
+                    ranked = _sem.reciprocal_rank_fusion(bm25_ranked, embed_ranked)
+            else:
+                ranked = bm25_ranked
+        else:
+            import sys as _sys
+            print(
+                "⚠️  sentence-transformers not installed — falling back to BM25. "
+                "Install with: pip install backendpro[semantic]",
+                file=_sys.stderr,
+            )
+            ranked = bm25_ranked
+    else:
+        ranked = bm25_ranked
 
     results = []
     for idx, score in ranked:
@@ -791,7 +823,7 @@ def apply_constraints(results, constraints):
 
 
 def search(query, domain=None, max_results=MAX_RESULTS,
-           *, min_score=0.0, max_age_months=None, expand=True):
+           *, min_score=0.0, max_age_months=None, expand=True, engine="bm25"):
     """Main search function with auto-domain detection.
 
     Args:
@@ -802,6 +834,7 @@ def search(query, domain=None, max_results=MAX_RESULTS,
         max_age_months: If set, drop rows whose `Last Updated` column is older
             than this many months. Rows without a date are kept.
         expand: Apply synonym expansion to the query (default True).
+        engine: Search engine — "bm25" (default), "hybrid", or "semantic".
     """
     if domain is None:
         domain = detect_domain(query)
@@ -816,7 +849,7 @@ def search(query, domain=None, max_results=MAX_RESULTS,
 
     results = _search_csv(
         filepath, config["search_cols"], config["output_cols"], query, max_results,
-        min_score=min_score, max_age_months=max_age_months, expand=expand,
+        min_score=min_score, max_age_months=max_age_months, expand=expand, engine=engine,
     )
 
     return {
@@ -829,7 +862,7 @@ def search(query, domain=None, max_results=MAX_RESULTS,
 
 
 def search_stack(query, stack, max_results=MAX_RESULTS,
-                 *, min_score=0.0, expand=True):
+                 *, min_score=0.0, expand=True, engine="bm25"):
     """Search stack-specific guidelines."""
     if stack not in STACK_CONFIG:
         return {"error": f"Unknown stack: {stack}. Available: {', '.join(AVAILABLE_STACKS)}"}
@@ -840,7 +873,7 @@ def search_stack(query, stack, max_results=MAX_RESULTS,
 
     results = _search_csv(
         filepath, _STACK_COLS["search_cols"], _STACK_COLS["output_cols"],
-        query, max_results, min_score=min_score, expand=expand,
+        query, max_results, min_score=min_score, expand=expand, engine=engine,
     )
 
     return {
@@ -853,7 +886,7 @@ def search_stack(query, stack, max_results=MAX_RESULTS,
     }
 
 
-def search_all(query, max_results=2, *, min_score=0.0, expand=True):
+def search_all(query, max_results=2, *, min_score=0.0, expand=True, engine="bm25"):
     """Cross-domain search: returns top hits across every domain CSV."""
     aggregated = {}
     for domain, config in CSV_CONFIG.items():
@@ -862,7 +895,7 @@ def search_all(query, max_results=2, *, min_score=0.0, expand=True):
             continue
         hits = _search_csv(
             filepath, config["search_cols"], config["output_cols"],
-            query, max_results, min_score=min_score, expand=expand,
+            query, max_results, min_score=min_score, expand=expand, engine=engine,
         )
         if hits:
             aggregated[domain] = hits

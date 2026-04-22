@@ -16,6 +16,7 @@ Usage:
 import argparse
 import io
 import json
+import os
 import shlex
 import sys
 
@@ -366,6 +367,11 @@ def _build_parser():
                         help="Write output to file (used with --adr)")
     parser.add_argument("--intent", choices=[i.value for i in Intent],
                         help="Force a specific intent (overrides auto-detection)")
+    parser.add_argument("--engine", choices=["bm25", "hybrid", "semantic"],
+                        default=os.environ.get("BACKENDPRO_ENGINE", "bm25"),
+                        help="Search engine: bm25 (default), hybrid (BM25+embeddings), semantic")
+    parser.add_argument("--rerank", action="store_true",
+                        help="Re-rank BM25 results with a cross-encoder (requires backendpro[rerank])")
     return parser
 
 
@@ -425,7 +431,7 @@ def main():
     if args.all:
         result = search_all(
             args.query, max_results=max(1, args.max_results // 2),
-            min_score=args.min_score, expand=expand,
+            min_score=args.min_score, expand=expand, engine=args.engine,
         )
         print(json.dumps(result, indent=2, ensure_ascii=False)
               if args.json else format_all(result, show_scores=show_scores))
@@ -434,12 +440,13 @@ def main():
     if args.stack:
         result = search_stack(
             args.query, args.stack, args.max_results,
-            min_score=args.min_score, expand=expand,
+            min_score=args.min_score, expand=expand, engine=args.engine,
         )
     else:
         result = search(
             args.query, args.domain, args.max_results,
-            min_score=args.min_score, max_age_months=args.max_age_months, expand=expand,
+            min_score=args.min_score, max_age_months=args.max_age_months,
+            expand=expand, engine=args.engine,
         )
 
     # Apply --constraints post-filter if provided.
@@ -447,6 +454,17 @@ def main():
         constraints = parse_constraints(args.constraints)
         if constraints:
             apply_constraints(result["results"], constraints)
+
+    # Apply --rerank if requested.
+    if args.rerank and "results" in result and result["results"]:
+        try:
+            try:
+                from .rerank import rerank as _rerank
+            except ImportError:
+                from rerank import rerank as _rerank  # type: ignore[no-redef]
+            result["results"] = _rerank(args.query, result["results"], top_k=args.max_results)
+        except Exception as e:
+            print(f"⚠️  Reranking failed: {e}", file=sys.stderr)
 
     # Intent classification — auto-detect or use --intent override.
     intent_value = args.intent or classify_intent(args.query).value
