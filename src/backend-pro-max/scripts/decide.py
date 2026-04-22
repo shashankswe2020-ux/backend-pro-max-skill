@@ -30,8 +30,6 @@ except ImportError:
         search,
     )
 
-TEMPLATES_DIR = Path(__file__).parent.parent / "templates" / "base"
-
 
 def _get_name(row):
     """Extract the display name from a KB row with explicit key lookup + fallback."""
@@ -64,6 +62,13 @@ _ORDERED_RE = re.compile(
 )
 
 _MULTIPLIERS = {"k": 1_000, "m": 1_000_000, "b": 1_000_000_000, "t": 1_000_000_000_000}
+
+# Capacity math defaults (used in design command).
+_PEAK_FACTOR = 3          # Peak-to-average QPS ratio.
+_DEFAULT_ROW_BYTES = 500  # Assumed average row size for storage estimates.
+_DEFAULT_REPLICATION = 3  # Storage replication factor.
+_DAU_TO_REQUESTS = 10     # Estimated requests per DAU per day.
+_MAX_FIELD_DISPLAY = 250  # Truncation limit for strengths/weaknesses in formatted output.
 
 
 def extract_constraints(requirement):
@@ -136,6 +141,21 @@ def extract_constraints(requirement):
     # Ordering
     if _ORDERED_RE.search(requirement):
         facets["ordering"] = True
+
+    # Adjective-form fallbacks (when no numeric pattern matched).
+    req_lower = requirement.lower()
+    if "throughput" not in facets:
+        if "very high throughput" in req_lower or "very-high throughput" in req_lower:
+            facets["throughput"] = "very-high"
+        elif "high throughput" in req_lower:
+            facets["throughput"] = "high"
+        elif "low throughput" in req_lower:
+            facets["throughput"] = "low"
+    if "latency" not in facets:
+        if "low latency" in req_lower or "ultra low latency" in req_lower:
+            facets["latency"] = "low-ms"
+        elif "sub-millisecond" in req_lower or "sub millisecond" in req_lower:
+            facets["latency"] = "sub-ms"
 
     return facets
 
@@ -396,13 +416,13 @@ def _parse_scale(requirement):
     return scales
 
 
-def _qps_from_daily(daily, peak_factor=3):
+def _qps_from_daily(daily, peak_factor=_PEAK_FACTOR):
     """Convert daily count to QPS (average and peak)."""
     avg = daily / 86400
     return {"avg": round(avg, 1), "peak": round(avg * peak_factor, 1)}
 
 
-def _storage_estimate(rows, row_bytes=500, replication=3):
+def _storage_estimate(rows, row_bytes=_DEFAULT_ROW_BYTES, replication=_DEFAULT_REPLICATION):
     """Estimate storage needs."""
     raw_gb = (rows * row_bytes) / (1024 ** 3)
     return {
@@ -474,8 +494,8 @@ def design(requirement, max_per_section=2):
     if scales.get("writes_per_day"):
         capacity["write_qps"] = _qps_from_daily(scales["writes_per_day"])
     if scales.get("dau"):
-        # Estimate: ~10 requests per DAU per day.
-        capacity["estimated_qps"] = _qps_from_daily(scales["dau"] * 10)
+        # Estimate: ~_DAU_TO_REQUESTS requests per DAU per day.
+        capacity["estimated_qps"] = _qps_from_daily(scales["dau"] * _DAU_TO_REQUESTS)
     if scales.get("writes_per_day"):
         capacity["storage_1yr"] = _storage_estimate(scales["writes_per_day"] * 365)
 
@@ -549,9 +569,9 @@ def format_decide(result):
             if strengths or weaknesses:
                 out.append(f"**{name}:**")
                 if strengths:
-                    out.append(f"- ✅ {strengths[:300]}")
+                    out.append(f"- ✅ {strengths[:_MAX_FIELD_DISPLAY]}")
                 if weaknesses:
-                    out.append(f"- ⚠️ {weaknesses[:300]}")
+                    out.append(f"- ⚠️ {weaknesses[:_MAX_FIELD_DISPLAY]}")
                 out.append("")
 
     caveat = f"> _Based on {result['candidates_count']} candidates across {len(result['domains_searched'])} domain(s). Consider expanding the KB for more options._"
@@ -604,13 +624,13 @@ def format_design(result):
             out.append(f"- **{rec['name']}** (`{rec['domain']}`)")
             if rec.get("strengths"):
                 s = rec["strengths"]
-                if len(s) > 200:
-                    s = s[:200] + "…"
+                if len(s) > _MAX_FIELD_DISPLAY:
+                    s = s[:_MAX_FIELD_DISPLAY] + "…"
                 out.append(f"  - Strengths: {s}")
             if rec.get("weaknesses"):
                 w = rec["weaknesses"]
-                if len(w) > 200:
-                    w = w[:200] + "…"
+                if len(w) > _MAX_FIELD_DISPLAY:
+                    w = w[:_MAX_FIELD_DISPLAY] + "…"
                 out.append(f"  - Weaknesses: {w}")
         out.append("")
 
