@@ -24,8 +24,10 @@ try:
         AVAILABLE_STACKS,
         CSV_CONFIG,
         MAX_RESULTS,
+        apply_constraints,
         compare,
         find_stale,
+        parse_constraints,
         search,
         search_all,
         search_stack,
@@ -43,8 +45,10 @@ except ImportError:
         AVAILABLE_STACKS,
         CSV_CONFIG,
         MAX_RESULTS,
+        apply_constraints,
         compare,
         find_stale,
+        parse_constraints,
         search,
         search_all,
         search_stack,
@@ -318,7 +322,7 @@ def _build_parser():
     parser.add_argument("--design", action="store_true",
                         help="Generate a design brief from the query")
     parser.add_argument("--constraints", metavar="EXPR",
-                        help="Constraint expression, e.g. 'throughput>=high,latency<=low'")
+                        help="Constraint expression, e.g. 'cloud=gcp,latency=low-ms,consistency=strong'")
     return parser
 
 
@@ -350,7 +354,7 @@ def main():
 
     if args.adr:
         domains = [args.domain] if args.domain else []
-        result = adr(args.adr, domains, query=args.query)
+        result = adr(args.adr, domains)
         print(json.dumps(result, indent=2, ensure_ascii=False) if args.json else format_adr(result))
         return
 
@@ -394,6 +398,12 @@ def main():
             args.query, args.domain, args.max_results,
             min_score=args.min_score, max_age_months=args.max_age_months, expand=expand,
         )
+
+    # Apply --constraints post-filter if provided.
+    if args.constraints and "results" in result:
+        constraints = parse_constraints(args.constraints)
+        if constraints:
+            apply_constraints(result["results"], constraints)
 
     print(json.dumps(result, indent=2, ensure_ascii=False)
           if args.json else format_output(result, show_scores=show_scores))

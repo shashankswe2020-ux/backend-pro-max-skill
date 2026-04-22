@@ -2,8 +2,8 @@
 
 > The staff-engineer differentiator: don't just find — decide and justify.
 
-**Status:** 🔲 Not started
-**Branch:** `feat/tier-1-decision-intelligence` (to be created from `main`)
+**Status:** ✅ Implemented
+**Branch:** `feat/tier-1-decision-intelligence` (commit `d921508`)
 **Depends on:** Current `main` (v0.2.x baseline)
 
 ---
@@ -53,11 +53,11 @@ Multi-domain orchestrated recommendation. Given a natural-language requirement s
 | 1.1.6 | Tests — unit tests for extractor, orchestrator, scorer, end-to-end CLI | `tests/test_decide.py` | 2h |
 
 ### Acceptance Criteria
-- [ ] `backendpro decide "event bus for 50k events/sec, ordered per-tenant, GCP-native"` returns ≥2 ranked candidates with trade-off table
-- [ ] Output includes constraints satisfied/violated per candidate
-- [ ] `--json` flag produces machine-readable output
-- [ ] `/decide` works in REPL
-- [ ] `pytest tests/test_decide.py` passes
+- [x] `backendpro decide "event bus for 50k events/sec, ordered per-tenant, GCP-native"` returns ≥2 ranked candidates with trade-off table
+- [x] Output includes constraints satisfied/violated per candidate
+- [x] `--json` flag produces machine-readable output
+- [x] `/decide` works in REPL
+- [x] `pytest tests/test_decide.py` passes
 
 ### Verification
 ```bash
@@ -95,12 +95,12 @@ Generate a Michael Nygard-format Architecture Decision Record pre-filled with ci
 | 1.2.5 | Tests | `tests/test_decide.py` | 1h |
 
 ### Acceptance Criteria
-- [ ] `backendpro adr "Adopt outbox pattern" --context messaging,reliability,consistency` produces valid Nygard-format markdown
-- [ ] `--out docs/adr/0042.md` writes to file (creates directory if needed)
-- [ ] Each section cites specific KB rows (Name + domain)
-- [ ] Consequences section pulls from Weaknesses/Pitfalls/Trade-offs columns
-- [ ] References section lists Docs URLs / Reference fields from cited rows
-- [ ] `pytest tests/test_decide.py::test_adr*` passes
+- [x] `backendpro adr "Adopt outbox pattern" --context messaging,reliability,consistency` produces valid Nygard-format markdown
+- [x] `--out docs/adr/0042.md` writes to file (creates directory if needed)
+- [x] Each section cites specific KB rows (Name + domain)
+- [x] Consequences section pulls from Weaknesses/Pitfalls/Trade-offs columns
+- [x] References section lists Docs URLs / Reference fields from cited rows
+- [x] `pytest tests/test_decide.py::test_adr*` passes
 
 ### Verification
 ```bash
@@ -131,12 +131,12 @@ System-design scaffolding from a one-liner. Given a system description + scale n
 | 1.3.6 | Tests | `tests/test_decide.py` | 2h |
 
 ### Acceptance Criteria
-- [ ] `backendpro design "url shortener, 100M reads/day, 1M writes/day, <50ms p99"` produces multi-section architecture scaffold
-- [ ] Each technology choice cites a KB row
-- [ ] Capacity math section shows QPS derivation, storage estimates
-- [ ] Failure modes section lists relevant patterns (circuit breaker, retry, etc.)
-- [ ] `--json` produces structured output
-- [ ] `pytest tests/test_decide.py::test_design*` passes
+- [x] `backendpro design "url shortener, 100M reads/day, 1M writes/day, <50ms p99"` produces multi-section architecture scaffold
+- [x] Each technology choice cites a KB row
+- [x] Capacity math section shows QPS derivation, storage estimates
+- [x] Failure modes section lists relevant patterns (circuit breaker, retry, etc.)
+- [x] `--json` produces structured output
+- [x] `pytest tests/test_decide.py::test_design*` passes
 
 ### Verification
 ```bash
@@ -175,11 +175,11 @@ Add structured constraint columns to CSVs and a `--constraints` flag for filteri
 | 1.4.8 | Tests | `tests/test_constraints.py` | 2h |
 
 ### Acceptance Criteria
-- [ ] `backendpro "database" --domain database --constraints "cloud=gcp,consistency=strong"` filters results
-- [ ] Results annotated with ✅ / ❌ per constraint
-- [ ] Missing constraint columns treated as "unknown" (not filtered out)
-- [ ] `backendpro-validate` still passes (optional cols tolerated)
-- [ ] Existing tests unbroken
+- [x] `backendpro "database" --domain database --constraints "cloud=gcp,consistency=strong"` filters results
+- [x] Results annotated with ✅ / ❌ per constraint
+- [x] Missing constraint columns treated as "unknown" (not filtered out)
+- [x] `backendpro-validate` still passes (optional cols tolerated)
+- [x] Existing tests unbroken
 - [ ] `pytest tests/test_constraints.py` passes
 
 ### Verification
@@ -221,22 +221,22 @@ pytest tests/ -v
 ## Checkpoint Criteria
 
 ### After Phase A
-- [ ] `databases.csv`, `messaging.csv`, `cache.csv` have constraint columns
-- [ ] `backendpro-validate` passes
-- [ ] `decide()` function returns ranked results (no CLI yet)
-- [ ] Existing 37+ tests still pass
+- [x] `databases.csv`, `messaging.csv`, `cache.csv` have constraint columns
+- [x] `backendpro-validate` passes
+- [x] `decide()` function returns ranked results (no CLI yet)
+- [x] Existing 37+ tests still pass
 
 ### After Phase B
-- [ ] `backendpro decide` and `backendpro adr` work end-to-end
-- [ ] JSON output works for both
-- [ ] REPL shortcuts `/decide` and `/adr` work
-- [ ] ≥15 new test cases
+- [x] `backendpro decide` and `backendpro adr` work end-to-end
+- [x] JSON output works for both
+- [x] REPL shortcuts `/decide` and `/adr` work
+- [x] ≥15 new test cases
 
 ### After Phase C (Tier 1 complete)
-- [ ] `backendpro design` works end-to-end
-- [ ] All 4 new commands work in CLI, REPL, JSON mode
+- [x] `backendpro design` works end-to-end
+- [x] All 4 new commands work in CLI, REPL, JSON mode
 - [ ] ≥25 new test cases for Tier 1
-- [ ] `ruff check src tests` clean
+- [x] `ruff check src tests` clean
 - [ ] README updated with Tier 1 features
 - [ ] CHANGELOG entry
 
@@ -244,21 +244,22 @@ pytest tests/ -v
 
 ## Files to Create / Modify
 
-| Action | File |
-|--------|------|
-| **Create** | `src/backend-pro-max/scripts/decide.py` |
-| **Create** | `src/backend-pro-max/templates/base/adr.md` |
-| **Create** | `tests/test_decide.py` |
-| **Create** | `tests/test_constraints.py` |
-| **Modify** | `src/backend-pro-max/scripts/search.py` (CLI + REPL) |
-| **Modify** | `src/backend-pro-max/scripts/core.py` (constraint filter, export) |
-| **Modify** | `src/backend-pro-max/scripts/validate.py` (optional col tolerance) |
-| **Modify** | `src/backend-pro-max/data/databases.csv` (constraint cols) |
-| **Modify** | `src/backend-pro-max/data/messaging.csv` (constraint cols) |
-| **Modify** | `src/backend-pro-max/data/cache.csv` (constraint cols) |
-| **Modify** | `src/backend-pro-max/scripts/__init__.py` (export decide) |
-| **Modify** | `pyproject.toml` (new entry points if needed) |
-| **Modify** | `README.md`, `CHANGELOG.md` |
+| Action | File | Status |
+|--------|------|--------|
+| **Create** | `src/backend-pro-max/scripts/decide.py` | ✅ |
+| **Create** | `src/backend-pro-max/templates/base/adr.md` | ✅ |
+| **Create** | `tests/test_decide.py` | ✅ |
+| **Create** | `tests/test_constraints.py` | ❌ Not created (constraints tested in test_decide.py) |
+| **Modify** | `src/backend-pro-max/scripts/search.py` (CLI + REPL) | ✅ |
+| **Modify** | `src/backend-pro-max/scripts/core.py` (constraint filter, export) | ✅ |
+| **Modify** | `src/backend-pro-max/scripts/validate.py` (optional col tolerance) | ⏭️ Not needed (constraint cols not in output_cols) |
+| **Modify** | `src/backend-pro-max/data/databases.csv` (constraint cols) | ✅ |
+| **Modify** | `src/backend-pro-max/data/messaging.csv` (constraint cols) | ✅ |
+| **Modify** | `src/backend-pro-max/data/cache.csv` (constraint cols) | ✅ |
+| **Modify** | `src/backend-pro-max/scripts/__init__.py` (export decide) | ⏭️ Skipped |
+| **Modify** | `pyproject.toml` (new entry points if needed) | ⏭️ Not needed |
+| **Modify** | `tests/conftest.py` (pre-import decide) | ✅ |
+| **Modify** | `README.md`, `CHANGELOG.md` | ❌ Pending |
 
 ---
 

@@ -341,7 +341,10 @@ def adr(title, context_domains, out_path=None):
 
     # Write to file if requested.
     if out_path:
-        out = Path(out_path)
+        out = Path(out_path).resolve()
+        cwd = Path.cwd().resolve()
+        if not str(out).startswith(str(cwd) + "/") and out != cwd:
+            return {"error": f"--out path must be under current directory ({cwd})"}
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(adr_text, encoding="utf-8")
 
