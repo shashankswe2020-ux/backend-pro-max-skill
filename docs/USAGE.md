@@ -102,6 +102,30 @@ python3 src/backend-pro-max/scripts/search.py "global sql" --domain database
 python3 src/backend-pro-max/scripts/search.py "rpo rto disaster recovery" --domain reliability
 ```
 
+### "Design a URL shortener (TinyURL)"
+
+```bash
+# 1. API style (REST + redirect semantics)
+python3 src/backend-pro-max/scripts/search.py "API rate limiting REST redirect" --domain api
+
+# 2. Storage — key-value lookup by short code
+python3 src/backend-pro-max/scripts/search.py "sharding partitioning key-value NoSQL" --domain database
+
+# 3. Caching — cache-aside with TTL + jitter for hot redirects
+python3 src/backend-pro-max/scripts/search.py "cache read-through write-through TTL" --domain cache
+
+# 4. Scaling — stateless horizontal auto-scaling
+python3 src/backend-pro-max/scripts/search.py "horizontal scaling stateless" --domain scaling
+
+# 5. Cross-cutting — reliability, patterns, architecture
+python3 src/backend-pro-max/scripts/search.py "URL shortener system design" --all
+```
+
+> Combine the results to produce a full design covering ID generation
+> (Snowflake → base62), DynamoDB/Postgres storage, Redis cache-aside with
+> jitter, CDN edge caching for 301s, rate limiting, abuse prevention, and
+> observability — all wired from day one.
+
 ## Integration with AI assistants
 
 ### Claude Code
