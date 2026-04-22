@@ -14,7 +14,7 @@ Cursor, Windsurf, GitHub Copilot, Gemini, Continue, or any AI assistant.
 
 [![PyPI](https://img.shields.io/pypi/v/backendpro?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/backendpro/)
 [![CI](https://img.shields.io/github/actions/workflow/status/shashankswe2020-ux/backend-pro-max-skill/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/shashankswe2020-ux/backend-pro-max-skill/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-148_passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
+[![Tests](https://img.shields.io/badge/tests-196_passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
 [![21 Domains](https://img.shields.io/badge/domains-21-blue?style=for-the-badge)](#-domains)
 [![12 Stacks](https://img.shields.io/badge/stacks-12-purple?style=for-the-badge)](#-stacks)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-yellow?style=for-the-badge&logo=python&logoColor=white)](#-prerequisites)
@@ -75,7 +75,10 @@ model is *instructed* to consult — so its advice cites a row, not a vibe.
 | 📐 **Do / Don't + Code examples** | Each row contains good vs bad code, severity, and a docs URL |
 | 🧠 **Auto domain detection** | Skip `--domain` and the engine picks the right CSV from your query |
 | ⚙️ **JSON output mode** | First-class integration with tool-calling agents and MCP servers |
-| ✅ **CI-enforced** | `backendpro-validate` schema-checks every CSV; 148 pytest cases run on Py 3.9 / 3.11 / 3.12 |
+| 🔌 **MCP server** | `pip install backendpro[mcp]` → 8 tools on stdio, works with Claude Desktop, Cline, Cursor, Zed |
+| 📎 **Citation tokens** | Every result carries `[BPM:domain.slug]` — greppable provenance for PR review |
+| 📡 **JSONL streaming** | `--jsonl` for agent loops that consume results incrementally |
+| ✅ **CI-enforced** | `backendpro-validate` schema-checks every CSV; 196 pytest cases run on Py 3.9 / 3.11 / 3.12 |
 
 ---
 
@@ -640,7 +643,90 @@ backendpro-validate                       # schema validation
 
 ---
 
-## 🧱 Extending
+## � MCP / Agent Integration (v0.3.1)
+
+Backend Pro Max ships as a **Model Context Protocol (MCP) server** — any
+MCP-aware IDE or agent framework can consume all 8 tools natively.
+
+### Install
+
+```bash
+pip install backendpro[mcp]    # adds the mcp SDK as an optional extra
+```
+
+> Core `pip install backendpro` still works with zero dependencies — MCP is fully optional.
+
+### Run the MCP server
+
+```bash
+backendpro-mcp                 # starts on stdio transport
+```
+
+### Claude Desktop config
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```jsonc
+{
+  "mcpServers": {
+    "backendpro": {
+      "command": "backendpro-mcp"
+    }
+  }
+}
+```
+
+### Available MCP tools
+
+| Tool | Description |
+|------|-------------|
+| `backendpro_search` | BM25 search in a domain (`query`, `domain?`, `max_results?`, `min_score?`) |
+| `backendpro_search_all` | Cross-domain search (`query`, `max_results?`) |
+| `backendpro_search_stack` | Stack-specific guidelines (`query`, `stack`, `max_results?`) |
+| `backendpro_compare` | Side-by-side comparison (`names[]`, `domain?`) |
+| `backendpro_decide` | Opinionated recommendation (`requirement`) |
+| `backendpro_adr` | Architecture Decision Record (`title`, `context_domains[]`) |
+| `backendpro_design` | System design scaffold (`description`) |
+| `backendpro_find_stale` | Freshness audit (`domain`, `months`) |
+
+Every tool returns **structured JSON with `[BPM:…]` citation tokens** — stable,
+greppable keys that let reviewers verify grounding in PRs:
+
+```bash
+grep -r '\[BPM:' .   # find all citations in generated code / docs
+```
+
+### JSONL streaming
+
+For agent loops that consume results incrementally:
+
+```bash
+backendpro "kafka" --domain messaging --jsonl     # one JSON object per line
+backendpro "idempotency" --all --jsonl             # cross-domain, streamed
+backendpro compare "Kafka" "RabbitMQ" --jsonl      # per-field lines
+```
+
+### Function-calling manifest (`tools.json`)
+
+A pre-generated [`tools.json`](tools.json) at repo root provides dual-format
+schemas (OpenAI `functions` + Anthropic `tool_use`) for LangGraph, CrewAI,
+AutoGen, and other agent frameworks:
+
+```python
+import json
+tools = json.load(open("tools.json"))["openai"]    # or ["anthropic"]
+```
+
+### MCP Inspector validation
+
+```bash
+npx @modelcontextprotocol/inspector backendpro-mcp
+# All 8 tools tested ✅ — see docs/mcp-inspector-report.md
+```
+
+---
+
+## �🧱 Extending
 
 Adding a new row, a new domain, or a new stack takes ~2 minutes.
 
@@ -708,8 +794,11 @@ hundreds of rows across 20+ domains without bloating the prompt.
 <details>
 <summary><strong>Can I use it from an MCP server / tool-calling agent?</strong></summary>
 
-Yes — use `--json` and parse the result. Each row includes the citation key,
-domain, summary, do/don't, code samples, severity, and docs URL.
+Yes — `pip install backendpro[mcp]` and run `backendpro-mcp`. It exposes 8
+tools via stdio transport, compatible with Claude Desktop, Cline, Cursor, Zed,
+and any MCP-aware client. See the [MCP section](#-mcp--agent-integration-v031)
+for details. For non-MCP agents, use `--json` or `--jsonl`, or import `tools.json`
+for OpenAI / Anthropic function-calling schemas.
 </details>
 
 ---

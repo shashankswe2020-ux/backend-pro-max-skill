@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "backendpro"
-version = "0.3.1"
+version = "0.4.0"
 description = "Backend Pro Max — BM25-searchable backend & distributed-systems engineering intelligence as an AI skill / CLI."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -49,6 +49,9 @@ semantic = [
 rerank = [
     "sentence-transformers>=2.2.0",
 ]
+mcp = [
+    "mcp>=1.0,<2.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/shashankswe2020-ux/backend-pro-max-skill"
@@ -58,6 +61,7 @@ Issues = "https://github.com/shashankswe2020-ux/backend-pro-max-skill/issues"
 [project.scripts]
 backendpro = "backendpro.scripts.search:main"
 backendpro-validate = "backendpro.scripts.validate:main"
+backendpro-mcp = "backendpro.scripts.mcp_server:main"
 
 # ------------------------------------------------------------------
 # The on-disk source layout uses a hyphenated directory name

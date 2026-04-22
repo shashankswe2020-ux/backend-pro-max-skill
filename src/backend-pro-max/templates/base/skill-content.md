@@ -44,19 +44,23 @@ python3 src/backend-pro-max/scripts/search.py --list
 
 When generating backend code or designs, the assistant should:
 
-1. **Anchor to the user's stack.** Always run a `--stack <stack>` query first
+1. **Always emit citation tokens.** Every time you reference a Backend Pro Max
+   result, include the `[BPM:…]` citation token verbatim (e.g.
+   `[BPM:messaging.kafka]`). This lets reviewers `grep -r '\[BPM:' .` in PRs
+   to verify grounding.
+2. **Anchor to the user's stack.** Always run a `--stack <stack>` query first
    to load the language-specific guidelines and follow them strictly.
-2. **Apply the right pattern, not the trendiest.** Use `--domain pattern` /
+3. **Apply the right pattern, not the trendiest.** Use `--domain pattern` /
    `--domain architecture` to pick patterns that fit the team size, traffic,
    and consistency requirements — not the patterns from a conference talk.
-3. **Be explicit about consistency, idempotency, and failure modes.** Every
+4. **Be explicit about consistency, idempotency, and failure modes.** Every
    non-trivial feature must answer: what happens on retry? on partial failure?
    on partition? on rollback?
-4. **Default to managed services** unless there is a concrete reason to
+5. **Default to managed services** unless there is a concrete reason to
    self-host (cost, data residency, latency, vendor risk).
-5. **Wire observability from day one.** Metrics, logs, and traces must be
+6. **Wire observability from day one.** Metrics, logs, and traces must be
    structured, correlated by request id, and tied to SLOs.
-6. **Treat security as a hard constraint.** Validate all input at the boundary,
+7. **Treat security as a hard constraint.** Validate all input at the boundary,
    parameterise SQL, encrypt in transit and at rest, store secrets in a
    manager (never in env files in repo), and rotate everything that can be
    rotated.

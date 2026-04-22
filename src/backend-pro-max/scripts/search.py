@@ -106,12 +106,15 @@ def format_output(result, show_scores=True):
 
     for i, row in enumerate(result["results"], 1):
         score = row.get("_score")
+        citation = row.get("_citation", "")
         header = f"### Result {i}"
+        if citation:
+            header += f"  {citation}"
         if show_scores and score is not None:
             header += f"  _(score: {score:.2f}, confidence: {_confidence_label(score)})_"
         output.append(header)
         for key, value in row.items():
-            if key == "_score":
+            if key in ("_score", "_citation"):
                 continue
             value_str = str(value).strip()
             if not value_str:
@@ -132,16 +135,19 @@ def format_all(result, show_scores=True):
         output.append("_No matches across any domain._")
         return "\n".join(output)
 
+    _INTERNAL = {"_score", "_citation"}
     for domain, rows in result["results"].items():
         output.append(f"### Domain: `{domain}` ({len(rows)} hit(s))")
         for i, row in enumerate(rows, 1):
-            head = next((v for k, v in row.items() if k != "_score"), "?")
+            head = next((v for k, v in row.items() if k not in _INTERNAL), "?")
+            citation = row.get("_citation", "")
             tag = f" _(score {row['_score']:.2f})_" if show_scores and "_score" in row else ""
-            output.append(f"- **{i}. {head}**{tag}")
+            cite_tag = f" {citation}" if citation else ""
+            output.append(f"- **{i}. {head}**{cite_tag}{tag}")
             shown = 0
-            head_key = next((k for k in row if k != "_score"), None)
+            head_key = next((k for k in row if k not in _INTERNAL), None)
             for key, value in row.items():
-                if key == "_score" or key == head_key or shown >= 3:
+                if key in _INTERNAL or key == head_key or shown >= 3:
                     continue
                 value_str = str(value).strip()
                 if value_str:
@@ -208,6 +214,47 @@ def format_stale(result):
         head = next(iter(row.values()), "?")
         out.append(f"- **{head}** — last updated: {row.get('Last Updated', '?')}")
     return "\n".join(out)
+
+
+# ============ JSONL FORMATTERS ============
+
+def format_jsonl(result):
+    """One JSON object per result line (single-domain search)."""
+    if "error" in result or not result.get("results"):
+        return ""
+    lines = []
+    domain = result.get("domain", "")
+    for i, row in enumerate(result["results"], 1):
+        obj = {"_index": i, "_domain": domain}
+        obj.update(row)
+        lines.append(json.dumps(obj, ensure_ascii=False))
+    return "\n".join(lines)
+
+
+def format_jsonl_all(result):
+    """One JSON object per result line (cross-domain), with ``_domain``."""
+    lines = []
+    idx = 0
+    for domain, rows in result.get("results", {}).items():
+        for row in rows:
+            idx += 1
+            obj = {"_index": idx, "_domain": domain}
+            obj.update(row)
+            lines.append(json.dumps(obj, ensure_ascii=False))
+    return "\n".join(lines)
+
+
+def format_jsonl_compare(result):
+    """One JSON object per field (compare mode)."""
+    if "error" in result:
+        return ""
+    lines = []
+    for col in result.get("columns", []):
+        obj = {"_field": col}
+        for name in result.get("names", []):
+            obj[name] = result.get("entries", {}).get(name, {}).get(col, "")
+        lines.append(json.dumps(obj, ensure_ascii=False))
+    return "\n".join(lines)
 
 
 def list_domains_and_stacks():
@@ -353,6 +400,8 @@ def _build_parser():
     parser.add_argument("--interactive", "-i", action="store_true",
                         help="Start an interactive REPL")
     parser.add_argument("--json", action="store_true", help="Output as JSON")
+    parser.add_argument("--jsonl", action="store_true",
+                        help="Output as JSON Lines (one JSON object per result line)")
     parser.add_argument("--list", action="store_true",
                         help="List available domains and stacks then exit")
     parser.add_argument("--decide", action="store_true",
@@ -419,7 +468,12 @@ def main():
         if len(names) < 2:
             parser.error("compare needs at least two names: backendpro compare <A> <B> [...]")
         result = compare(names, domain=args.domain)
-        print(json.dumps(result, indent=2, ensure_ascii=False) if args.json else format_compare(result))
+        if args.jsonl:
+            print(format_jsonl_compare(result))
+        elif args.json:
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+        else:
+            print(format_compare(result))
         return
 
     if not args.query:
@@ -433,8 +487,12 @@ def main():
             args.query, max_results=max(1, args.max_results // 2),
             min_score=args.min_score, expand=expand, engine=args.engine,
         )
-        print(json.dumps(result, indent=2, ensure_ascii=False)
-              if args.json else format_all(result, show_scores=show_scores))
+        if args.jsonl:
+            print(format_jsonl_all(result))
+        elif args.json:
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+        else:
+            print(format_all(result, show_scores=show_scores))
         return
 
     if args.stack:
@@ -470,7 +528,9 @@ def main():
     intent_value = args.intent or classify_intent(args.query).value
     result["intent"] = intent_value
 
-    if args.json:
+    if args.jsonl:
+        print(format_jsonl(result))
+    elif args.json:
         print(json.dumps(result, indent=2, ensure_ascii=False))
     else:
         # Try intent-specific template; fall back to default.
