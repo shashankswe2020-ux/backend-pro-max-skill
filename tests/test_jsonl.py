@@ -3,12 +3,12 @@ from __future__ import annotations
 
 import json
 
+from core import compare, search, search_all
 from search import (
     format_jsonl,
     format_jsonl_all,
     format_jsonl_compare,
 )
-from core import compare, search, search_all
 
 
 class TestFormatJsonl:

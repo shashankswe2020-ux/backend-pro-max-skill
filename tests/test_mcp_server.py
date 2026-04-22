@@ -8,8 +8,9 @@ MCP Inspector as documented in the plan.
 """
 from __future__ import annotations
 
-import pytest
 import sys
+
+import pytest
 
 # Skip the entire module if the `mcp` package is not installed.
 mcp_available = True
@@ -32,14 +33,14 @@ if mcp_available:
         sys.path.insert(0, str(_scripts))
 
     from mcp_server import (
+        backendpro_adr,
+        backendpro_compare,
+        backendpro_decide,
+        backendpro_design,
+        backendpro_find_stale,
         backendpro_search,
         backendpro_search_all,
         backendpro_search_stack,
-        backendpro_compare,
-        backendpro_decide,
-        backendpro_adr,
-        backendpro_design,
-        backendpro_find_stale,
         mcp_server,
     )
 

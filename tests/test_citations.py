@@ -7,10 +7,8 @@ from __future__ import annotations
 
 import re
 
-from core import compare, search, search_all, search_stack, find_stale
-
 # Import the citation helper directly for unit tests.
-from core import _make_citation
+from core import _make_citation, compare, search, search_all, search_stack
 
 # ────────────────────────────────────────────────────────────────
 # Unit tests for _make_citation helper
