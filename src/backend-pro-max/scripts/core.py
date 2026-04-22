@@ -11,12 +11,14 @@ Public API (stable):
     search_all(query, max_results=2, *, min_score=0.0)
     compare(names, domain=None, max_per_name=1)
     detect_domain(query)
+    classify_intent(query)
     find_stale(domain, months)
     clear_cache()
-    CSV_CONFIG, STACK_CONFIG, AVAILABLE_STACKS, MAX_RESULTS
+    CSV_CONFIG, STACK_CONFIG, AVAILABLE_STACKS, MAX_RESULTS, Intent
 """
 
 import csv
+import enum
 import re
 from collections import defaultdict
 from datetime import datetime
@@ -204,6 +206,14 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Category", "Workload", "Use Case", "Strengths", "Weaknesses",
             "Tooling", "Notes",
+        ],
+    },
+    "antipattern": {
+        "file": "anti-patterns.csv",
+        "search_cols": ["Name", "Category", "Symptom", "Root Cause", "Keywords"],
+        "output_cols": [
+            "Name", "Category", "Symptom", "Root Cause", "Why It's Tempting",
+            "Fix", "Related Patterns", "Severity", "Last Updated",
         ],
     },
 }
@@ -542,6 +552,13 @@ _DOMAIN_KEYWORDS = {
                       "flink", "beam", "airflow", "dagster", "prefect", "dbt", "snowflake",
                       "bigquery", "redshift", "delta lake", "iceberg", "hudi", "kafka connect",
                       "debezium", "cdc", "change data capture", "batch", "streaming"],
+    "antipattern":   ["anti-pattern", "antipattern", "anti pattern", "don't", "avoid",
+                      "distributed monolith", "god service", "dual writes", "dual write",
+                      "chatty microservice", "unbounded retry", "n+1", "log and throw",
+                      "log-and-throw", "error swallowing", "shared database integration",
+                      "sync-over-async", "sync over async", "premature microservice",
+                      "missing idempotency", "secrets in env", "polling instead",
+                      "time-based cache", "bad practice", "code smell", "pitfall"],
 }
 
 
@@ -560,6 +577,118 @@ def detect_domain(query):
         scores[domain] = score
     best = max(scores, key=scores.get)
     return best if scores[best] > 0 else "pattern"
+
+
+# ============ INTENT CLASSIFICATION ============
+class Intent(enum.Enum):
+    """Query intent — determines output template shape."""
+    DEFINITION = "definition"
+    COMPARISON = "comparison"
+    TROUBLESHOOT = "troubleshoot"
+    DESIGN = "design"
+    MIGRATION = "migration"
+    INCIDENT = "incident"
+    GENERAL = "general"
+
+
+# Each intent has a list of (pattern, weight) tuples. First match with
+# highest total weight wins.  Patterns are checked against the lowercased
+# query.  We keep this deliberately high-precision (few false positives)
+# and fall back to GENERAL on low confidence.
+
+_INTENT_PATTERNS: dict = {
+    Intent.COMPARISON: [
+        # "X vs Y", "X or Y", "X versus Y", "compare X Y", "difference between X and Y"
+        (r'\bvs\.?\b', 3),
+        (r'\bversus\b', 3),
+        (r'\bcompare\b', 3),
+        (r'\bcomparison\b', 3),
+        (r'\bdifference(?:s)?\s+between\b', 3),
+        (r'\bor\b', 1),  # weak — needs other signal
+    ],
+    Intent.DEFINITION: [
+        (r'^what\s+is\b', 3),
+        (r'^explain\b', 3),
+        (r'^define\b', 3),
+        (r'^describe\b', 2),
+        (r'\bdefinition\b', 3),
+        (r'^how\s+does\b.*\bwork\b', 2),
+        (r'^what\s+are\b', 2),
+    ],
+    Intent.TROUBLESHOOT: [
+        (r'\btroubleshoot\b', 3),
+        (r'\bdebug\b', 2),
+        (r'\bfix\b', 2),
+        (r'\berror\b', 2),
+        (r'\bfail(?:s|ure|ing|ed)?\b', 2),
+        (r'\btimeout\b', 2),
+        (r'\blag\b', 2),
+        (r'\bslow\b', 2),
+        (r'\bcrash\b', 2),
+        (r'\bhigh\s+(?:cpu|memory|latency)\b', 2),
+        (r'\bconnection\s+(?:pool|refused|reset)\b', 2),
+        (r'\bout\s+of\s+memory\b', 3),
+        (r'\bexhaust\b', 2),
+        (r'\bleak\b', 2),
+        (r'\bwhy\s+(?:is|does|do|are)\b', 1),
+    ],
+    Intent.DESIGN: [
+        (r'^design\b', 3),
+        (r'\bsystem\s+design\b', 3),
+        (r'\barchitect(?:ure)?\s+(?:for|of|a)\b', 2),
+        (r'\bhow\s+(?:to|would)\s+(?:build|design|architect)\b', 3),
+    ],
+    Intent.MIGRATION: [
+        (r'\bmigrat(?:e|ion|ing)\b', 3),
+        (r'\bmove\s+from\b', 3),
+        (r'\bswitch\s+from\b', 3),
+        (r'\breplace\b.*\bwith\b', 2),
+        (r'\btransition\s+(?:from|to)\b', 2),
+        (r'\bupgrade\s+from\b', 2),
+    ],
+    Intent.INCIDENT: [
+        (r'\bincident\b', 3),
+        (r'\boutage\b', 3),
+        (r'\bfailover\b', 2),
+        (r'\bpostmortem\b', 3),
+        (r'\bdowntime\b', 2),
+        (r'\bdisaster\b', 2),
+        (r'\brecovery\b', 1),
+        (r'\brunbook\b', 3),
+    ],
+}
+
+
+def classify_intent(query: str) -> "Intent":
+    """Classify a query into an Intent using keyword/regex patterns.
+
+    Conservative: defaults to GENERAL when confidence is low.
+    """
+    q = query.lower().strip()
+    if not q:
+        return Intent.GENERAL
+
+    intent_scores: dict = {}
+    for intent, patterns in _INTENT_PATTERNS.items():
+        total = 0
+        for pattern, weight in patterns:
+            if re.search(pattern, q):
+                total += weight
+        if total > 0:
+            intent_scores[intent] = total
+
+    if not intent_scores:
+        return Intent.GENERAL
+
+    best_intent = max(intent_scores, key=intent_scores.get)
+    best_score = intent_scores[best_intent]
+
+    # Require minimum confidence of 2 to avoid false positives from
+    # single weak signals (e.g. "or" alone triggering COMPARISON).
+    if best_score < 2:
+        return Intent.GENERAL
+
+    return best_intent
 
 
 # ============ CONSTRAINT FILTERING ============

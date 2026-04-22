@@ -24,7 +24,9 @@ try:
         AVAILABLE_STACKS,
         CSV_CONFIG,
         MAX_RESULTS,
+        Intent,
         apply_constraints,
+        classify_intent,
         compare,
         find_stale,
         parse_constraints,
@@ -40,12 +42,15 @@ try:
         format_decide,
         format_design,
     )
+    from .templates import format_by_intent
 except ImportError:
     from core import (  # type: ignore[no-redef]
         AVAILABLE_STACKS,
         CSV_CONFIG,
         MAX_RESULTS,
+        Intent,
         apply_constraints,
+        classify_intent,
         compare,
         find_stale,
         parse_constraints,
@@ -61,6 +66,7 @@ except ImportError:
         format_decide,
         format_design,
     )
+    from templates import format_by_intent  # type: ignore[no-redef]
 
 # Force UTF-8 for stdout/stderr to handle emojis on Windows (cp1252 default).
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
@@ -303,8 +309,15 @@ def interactive_loop():
             except Exception as e:
                 print(f"Error: {e}")
             continue
-        # Default: plain search
-        print(format_output(search(line)))
+        # Default: plain search with intent detection
+        intent = classify_intent(line)
+        result = search(line)
+        result["intent"] = intent.value
+        formatted = format_by_intent(intent.value, result)
+        if formatted is None:
+            formatted = format_output(result)
+        intent_tag = f"[{intent.value}] " if intent != Intent.GENERAL else ""
+        print(f"{intent_tag}\n{formatted}" if intent_tag else formatted)
 
 
 # ============ ARG PARSING ============
@@ -351,6 +364,8 @@ def _build_parser():
                         help="Constraint expression, e.g. 'cloud=gcp,latency=low-ms,consistency=strong'")
     parser.add_argument("--out", metavar="PATH",
                         help="Write output to file (used with --adr)")
+    parser.add_argument("--intent", choices=[i.value for i in Intent],
+                        help="Force a specific intent (overrides auto-detection)")
     return parser
 
 
@@ -433,8 +448,18 @@ def main():
         if constraints:
             apply_constraints(result["results"], constraints)
 
-    print(json.dumps(result, indent=2, ensure_ascii=False)
-          if args.json else format_output(result, show_scores=show_scores))
+    # Intent classification — auto-detect or use --intent override.
+    intent_value = args.intent or classify_intent(args.query).value
+    result["intent"] = intent_value
+
+    if args.json:
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+    else:
+        # Try intent-specific template; fall back to default.
+        formatted = format_by_intent(intent_value, result, show_scores=show_scores)
+        if formatted is None:
+            formatted = format_output(result, show_scores=show_scores)
+        print(formatted)
 
 
 if __name__ == "__main__":
