@@ -30,6 +30,14 @@ try:
         search_all,
         search_stack,
     )
+    from .decide import (
+        adr,
+        decide,
+        design,
+        format_adr,
+        format_decide,
+        format_design,
+    )
 except ImportError:
     from core import (  # type: ignore[no-redef]
         AVAILABLE_STACKS,
@@ -40,6 +48,14 @@ except ImportError:
         search,
         search_all,
         search_stack,
+    )
+    from decide import (  # type: ignore[no-redef]
+        adr,
+        decide,
+        design,
+        format_adr,
+        format_decide,
+        format_design,
     )
 
 # Force UTF-8 for stdout/stderr to handle emojis on Windows (cp1252 default).
@@ -200,6 +216,9 @@ Interactive commands:
   /s <stack> <query>            search a stack
   /all <query>                  cross-domain search
   /cmp <name1> | <name2> [...]  compare entries (pipe-separated)
+  /decide <requirement>         opinionated multi-domain recommendation
+  /adr <title> | <domain1,domain2,...>  generate ADR
+  /design <requirement>         system design scaffold
   /stale <domain> <months>      list stale entries
   /list                         list domains & stacks
   /help                         this help
@@ -256,6 +275,21 @@ def interactive_loop():
             except (ValueError, IndexError):
                 print("usage: /stale <domain> <months>")
             continue
+        if line.startswith("/decide "):
+            print(format_decide(decide(line[8:].strip())))
+            continue
+        if line.startswith("/adr "):
+            parts = line[5:].split("|", 1)
+            if len(parts) != 2:
+                print("usage: /adr <title> | <domain1,domain2,...>")
+                continue
+            title = parts[0].strip()
+            domains = [d.strip() for d in parts[1].split(",") if d.strip()]
+            print(format_adr(adr(title, domains)))
+            continue
+        if line.startswith("/design "):
+            print(format_design(design(line[8:].strip())))
+            continue
         # Default: plain search
         print(format_output(search(line)))
 
@@ -294,6 +328,14 @@ def _build_parser():
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     parser.add_argument("--list", action="store_true",
                         help="List available domains and stacks then exit")
+    parser.add_argument("--decide", action="store_true",
+                        help="Decision-intelligence mode: rank options with constraint filtering")
+    parser.add_argument("--adr", metavar="TITLE",
+                        help="Generate an ADR for TITLE (use with --domain)")
+    parser.add_argument("--design", action="store_true",
+                        help="Generate a design brief from the query")
+    parser.add_argument("--constraints", metavar="EXPR",
+                        help="Constraint expression, e.g. 'throughput>=high,latency<=low'")
     return parser
 
 
@@ -314,6 +356,26 @@ def main():
             parser.error("--stale requires --domain and --max-age-months")
         result = find_stale(args.domain, args.max_age_months)
         print(json.dumps(result, indent=2, ensure_ascii=False) if args.json else format_stale(result))
+        return
+
+    if args.decide:
+        if not args.query:
+            parser.error("--decide requires a query")
+        result = decide(args.query)
+        print(json.dumps(result, indent=2, ensure_ascii=False) if args.json else format_decide(result))
+        return
+
+    if args.adr:
+        domains = [args.domain] if args.domain else []
+        result = adr(args.adr, domains, query=args.query)
+        print(json.dumps(result, indent=2, ensure_ascii=False) if args.json else format_adr(result))
+        return
+
+    if args.design:
+        if not args.query:
+            parser.error("--design requires a query")
+        result = design(args.query)
+        print(json.dumps(result, indent=2, ensure_ascii=False) if args.json else format_design(result))
         return
 
     if args.query == "compare":

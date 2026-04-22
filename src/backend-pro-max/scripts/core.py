@@ -59,6 +59,8 @@ CSV_CONFIG = {
             "Name", "Category", "Data Model", "Consistency Model", "Replication",
             "Sharding", "Use Case", "Strengths", "Weaknesses", "Typical Latency",
             "Operational Cost", "Cloud Managed Options", "Notes",
+            "Throughput Tier", "Latency Tier", "Consistency Tier", "Cost Tier",
+            "Cloud Native",
         ],
     },
     "messaging": {
@@ -68,6 +70,8 @@ CSV_CONFIG = {
             "Name", "Category", "Delivery", "Ordering", "Throughput", "Latency",
             "Persistence", "Replay", "Use Case", "Strengths", "Weaknesses",
             "Cloud Managed Options", "Notes",
+            "Throughput Tier", "Latency Tier", "Consistency Tier", "Cost Tier",
+            "Cloud Native",
         ],
     },
     "cache": {
@@ -76,6 +80,8 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Strategy", "Topology", "Eviction", "Consistency",
             "Use Case", "Strengths", "Weaknesses", "Pitfalls", "Notes",
+            "Throughput Tier", "Latency Tier", "Consistency Tier", "Cost Tier",
+            "Cloud Native",
         ],
     },
     "cloud": {
@@ -554,6 +560,105 @@ def detect_domain(query):
         scores[domain] = score
     best = max(scores, key=scores.get)
     return best if scores[best] > 0 else "pattern"
+
+
+# ============ CONSTRAINT FILTERING ============
+# Columns that carry structured constraint metadata.
+CONSTRAINT_COLUMNS = [
+    "Throughput Tier", "Latency Tier", "Consistency Tier", "Cost Tier", "Cloud Native",
+]
+
+# Known tier orderings (lower index = more demanding / better).
+_TIER_ORDER = {
+    "throughput": ["low", "medium", "high", "very-high"],
+    "latency": ["sub-ms", "low-ms", "tens-ms", "hundreds-ms", "seconds"],
+    "consistency": ["none", "eventual", "tunable", "strong"],
+    "cost": ["free", "low", "medium", "medium-high", "high", "very-high"],
+}
+
+# Map short constraint key names to CSV column names.
+_CONSTRAINT_COL_MAP = {
+    "throughput": "Throughput Tier",
+    "latency": "Latency Tier",
+    "consistency": "Consistency Tier",
+    "cost": "Cost Tier",
+    "cloud": "Cloud Native",
+}
+
+
+def parse_constraints(constraint_str):
+    """Parse a constraint string like 'cloud=gcp,latency=low-ms,consistency=strong'.
+
+    Returns a dict: {key: value} where key is a short name (cloud, latency, …).
+    """
+    if not constraint_str:
+        return {}
+    constraints = {}
+    for part in constraint_str.split(","):
+        part = part.strip()
+        if "=" not in part:
+            continue
+        key, _, val = part.partition("=")
+        key = key.strip().lower()
+        val = val.strip().lower()
+        if key and val:
+            constraints[key] = val
+    return constraints
+
+
+def apply_constraints(results, constraints):
+    """Post-filter search results against structured constraint columns.
+
+    Each result is annotated with a `_constraints` dict:
+      {constraint_key: {"value": csv_value, "wanted": user_value, "match": bool|"unknown"}}
+    Results are re-sorted by number of satisfied constraints (descending),
+    then by BM25 score.
+    """
+    if not constraints:
+        return results
+
+    for row in results:
+        row["_constraints"] = {}
+        for key, wanted in constraints.items():
+            col = _CONSTRAINT_COL_MAP.get(key)
+            if not col:
+                continue
+            actual = str(row.get(col, "")).strip().lower()
+            if not actual:
+                row["_constraints"][key] = {"value": "", "wanted": wanted, "match": "unknown"}
+                continue
+
+            if key == "cloud":
+                # Cloud is comma-separated list; check if wanted value is in it.
+                parts = [p.strip() for p in actual.split(",")]
+                match = wanted in parts or actual == "multi"
+            elif key in _TIER_ORDER:
+                # For ordered tiers, check if actual meets or exceeds wanted.
+                order = _TIER_ORDER[key]
+                try:
+                    actual_idx = order.index(actual)
+                    wanted_idx = order.index(wanted)
+                    if key in ("latency", "cost"):
+                        # Lower is better — actual index should be <= wanted.
+                        match = actual_idx <= wanted_idx
+                    else:
+                        # Higher is better — actual index should be >= wanted.
+                        match = actual_idx >= wanted_idx
+                except ValueError:
+                    match = actual == wanted
+            else:
+                match = actual == wanted
+
+            row["_constraints"][key] = {"value": actual, "wanted": wanted, "match": match}
+
+    # Sort: most constraints satisfied first, then by BM25 score.
+    def _sort_key(row):
+        cm = row.get("_constraints", {})
+        satisfied = sum(1 for v in cm.values() if v["match"] is True)
+        return (-satisfied, -float(row.get("_score", 0.0)))
+
+    results.sort(key=_sort_key)
+    return results
 
 
 def search(query, domain=None, max_results=MAX_RESULTS,
