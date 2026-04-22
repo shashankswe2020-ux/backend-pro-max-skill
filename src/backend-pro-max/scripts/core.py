@@ -451,6 +451,50 @@ def _is_stale(row, max_age_months):
 _warned_semantic = False
 
 
+# ============ CITATION TOKENS ============
+def _slugify(text, max_len=40):
+    """Convert text to a stable, URL-safe slug: lowercase, hyphens, no specials."""
+    s = str(text).lower().strip()
+    s = re.sub(r"[^a-z0-9\s-]", "", s)   # strip non-alphanumeric
+    s = re.sub(r"[\s_]+", "-", s)          # spaces/underscores → hyphens
+    s = re.sub(r"-{2,}", "-", s)           # collapse runs of hyphens
+    s = s.strip("-")
+    return s[:max_len].rstrip("-") if s else "unknown"
+
+
+def _row_name(row):
+    """Extract the best identifier from a row dict."""
+    for key in ("Name", "Service", "Technology", "Pattern", "Category", "Guideline"):
+        val = str(row.get(key, "")).strip()
+        if val:
+            return val
+    # Last resort — first non-empty value.
+    for v in row.values():
+        val = str(v).strip()
+        if val:
+            return val
+    return "unknown"
+
+
+def _make_citation(domain, row, column=None):
+    """Build a citation token: ``[BPM:<domain>.<name_slug>]``.
+
+    If *column* is given, appends a third segment:
+    ``[BPM:<domain>.<name_slug>.<column_slug>]``.
+    """
+    name_slug = _slugify(_row_name(row))
+    parts = [domain, name_slug]
+    if column:
+        parts.append(_slugify(column))
+    return "[BPM:" + ".".join(parts) + "]"
+
+
+def _inject_citations(results, domain):
+    """Add ``_citation`` to each result row in-place."""
+    for row in results:
+        row["_citation"] = _make_citation(domain, row)
+
+
 def _search_csv(filepath, search_cols, output_cols, query, max_results,
                 *, min_score=0.0, max_age_months=None, expand=True, engine="bm25"):
     global _warned_semantic
@@ -857,6 +901,7 @@ def search(query, domain=None, max_results=MAX_RESULTS,
         filepath, config["search_cols"], config["output_cols"], query, max_results,
         min_score=min_score, max_age_months=max_age_months, expand=expand, engine=engine,
     )
+    _inject_citations(results, domain)
 
     return {
         "domain": domain,
@@ -881,6 +926,7 @@ def search_stack(query, stack, max_results=MAX_RESULTS,
         filepath, _STACK_COLS["search_cols"], _STACK_COLS["output_cols"],
         query, max_results, min_score=min_score, expand=expand, engine=engine,
     )
+    _inject_citations(results, f"stack-{stack}")
 
     return {
         "domain": "stack",
@@ -904,6 +950,7 @@ def search_all(query, max_results=2, *, min_score=0.0, expand=True, engine="bm25
             query, max_results, min_score=min_score, expand=expand, engine=engine,
         )
         if hits:
+            _inject_citations(hits, domain)
             aggregated[domain] = hits
     return {"query": query, "domains": list(aggregated.keys()), "results": aggregated}
 
@@ -954,6 +1001,7 @@ def compare(names, domain=None, max_per_name=1):
                 found = True
         if found:
             entry = top
+            entry["_citation"] = _make_citation(auto_domain, entry)
         else:
             entry = {}
             missing.append(name)
@@ -972,7 +1020,7 @@ def compare(names, domain=None, max_per_name=1):
                 suggestions[name] = hints[:3]
         entries[name] = entry
         for col in entry.keys():
-            if col not in columns_seen and col != "_score":
+            if col not in columns_seen and col not in ("_score", "_citation"):
                 columns_seen.append(col)
 
     return {
@@ -1005,6 +1053,7 @@ def find_stale(domain, months):
         if _months_since(dt) > months:
             entry = {col: row.get(col, "") for col in config["output_cols"] if col in row}
             entry["Last Updated"] = row.get("Last Updated", row.get("Updated", ""))
+            entry["_citation"] = _make_citation(domain, entry)
             stale.append(entry)
     return {
         "domain": domain,

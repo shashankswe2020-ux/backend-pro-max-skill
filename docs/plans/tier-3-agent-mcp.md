@@ -77,6 +77,7 @@ MCP-aware client. Uses stdio transport (stdin/stdout JSON-RPC).
 | 3.1.8 | Error handling — graceful errors as tool results, not crashes | `scripts/mcp_server.py` | 1h |
 | 3.1.9 | Claude Desktop config snippet in README | `README.md` | 0.5h |
 | 3.1.10 | Tests — mock MCP client calls each tool, validates response schema | `tests/test_mcp_server.py` (new) | 3h |
+| 3.1.11 | MCP Inspector validation — all 8 tools pass interactive Inspector testing (connect, list, invoke, error cases) | Manual + `docs/mcp-inspector-report.md` (new) | 2h |
 
 ### Acceptance Criteria
 
@@ -88,6 +89,13 @@ MCP-aware client. Uses stdio transport (stdin/stdout JSON-RPC).
 - [ ] Claude Desktop config `{"command": "backendpro-mcp"}` works end-to-end
 - [ ] `pip install backendpro` (without `[mcp]`) still works — MCP is fully optional
 - [ ] `pytest tests/test_mcp_server.py` passes (≥16 test cases, 2 per tool)
+- [ ] MCP Inspector testing passed for all 8 tools:
+  - [ ] Inspector connects to `backendpro-mcp` via stdio successfully
+  - [ ] `tools/list` returns all 8 tools with valid schemas in Inspector UI
+  - [ ] Each tool invoked via Inspector returns structured JSON (no errors)
+  - [ ] Invalid inputs return proper MCP error responses in Inspector (no crashes)
+  - [ ] Inspector round-trip latency < 1s for all tools
+  - [ ] Inspector report documented in `docs/mcp-inspector-report.md`
 
 ### Verification
 
@@ -99,6 +107,15 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
 
 # Integration test
 pytest tests/test_mcp_server.py -v
+
+# MCP Inspector — interactive validation (requires npx)
+npx @modelcontextprotocol/inspector backendpro-mcp
+# In Inspector UI:
+#   1. Verify connection status = connected
+#   2. Click "List Tools" → confirm 8 tools with schemas
+#   3. Invoke each tool with sample inputs → confirm structured JSON responses
+#   4. Invoke with invalid inputs → confirm error responses (not crashes)
+#   5. Screenshot / document results in docs/mcp-inspector-report.md
 
 # Manual — add to Claude Desktop config and ask "search for circuit breaker"
 ```
@@ -296,6 +313,7 @@ pytest tests/test_citations.py -v
 ### After Phase C (Tier 3 complete)
 
 - [ ] `backendpro-mcp` runs, responds to MCP protocol, exposes 8 tools
+- [ ] MCP Inspector testing passed — all 8 tools connect, list, invoke, and handle errors correctly
 - [ ] Claude Desktop integration documented and tested manually
 - [ ] All outputs (markdown, JSON, JSONL, MCP) include citations
 - [ ] ≥30 new test cases total for Tier 3
@@ -314,6 +332,7 @@ pytest tests/test_citations.py -v
 | **Create** | `src/backend-pro-max/scripts/gen_tools_schema.py` |
 | **Create** | `tools.json` |
 | **Create** | `tests/test_mcp_server.py` |
+| **Create** | `docs/mcp-inspector-report.md` |
 | **Create** | `tests/test_jsonl.py` |
 | **Create** | `tests/test_tools_schema.py` |
 | **Create** | `tests/test_citations.py` |
