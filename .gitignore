@@ -1,0 +1,39 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Coverage / artefacts
+coverage/
+.coverage
+htmlcov/
+*.lcov
+
+# Local design / project notes
+/tmp_local/

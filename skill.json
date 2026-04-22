@@ -1,0 +1,35 @@
+{
+  "name": "backend-pro-max",
+  "displayName": "Backend Pro Max",
+  "description": "AI-powered backend & distributed-systems intelligence: 12+ programming languages, 20+ knowledge domains (databases, messaging, cache, cloud, IaC, containers, observability, API design, auth, security, CI/CD, testing, architecture, scaling, consistency, performance, reliability, data engineering) and language-specific stack guidelines for senior backend / distributed-systems engineers.",
+  "version": "0.1.0",
+  "author": "shashankswe2020-ux",
+  "license": "MIT",
+  "repository": "https://github.com/shashankswe2020-ux/backend-pro-max-skill",
+  "keywords": [
+    "backend",
+    "distributed-systems",
+    "microservices",
+    "cloud",
+    "kubernetes",
+    "kafka",
+    "databases",
+    "observability",
+    "ai-skill",
+    "site-reliability"
+  ],
+  "platforms": [
+    "claude",
+    "cursor",
+    "windsurf",
+    "copilot",
+    "codex",
+    "gemini",
+    "continue",
+    "opencode",
+    "droid"
+  ],
+  "entrypoints": {
+    "search": "src/backend-pro-max/scripts/search.py"
+  }
+}

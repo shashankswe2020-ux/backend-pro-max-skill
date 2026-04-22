@@ -1,0 +1,24 @@
+{
+  "name": "backend-pro-max",
+  "displayName": "Backend Pro Max",
+  "description": "Backend & distributed-systems engineering intelligence skill.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "author": {
+    "name": "shashankswe2020-ux",
+    "url": "https://github.com/shashankswe2020-ux"
+  },
+  "homepage": "https://github.com/shashankswe2020-ux/backend-pro-max-skill",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shashankswe2020-ux/backend-pro-max-skill.git"
+  },
+  "keywords": [
+    "backend",
+    "distributed-systems",
+    "cloud",
+    "microservices",
+    "sre",
+    "ai-skill"
+  ]
+}
