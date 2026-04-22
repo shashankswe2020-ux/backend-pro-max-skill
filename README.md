@@ -149,6 +149,99 @@ A taste of what to ask — these all return ranked, citable rows:
 
 ---
 
+## 🧠 Decision Intelligence (v0.3)
+
+Three new commands — `decide`, `adr`, `design` — turn the search engine into
+a **decision advisor**. Instead of returning raw rows, they extract
+constraints from your query, score candidates, and produce structured output
+an LLM can cite directly.
+
+```bash
+# Quick decision with trade-off analysis
+backendpro decide "Kafka vs Pulsar vs Pub/Sub for high-throughput event streaming on GCP"
+
+# Architecture Decision Record (Markdown)
+backendpro adr "Redis vs Memcached for session cache on AWS"
+
+# Capacity-aware design document
+backendpro design "Postgres vs DynamoDB for 50M DAU e-commerce with strong consistency"
+```
+
+### Why does this matter?
+
+| Dimension | Plain LLM | Backend Pro Max + LLM |
+|---|---|---|
+| **Candidates** | Mentions 2–3 obvious options | Returns **5 ranked candidates** from the knowledge base, including less-obvious picks |
+| **Constraints** | Ignores or hallucinates requirements | Extracts facets (`throughput:high`, `cloud:gcp`, `consistency:strong`) and **scores every candidate** against them |
+| **Trade-offs** | Vague "it depends" | Structured **pro/con per candidate** with severity ratings |
+| **Citations** | None | Every recommendation cites `domain:key` rows the reviewer can verify |
+| **Reproducibility** | Different answer each time | Deterministic BM25 ranking — same query, same results |
+
+### 5 hard demos
+
+These are real outputs from the `decide` command — the kind of nuanced
+comparisons that catch LLMs off-guard:
+
+<details>
+<summary><strong>1. Kafka vs Pulsar vs Pub/Sub</strong> — <code>decide "Kafka vs Pulsar vs Pub/Sub for high-throughput event streaming on GCP with ordering guarantees"</code></summary>
+
+- **Recommendation:** Apache Pulsar (highest combined score)
+- **5 candidates returned** across messaging domain
+- **Constraints extracted:** `throughput:high`, `cloud:gcp`, `ordering:true`
+- Top 3 all score **2/2** on constraint match — decision comes down to BM25 relevance to the specific query
+- 🔑 *Plain LLM would say "use Pub/Sub because you're on GCP" — misses that Pulsar and Kafka score equally well on constraints and may be better fits for ordering guarantees*
+
+</details>
+
+<details>
+<summary><strong>2. Redis vs Memcached</strong> — <code>decide "Redis vs Memcached for low-latency session cache on AWS"</code></summary>
+
+- **Recommendation:** Redis (highest score)
+- **5 candidates** across cache + database domains
+- **Constraints extracted:** `cloud:aws`, `throughput:high`, `latency:low-ms`
+- Redis scores **3/3** on all constraint columns
+- 🔑 *Plain LLM gives a generic feature comparison. Backend Pro Max surfaces that Redis wins on every extracted constraint axis, and also pulls in database-domain rows for Redis Cluster that an LLM wouldn't think to include.*
+
+</details>
+
+<details>
+<summary><strong>3. Monolith vs Microservices</strong> — <code>decide "monolith vs microservices for a 10-person startup"</code></summary>
+
+- **Recommendation:** Monolith (highest BM25 score)
+- **5 candidates** across architecture + patterns domains
+- No constraint columns on architecture domain — pure relevance ranking
+- 🔑 *Plain LLM hedges with "it depends on your team." Backend Pro Max commits to monolith as #1, returns modular monolith at #2, and includes the specific trade-off rows (coupling, deployment, team autonomy) that justify the ranking.*
+
+</details>
+
+<details>
+<summary><strong>4. Postgres vs DynamoDB</strong> — <code>decide "Postgres vs DynamoDB for 50M DAU e-commerce with strong consistency on multi-cloud"</code></summary>
+
+- **Recommendation:** Spanner / TiDB (surprise — neither of the two named!)
+- **5 candidates** across database + consistency + scaling domains
+- **Constraints extracted:** `throughput:high`, `cloud:multi-cloud`, `consistency:strong`
+- Spanner scores **3/3**; Postgres lands at **#3** with 2/3 (not cloud-native multi-cloud)
+- 🔑 *This is the killer demo. A plain LLM would compare only Postgres and DynamoDB. Backend Pro Max widens the search and surfaces Spanner/TiDB as a better fit for the actual constraints — exactly what a staff engineer would do in a design review.*
+
+</details>
+
+<details>
+<summary><strong>5. REST vs GraphQL</strong> — <code>decide "REST vs GraphQL for a public API with low latency"</code></summary>
+
+- **Recommendation:** Based on API-domain BM25 ranking
+- **5 candidates** across api + performance domains
+- **Constraints extracted:** `latency:low-ms`
+- Pulls in tail-latency and performance rows that a pure API comparison would miss
+- 🔑 *Plain LLM gives a feature matrix. Backend Pro Max crosses into the performance domain and flags tail-latency concerns for GraphQL that most comparisons overlook.*
+
+</details>
+
+> **Note:** Constraint scoring works best on domains with constraint columns
+> (`databases`, `messaging`, `cache`). Other domains use pure BM25 relevance.
+> More constraint columns are planned for future tiers.
+
+---
+
 ## 📚 Domains
 
 | Domain          | What's in it                                                      |
@@ -347,6 +440,9 @@ backendpro "circuit breaker"
 backendpro "virtual threads" --stack java-spring
 backendpro "idempotency" --all
 backendpro compare "Postgres" "DynamoDB" --domain database
+backendpro decide "Kafka vs Pulsar" --constraints throughput=high
+backendpro adr "Redis vs Memcached for session cache on AWS"
+backendpro design "Postgres vs DynamoDB for 50M DAU e-commerce"
 backendpro-validate                       # ✅ All CSVs valid (20 domains + 12 stacks).
 
 # Or, without installing
@@ -358,7 +454,7 @@ python3 src/backend-pro-max/scripts/search.py "circuit breaker"
 
 ```bash
 pip install -e ".[dev]"
-pytest                                    # 37 tests
+pytest                                    # 80 tests
 ruff check src tests                      # lint
 backendpro-validate                       # schema validation
 ```
