@@ -66,6 +66,26 @@ model is *instructed* to consult — so its advice cites a row, not a vibe.
 
 ## ⚡ Quick start
 
+### Option A — install once, type `backendpro`
+
+```bash
+# Pure-stdlib install — no runtime deps
+pip install git+https://github.com/shashankswe2020-ux/backend-pro-max-skill
+# or, from a clone:  pip install .
+
+backendpro --list
+backendpro "kafka exactly once delivery"
+backendpro "circuit breaker" --domain pattern
+backendpro "virtual threads" --stack java-spring
+backendpro "idempotency" --all
+backendpro "redis cluster" --json
+```
+
+> 💡 `pipx install git+https://github.com/shashankswe2020-ux/backend-pro-max-skill`
+> works too if you prefer an isolated venv.
+
+### Option B — run the script directly (no install)
+
 ```bash
 # 0. No install needed — pure Python 3.8+ stdlib
 python3 src/backend-pro-max/scripts/search.py --list
@@ -249,7 +269,15 @@ in your repo.
 <details>
 <summary><strong>⚙️ Anywhere else (CLI / scripts / MCP)</strong></summary>
 
-The CLI is pure Python 3 standard library — clone this repo and run:
+The CLI is pure Python 3 standard library. Either install it:
+
+```bash
+pip install git+https://github.com/shashankswe2020-ux/backend-pro-max-skill
+backendpro --list
+backendpro "redis cluster" --json
+```
+
+…or just clone and run the script directly:
 
 ```bash
 python3 src/backend-pro-max/scripts/search.py --list
@@ -272,10 +300,15 @@ agent loop, or any CI step.
 ## 🧪 Smoke test
 
 ```bash
+# Installed CLI
+backendpro --list
+backendpro "circuit breaker"
+backendpro "virtual threads" --stack java-spring
+backendpro "idempotency" --all
+
+# Or, without installing
 python3 src/backend-pro-max/scripts/search.py --list
 python3 src/backend-pro-max/scripts/search.py "circuit breaker"
-python3 src/backend-pro-max/scripts/search.py "virtual threads" --stack java-spring
-python3 src/backend-pro-max/scripts/search.py "idempotency" --all
 ```
 
 ---

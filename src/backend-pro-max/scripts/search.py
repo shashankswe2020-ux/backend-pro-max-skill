@@ -25,10 +25,20 @@ import io
 import json
 import sys
 
-from core import (
-    CSV_CONFIG, AVAILABLE_STACKS, MAX_RESULTS,
-    search, search_stack, search_all,
-)
+try:
+    # When installed as a package (`pip install .`) or imported via
+    # `python -m backendpro.scripts.search`.
+    from .core import (
+        CSV_CONFIG, AVAILABLE_STACKS, MAX_RESULTS,
+        search, search_stack, search_all,
+    )
+except ImportError:
+    # When executed directly as a script:
+    #   python3 src/backend-pro-max/scripts/search.py …
+    from core import (  # type: ignore[no-redef]
+        CSV_CONFIG, AVAILABLE_STACKS, MAX_RESULTS,
+        search, search_stack, search_all,
+    )
 
 # Force UTF-8 for stdout/stderr to handle emojis on Windows (cp1252 default).
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
