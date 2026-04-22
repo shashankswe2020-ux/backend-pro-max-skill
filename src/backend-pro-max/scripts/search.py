@@ -128,7 +128,7 @@ def main():
         parser.error("a query is required (or pass --list)")
 
     if args.all:
-        result = search_all(args.query, max_results=max(1, args.max_results // 2 or 1))
+        result = search_all(args.query, max_results=max(1, args.max_results // 2))
         print(json.dumps(result, indent=2, ensure_ascii=False) if args.json else format_all(result))
         return
 
