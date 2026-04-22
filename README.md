@@ -7,15 +7,15 @@
 ### *A staff-engineer-in-a-box for your AI coding assistant*
 
 **Curated, BM25-searchable backend & distributed-systems intelligence**
-across **20 domains** and **12 language stacks** — drop it into Claude Code,
+across **21 domains** and **12 language stacks** — drop it into Claude Code,
 Cursor, Windsurf, GitHub Copilot, Gemini, Continue, or any AI assistant.
 
 <br />
 
 [![PyPI](https://img.shields.io/pypi/v/backendpro?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/backendpro/)
 [![CI](https://img.shields.io/github/actions/workflow/status/shashankswe2020-ux/backend-pro-max-skill/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/shashankswe2020-ux/backend-pro-max-skill/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-80_passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
-[![20 Domains](https://img.shields.io/badge/domains-20-blue?style=for-the-badge)](#-domains)
+[![Tests](https://img.shields.io/badge/tests-148_passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
+[![21 Domains](https://img.shields.io/badge/domains-21-blue?style=for-the-badge)](#-domains)
 [![12 Stacks](https://img.shields.io/badge/stacks-12-purple?style=for-the-badge)](#-stacks)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-yellow?style=for-the-badge&logo=python&logoColor=white)](#-prerequisites)
 [![Zero Dependencies](https://img.shields.io/badge/deps-stdlib_only-orange?style=for-the-badge)](#-prerequisites)
@@ -59,7 +59,7 @@ model is *instructed* to consult — so its advice cites a row, not a vibe.
 
 | | |
 |---|---|
-| 📚 **20 domain knowledge bases** | Languages · Patterns · Databases · Messaging · Cache · Cloud · IaC · Containers · Observability · API · Auth · Security · CI/CD · Testing · Architecture · Scaling · Consistency · Performance · Reliability · Data |
+| 📚 **21 domain knowledge bases** | Languages · Patterns · Databases · Messaging · Cache · Cloud · IaC · Containers · Observability · API · Auth · Security · CI/CD · Testing · Architecture · Scaling · Consistency · Performance · Reliability · Data · Anti-patterns |
 | 🛠️ **12 stack guidelines** | Go · Java/Spring · Python/FastAPI · Node/Express · Rust/Axum · C#/ASP.NET · Kotlin/Spring · Scala/Akka · Elixir/Phoenix · Ruby/Rails · PHP/Laravel · C++ |
 | 🔎 **Pure-Python BM25 + synonyms** | No installs, no models, no network — `partial failure` → finds `Saga` / `Circuit Breaker` automatically |
 | ⚖️ **`compare` mode** | `backendpro compare "Kafka" "RabbitMQ" --domain messaging` → side-by-side markdown table for ADRs |
@@ -67,11 +67,15 @@ model is *instructed* to consult — so its advice cites a row, not a vibe.
 | 📅 **Freshness tracking** | `Last Updated` column + `--max-age-months` filter + `--stale` audit mode |
 | 🎯 **Confidence scores** | Every result carries a BM25 score + `high`/`medium`/`low` label so the agent knows when to trust |
 | ⚡ **mtime-cached index** | Sub-millisecond repeat queries — agent loops stay snappy |
+| 🧠 **Intent classifier** | Auto-detects query intent (comparison, troubleshoot, migration, incident, definition, best-practice, checklist) and applies a structured template to the output |
+| 🔀 **Hybrid retrieval** | `pip install backendpro[semantic]` adds embedding-based search via sentence-transformers + RRF fusion with BM25 — graceful fallback to pure BM25 when not installed |
+| 🏆 **Cross-encoder re-ranking** | `pip install backendpro[rerank]` adds cross-encoder re-ranking for precision-critical queries — optional, graceful fallback |
+| ⚠️ **Anti-patterns domain** | 15 common distributed-systems anti-patterns (Distributed Monolith, God Service, Dual Writes, …) with symptoms, root causes, and fixes |
 | 🤖 **Drop-in skill files** | `SKILL.md` for Claude Code · `skill-content.md` for Cursor / Windsurf / Copilot / Gemini / Continue |
 | 📐 **Do / Don't + Code examples** | Each row contains good vs bad code, severity, and a docs URL |
 | 🧠 **Auto domain detection** | Skip `--domain` and the engine picks the right CSV from your query |
 | ⚙️ **JSON output mode** | First-class integration with tool-calling agents and MCP servers |
-| ✅ **CI-enforced** | `backendpro-validate` schema-checks every CSV; 37 pytest cases run on Py 3.9 / 3.11 / 3.12 |
+| ✅ **CI-enforced** | `backendpro-validate` schema-checks every CSV; 148 pytest cases run on Py 3.9 / 3.11 / 3.12 |
 
 ---
 
@@ -357,7 +361,7 @@ chunks. This works, but has well-known failure modes:
 | **No structure in, no structure out** | Chunks are flat text; the LLM has to *infer* which part is "when to use" vs "when not to" |
 | **Hallucination laundering** | The LLM cites a retrieved chunk but subtly changes the recommendation |
 | **Non-determinism** | Same query, different embedding model version → different chunks → different answer |
-| **Cold start cost** | Embedding 20 CSVs requires a model download, GPU/CPU time, and a vector DB |
+| **Cold start cost** | Embedding 21 CSVs requires a model download, GPU/CPU time, and a vector DB |
 | **Dependency weight** | `sentence-transformers` + `faiss` + `chromadb` = 500 MB+ before you write a line of code |
 
 ### The Backend Pro Max approach
@@ -440,6 +444,7 @@ dimension that matters: precision, reproducibility, auditability, and speed.
 | 🚀 `performance`   | N+1, missing indexes, plan regressions, pool exhaustion, GC pauses, hot keys, tail latency, thundering herd, async-blocking, cold starts, leaks, hot-path allocations, JSON serialisation, chatty interfaces, TLS overhead |
 | 🛟 `reliability`   | SLO/SLI/error budget, timeouts, retries+backoff, circuit breaker, bulkhead, idempotency, graceful shutdown, liveness/readiness, capacity & headroom, RPO/RTO, multi-AZ/region, backups + PITR, chaos engineering, runbooks, blue/green & canary, feature flags, per-tenant quotas, postmortems |
 | 🧮 `data`          | Spark, Flink, Kafka Streams/ksqlDB, Airbyte/Fivetran/Stitch/Meltano, dbt, Airflow, Dagster, Prefect, Iceberg/Delta/Hudi, ClickHouse/Druid/Pinot, Spark Streaming + Delta, Debezium, Kafka Connect, LakeFS/Nessie, vector DBs, feature stores |
+| ⚠️ `antipattern`   | Distributed Monolith, Shared Database Integration, God Service, Sync-over-Async, Dual Writes, Chatty Microservices, Unbounded Retry, Missing Idempotency Key, Premature Microservices, Log-and-Throw, Generic Error Swallowing, N+1 Query, Secrets in Env Vars, Time-Based Cache Invalidation Only, Polling Instead of Events |
 
 ---
 
@@ -498,7 +503,7 @@ See [`CLAUDE.md`](CLAUDE.md) for the full layout. TL;DR:
 
 ```
 src/backend-pro-max/
-├── data/                       # 20 domain CSVs + stacks/ (12 stack CSVs)
+├── data/                       # 21 domain CSVs + stacks/ (12 stack CSVs)
 │   ├── languages.csv  patterns.csv  databases.csv  messaging.csv …
 │   └── stacks/
 │       └── go.csv  java-spring.csv  python-fastapi.csv  …
@@ -521,7 +526,7 @@ flowchart TD
     U["👤 User Query\n&quot;Design a URL shortener with caching&quot;"]:::user
     S["📜 SKILL.md / skill-content.md\nInstructs model to search before answering"]:::skill
     C["🔎 backendpro CLI\nBM25 search engine · pure Python stdlib"]:::cli
-    D["📚 20 Domain CSVs\napi · cache · database\nscaling · reliability …"]:::data
+    D["📚 21 Domain CSVs\napi · cache · database\nscaling · reliability …"]:::data
     K["🛠️ 12 Stack CSVs\ngo · java-spring\npython-fastapi …"]:::data
     A["🌐 Auto-detect / --all\nCross-domain search"]:::data
     R["📋 Ranked Results\nCited rows · do/don't · code\nseverity · docs URL"]:::result
@@ -617,7 +622,7 @@ backendpro compare "Postgres" "DynamoDB" --domain database
 backendpro decide "Kafka vs Pulsar" --constraints throughput=high
 backendpro adr "Redis vs Memcached for session cache on AWS"
 backendpro design "Postgres vs DynamoDB for 50M DAU e-commerce"
-backendpro-validate                       # ✅ All CSVs valid (20 domains + 12 stacks).
+backendpro-validate                       # ✅ All CSVs valid (21 domains + 12 stacks).
 
 # Or, without installing
 python3 src/backend-pro-max/scripts/search.py --list
@@ -628,7 +633,7 @@ python3 src/backend-pro-max/scripts/search.py "circuit breaker"
 
 ```bash
 pip install -e ".[dev]"
-pytest                                    # 80 tests
+pytest                                    # 148 tests
 ruff check src tests                      # lint
 backendpro-validate                       # schema validation
 ```

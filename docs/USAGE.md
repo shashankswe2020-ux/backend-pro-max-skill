@@ -133,6 +133,9 @@ backendpro compare "Kafka" "RabbitMQ" --json
 | `--interactive` / `-i`     | Start the REPL                                                        |
 | `--stale`                  | Audit mode (with `--domain` and `--max-age-months`)                   |
 | `--list`                   | List domains and stacks                                               |
+| `--intent <type>`          | Override auto-detected intent (`comparison`, `troubleshoot`, `migration`, `incident`, `definition`, `best-practice`, `checklist`) |
+| `--engine <engine>`        | Retrieval engine: `bm25` (default), `hybrid`, or `semantic`. Hybrid/semantic require `pip install backendpro[semantic]` |
+| `--rerank`                 | Re-rank results with a cross-encoder model. Requires `pip install backendpro[rerank]` |
 
 ### Confidence scores
 
@@ -158,6 +161,56 @@ backendpro "how to handle partial failure across services"
 ```
 
 Pass `--no-expand` to recover pure-keyword behavior.
+
+### Anti-patterns
+
+The `antipattern` domain contains 15 common distributed-systems anti-patterns
+with symptoms, root causes, and fixes:
+
+```bash
+backendpro "distributed monolith" --domain antipattern
+backendpro "dual writes" --domain antipattern
+backendpro "god service" --domain antipattern
+```
+
+### Intent-aware output
+
+The intent classifier auto-detects query intent and applies structured
+templates. You can also override it:
+
+```bash
+# Auto-detected as "troubleshoot" → Symptom / Root Cause / Fix template
+backendpro "connection pool exhausted"
+
+# Force a specific intent
+backendpro "kafka vs rabbitmq" --intent comparison
+backendpro "migrate from monolith to microservices" --intent migration
+```
+
+### Hybrid retrieval (optional)
+
+For conceptual queries where keyword matching falls short, enable
+embedding-based hybrid search:
+
+```bash
+pip install backendpro[semantic]
+
+# Hybrid = BM25 + embedding similarity via Reciprocal Rank Fusion
+backendpro "how to handle eventual consistency" --engine hybrid
+
+# Pure semantic (embedding only)
+backendpro "conceptual distributed systems question" --engine semantic
+```
+
+### Cross-encoder re-ranking (optional)
+
+For precision-critical queries, add cross-encoder re-ranking:
+
+```bash
+pip install backendpro[rerank]
+
+backendpro "saga pattern" --rerank
+```
 
 ## Recipes
 

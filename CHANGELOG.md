@@ -11,17 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `backendpro decide "Kafka vs Pulsar"` — ranked recommendation with constraint scoring.
   - `backendpro adr "Redis vs Memcached"` — auto-generated Architecture Decision Record (Markdown).
   - `backendpro design "Postgres for 50M DAU"` — capacity-aware design document with QPS/storage estimates.
+- **Intent Classifier (Tier 2)** — auto-detects query intent (`comparison`, `troubleshoot`, `migration`, `incident`, `definition`, `best-practice`, `checklist`) using weighted regex patterns. Structured templates format output by intent. Override with `--intent <type>`.
+- **Hybrid Retrieval (Tier 2)** — optional embedding-based search via `sentence-transformers` + Reciprocal Rank Fusion with BM25. Install with `pip install backendpro[semantic]`. Use `--engine hybrid` or `--engine semantic`. Graceful fallback to BM25 when not installed.
+- **Cross-Encoder Re-ranking (Tier 2)** — optional cross-encoder re-ranking for precision-critical queries. Install with `pip install backendpro[rerank]`. Use `--rerank`. Graceful fallback when not installed.
+- **Anti-patterns Domain (Tier 2)** — 15 common distributed-systems anti-patterns (Distributed Monolith, God Service, Dual Writes, Sync-over-Async, Chatty Microservices, …) with symptoms, root causes, fixes, and severity ratings.
+- **`templates.py`** — per-intent output formatters with structured field extraction.
+- **`semantic.py`** — embedding index with disk cache (numpy + JSON, no pickle), mtime-based invalidation.
+- **`rerank.py`** — cross-encoder re-ranking with lazy model loading and graceful fallback.
 - **Constraint extraction** — queries are parsed for facets (`throughput:high`, `latency:low-ms`, `cloud:aws`, `consistency:strong`) and candidates are scored against constraint columns in CSVs.
 - **`--constraints` flag** — explicit constraint overrides: `--constraints throughput=high,cloud=aws`.
 - **`--out` flag** — write ADR output directly to a file: `backendpro adr "..." --out decision.md`.
 - **Constraint columns** on `databases.csv`, `messaging.csv`, `cache.csv` — Throughput Tier, Latency Tier, Consistency Tier, Cost Tier, Cloud Native.
 - **43 new tests** (80 total, up from 37) covering `decide`, `adr`, `design`, constraint extraction, constraint application, formatters, capacity math, and edge cases.
+- **68 more tests (148 total)** covering intent classification (35 tests), anti-patterns (16 tests), semantic search (11 tests), re-ranking (5 tests), and template formatting.
 - **`_get_name()` helper** — safe row-name extraction replacing fragile `next(iter())` calls.
 - **Named constants** — `_PEAK_FACTOR`, `_DEFAULT_ROW_BYTES`, `_DEFAULT_REPLICATION`, `_DAU_TO_REQUESTS`, `_MAX_FIELD_DISPLAY` replace magic numbers.
 - **Smarter `compare`** — when a queried term has zero hits in the chosen domain, the result no longer silently fills the column with `—`. Instead the entry is blanked, the name is added to a new `missing` list, and `suggestions` point at other domains where the term actually lives (e.g. `compare cosmosdb dynamodb` now hints `try --domain cloud → Cosmos DB`). Markdown output renders a `> ⚠️` warning block above the table.
 - **Product-name synonyms** — query expansion now bridges no-space variants (`cosmosdb` ↔ `cosmos db`, `dynamodb` ↔ `dynamo db`, `mongodb`, `clickhouse`, `bigquery`, `elasticsearch`, `rabbitmq`, `kubernetes`/`k8s`, `postgres`/`postgresql`, etc.).
 
 ### Fixed
+- **Pickle deserialization risk** — replaced `pickle.load()` in semantic cache with `numpy.load(allow_pickle=False)` + `json.load()` (CWE-502, #22).
+- **Cache directory permissions** — `.backendpro_cache/` now created with `mode=0o700` (CWE-732, #24).
+- **Semantic fallback warning flood** — warning now prints once per process instead of on every call (#23).
 - **Path traversal** in `--out` flag — rejects `..` segments and absolute paths.
 - **ADR TypeError** — removed invalid `query=` kwarg in `adr()` call.
 - **Dead `--constraints`** flag — now wired into search path via `parse_constraints()` + `apply_constraints()`.
@@ -36,8 +47,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Bumped version to **0.3.0**.
-- Landing page (`index.html`) updated with Decision Intelligence cards, terminal demo, and 80-test stats.
-- README updated with Decision Intelligence section, 5 hard demos, and updated badges/smoke tests.
+- Landing page (`index.html`) updated with 21 domains, 148 tests, Tier 2 feature cards (intent, hybrid, rerank, anti-patterns).
+- README updated with Decision Intelligence section, Tier 2 features, 21 domains, 148 tests, anti-patterns domain, and updated badges.
+- USAGE.md updated with `--intent`, `--engine`, `--rerank` flags, anti-patterns examples, and hybrid/rerank sections.
 
 ## [0.2.0] — 2026-04-22
 

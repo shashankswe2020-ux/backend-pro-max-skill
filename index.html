@@ -536,12 +536,12 @@ footer{
   <div class="hero-glow"></div>
 
   <div class="hero-badges">
-    <span class="badge green">20 Domains</span>
+    <span class="badge green">21 Domains</span>
     <span class="badge blue">12 Stacks</span>
     <span class="badge amber">BM25 + Synonyms</span>
     <span class="badge green">Compare Mode</span>
     <span class="badge blue">Interactive REPL</span>
-    <span class="badge amber">80 Tests · CI</span>
+    <span class="badge amber">148 Tests · CI</span>
     <span class="badge">Python 3.8+</span>
     <span class="badge">Zero Dependencies</span>
     <span class="badge">MIT License</span>
@@ -555,7 +555,7 @@ footer{
   </h1>
 
   <p class="hero-desc">
-    Curated, BM25-searchable backend &amp; distributed-systems intelligence across <strong style="color:var(--text)">20 domains</strong> and <strong style="color:var(--text)">12 language stacks</strong> — drop it into Claude Code, Cursor, Copilot, or any AI assistant.
+    Curated, BM25-searchable backend &amp; distributed-systems intelligence across <strong style="color:var(--text)">21 domains</strong> and <strong style="color:var(--text)">12 language stacks</strong> — drop it into Claude Code, Cursor, Copilot, or any AI assistant.
   </p>
 
   <div class="hero-actions">
@@ -609,11 +609,11 @@ footer{
 
 <!-- STATS -->
 <div class="stats-row" style="margin:0 40px 80px;max-width:none">
-  <div class="stat"><div class="stat-num"><span>20</span></div><div class="stat-label">Domains</div></div>
+  <div class="stat"><div class="stat-num"><span>21</span></div><div class="stat-label">Domains</div></div>
   <div class="stat"><div class="stat-num"><span>12</span></div><div class="stat-label">Stacks</div></div>
   <div class="stat"><div class="stat-num">BM<span>25</span></div><div class="stat-label">+ Synonyms</div></div>
   <div class="stat"><div class="stat-num"><span>0</span></div><div class="stat-label">Dependencies</div></div>
-  <div class="stat"><div class="stat-num"><span>80</span></div><div class="stat-label">Tests · CI Green</div></div>
+  <div class="stat"><div class="stat-num"><span>148</span></div><div class="stat-label">Tests · CI Green</div></div>
   <div class="stat"><div class="stat-num"><span>6</span></div><div class="stat-label">AI Tools Supported</div></div>
 </div>
 
@@ -622,7 +622,7 @@ footer{
 <!-- DOMAINS -->
 <section id="domains">
   <div class="section-tag">// Knowledge Base</div>
-  <h2>20 Backend Domains</h2>
+  <h2>21 Backend Domains</h2>
   <p class="section-desc">Every domain contains opinionated, source-citable, staff-engineer-grade rows with Do / Don't examples and severity ratings.</p>
 
   <div class="domains-grid">
@@ -745,6 +745,12 @@ footer{
       <div class="domain-name">language</div>
       <div class="domain-desc">Go, Java, Kotlin, Python, Rust, Node.js/TS, C#, Scala, Elixir, Ruby, PHP, C++</div>
       <div class="domain-count">12 languages</div>
+    </div>
+    <div class="domain-card" style="--card-color:var(--red)">
+      <span class="domain-icon">⚠️</span>
+      <div class="domain-name">antipattern</div>
+      <div class="domain-desc">Distributed Monolith, God Service, Dual Writes, Sync-over-Async, Chatty Microservices, Unbounded Retry, N+1 Query</div>
+      <div class="domain-count">15 anti-patterns</div>
     </div>
   </div>
 </section>
@@ -887,8 +893,26 @@ footer{
     <div class="domain-card" style="--card-color:var(--green)">
       <span class="domain-icon">🧪</span>
       <div class="domain-name">tested + linted</div>
-      <div class="domain-desc">80 pytest cases covering ranking quality, edge cases, decision intelligence, and domain detection. Ruff lint + CSV validation on Python 3.9 / 3.11 / 3.12.</div>
+      <div class="domain-desc">148 pytest cases covering ranking quality, edge cases, decision intelligence, intent classification, and domain detection. Ruff lint + CSV validation on Python 3.9 / 3.11 / 3.12.</div>
       <div class="domain-count">Green on every push</div>
+    </div>
+    <div class="domain-card" style="--card-color:var(--blue)">
+      <span class="domain-icon">🧠</span>
+      <div class="domain-name">intent classifier</div>
+      <div class="domain-desc">Auto-detects query intent — comparison, troubleshoot, migration, incident, definition, best-practice, checklist — and applies structured templates to output.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro "how to fix<br>connection pool exhaustion"<br>--intent troubleshoot</code></div>
+      <div class="domain-count">7 intent types</div>
+    </div>
+    <div class="domain-card" style="--card-color:var(--purple)">
+      <span class="domain-icon">🔀</span>
+      <div class="domain-name">hybrid retrieval</div>
+      <div class="domain-desc">Optional embedding-based search via sentence-transformers + Reciprocal Rank Fusion with BM25. Graceful fallback to pure BM25.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">pip install backendpro[semantic]<br>backendpro "conceptual query"<br>--engine hybrid</code></div>
+      <div class="domain-count">BM25 + embeddings</div>
+    </div>
+    <div class="domain-card" style="--card-color:var(--orange)">
+      <span class="domain-icon">🏆</span>
+      <div class="domain-name">cross-encoder rerank</div>
+      <div class="domain-desc">Optional cross-encoder re-ranking for precision-critical queries. Graceful fallback when not installed.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">pip install backendpro[rerank]<br>backendpro "saga pattern"<br>--rerank</code></div>
+      <div class="domain-count">Precision boost</div>
     </div>
     <div class="domain-card" style="--card-color:var(--cyan)">
       <span class="domain-icon">🧠</span>
@@ -939,7 +963,7 @@ footer{
         <div class="step-num">03</div>
         <div class="step-content-inner">
           <div class="step-title">BM25 + Synonym Expansion</div>
-          <div class="step-detail">Pure Python BM25 ranks rows across 20 domain CSVs, with synonym expansion ("partial failure" → "compensation, saga") and an mtime-cached in-memory index. Every result carries a confidence score. No network, no model.</div>
+          <div class="step-detail">Pure Python BM25 ranks rows across 21 domain CSVs, with synonym expansion ("partial failure" → "compensation, saga") and an mtime-cached in-memory index. Every result carries a confidence score. No network, no model.</div>
         </div>
       </div>
       <div class="step-item" onclick="setStep(3)">
@@ -1074,7 +1098,7 @@ footer{
     <div class="install-card">
       <div class="install-tool">🧪 Contributors</div>
       <div class="install-sub">Tests, lint &amp; CSV validator</div>
-      <div class="install-code">pip install -e ".[dev]"<br><br>pytest                    # 80 tests<br>ruff check src tests      # lint<br>backendpro-validate       # CSVs</div>
+      <div class="install-code">pip install -e ".[dev]"<br><br>pytest                    # 148 tests<br>ruff check src tests      # lint<br>backendpro-validate       # CSVs</div>
     </div>
   </div>
 </section>
