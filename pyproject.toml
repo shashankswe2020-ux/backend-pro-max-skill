@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "backendpro"
+version = "0.1.0"
+description = "Backend Pro Max — BM25-searchable backend & distributed-systems engineering intelligence as an AI skill / CLI."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+keywords = [
+    "backend", "distributed-systems", "ai", "skill", "claude",
+    "cursor", "copilot", "bm25", "search", "knowledge-base",
+]
+authors = [
+    { name = "backend-pro-max-skill contributors" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Utilities",
+]
+# Pure standard-library — no runtime dependencies.
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/shashankswe2020-ux/backend-pro-max-skill"
+Repository = "https://github.com/shashankswe2020-ux/backend-pro-max-skill"
+Issues = "https://github.com/shashankswe2020-ux/backend-pro-max-skill/issues"
+
+[project.scripts]
+backendpro = "backendpro.scripts.search:main"
+
+# ------------------------------------------------------------------
+# The on-disk source layout uses a hyphenated directory name
+# (`src/backend-pro-max/`), which is not a valid Python identifier.
+# We map it to the importable package name `backendpro` here so the
+# CLI installs cleanly while keeping the existing source layout
+# (and the skill files that reference it) untouched.
+# ------------------------------------------------------------------
+[tool.setuptools]
+include-package-data = true
+packages = ["backendpro", "backendpro.scripts"]
+
+[tool.setuptools.package-dir]
+backendpro = "src/backend-pro-max"
+"backendpro.scripts" = "src/backend-pro-max/scripts"
+
+[tool.setuptools.package-data]
+backendpro = [
+    "data/*.csv",
+    "data/stacks/*.csv",
+    "templates/base/*.md",
+]
