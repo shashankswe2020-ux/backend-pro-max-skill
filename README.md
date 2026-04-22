@@ -13,6 +13,8 @@ Cursor, Windsurf, GitHub Copilot, Gemini, Continue, or any AI assistant.
 <br />
 
 [![PyPI](https://img.shields.io/pypi/v/backendpro?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/backendpro/)
+[![CI](https://img.shields.io/github/actions/workflow/status/shashankswe2020-ux/backend-pro-max-skill/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/shashankswe2020-ux/backend-pro-max-skill/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-37_passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
 [![20 Domains](https://img.shields.io/badge/domains-20-blue?style=for-the-badge)](#-domains)
 [![12 Stacks](https://img.shields.io/badge/stacks-12-purple?style=for-the-badge)](#-stacks)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-yellow?style=for-the-badge&logo=python&logoColor=white)](#-prerequisites)
@@ -59,11 +61,17 @@ model is *instructed* to consult — so its advice cites a row, not a vibe.
 |---|---|
 | 📚 **20 domain knowledge bases** | Languages · Patterns · Databases · Messaging · Cache · Cloud · IaC · Containers · Observability · API · Auth · Security · CI/CD · Testing · Architecture · Scaling · Consistency · Performance · Reliability · Data |
 | 🛠️ **12 stack guidelines** | Go · Java/Spring · Python/FastAPI · Node/Express · Rust/Axum · C#/ASP.NET · Kotlin/Spring · Scala/Akka · Elixir/Phoenix · Ruby/Rails · PHP/Laravel · C++ |
-| 🔎 **Pure-Python BM25 search** | No installs, no models, no network — just `python3`. |
+| 🔎 **Pure-Python BM25 + synonyms** | No installs, no models, no network — `partial failure` → finds `Saga` / `Circuit Breaker` automatically |
+| ⚖️ **`compare` mode** | `backendpro compare "Kafka" "RabbitMQ" --domain messaging` → side-by-side markdown table for ADRs |
+| 💬 **Interactive REPL** | `backendpro --interactive` for design sessions: `/d`, `/s`, `/all`, `/cmp`, `/stale` |
+| 📅 **Freshness tracking** | `Last Updated` column + `--max-age-months` filter + `--stale` audit mode |
+| 🎯 **Confidence scores** | Every result carries a BM25 score + `high`/`medium`/`low` label so the agent knows when to trust |
+| ⚡ **mtime-cached index** | Sub-millisecond repeat queries — agent loops stay snappy |
 | 🤖 **Drop-in skill files** | `SKILL.md` for Claude Code · `skill-content.md` for Cursor / Windsurf / Copilot / Gemini / Continue |
 | 📐 **Do / Don't + Code examples** | Each row contains good vs bad code, severity, and a docs URL |
 | 🧠 **Auto domain detection** | Skip `--domain` and the engine picks the right CSV from your query |
 | ⚙️ **JSON output mode** | First-class integration with tool-calling agents and MCP servers |
+| ✅ **CI-enforced** | `backendpro-validate` schema-checks every CSV; 37 pytest cases run on Py 3.9 / 3.11 / 3.12 |
 
 ---
 
@@ -80,7 +88,13 @@ backendpro "kafka exactly once delivery"
 backendpro "circuit breaker" --domain pattern
 backendpro "virtual threads" --stack java-spring
 backendpro "idempotency" --all
-backendpro "redis cluster" --json
+
+# v0.2 power tools
+backendpro compare "Kafka" "RabbitMQ" --domain messaging   # ADR-style table
+backendpro --interactive                                    # REPL for design sessions
+backendpro --stale --domain pattern --max-age-months 18     # freshness audit
+backendpro "redis cluster" --json                           # MCP / agent-friendly
+backendpro-validate                                         # schema-check every CSV
 ```
 
 > 💡 `pipx install backendpro` works too if you prefer an isolated venv.
@@ -332,10 +346,21 @@ backendpro --list
 backendpro "circuit breaker"
 backendpro "virtual threads" --stack java-spring
 backendpro "idempotency" --all
+backendpro compare "Postgres" "DynamoDB" --domain database
+backendpro-validate                       # ✅ All CSVs valid (20 domains + 12 stacks).
 
 # Or, without installing
 python3 src/backend-pro-max/scripts/search.py --list
 python3 src/backend-pro-max/scripts/search.py "circuit breaker"
+```
+
+### Run the test suite (contributors)
+
+```bash
+pip install -e ".[dev]"
+pytest                                    # 37 tests
+ruff check src tests                      # lint
+backendpro-validate                       # schema validation
 ```
 
 ---
@@ -346,11 +371,20 @@ Adding a new row, a new domain, or a new stack takes ~2 minutes.
 
 | Want to add…       | Steps                                                                 |
 |--------------------|-----------------------------------------------------------------------|
-| 📝 **A new row**       | Append to the relevant `data/<domain>.csv` (keep column order).       |
+| 📝 **A new row**       | Append to the relevant `data/<domain>.csv` (keep column order; quote any field with commas). Set `Last Updated` to today (`YYYY-MM-DD`) where the column exists. |
 | 🆕 **A new domain**    | Add `data/<domain>.csv`, register in `CSV_CONFIG` + `_DOMAIN_KEYWORDS` in `core.py`. |
 | 🧱 **A new stack**     | Add `data/stacks/<stack>.csv`, register in `STACK_CONFIG` in `core.py`. |
+| 🔁 **A search synonym** | Add a token → expansions entry in `_SYNONYMS` in `core.py` (keep it conservative). |
 
-Full details in [`CLAUDE.md`](CLAUDE.md) (*"Adding new content"*) and
+Always run before pushing:
+
+```bash
+pytest                  # ranking-quality + unit tests
+backendpro-validate     # CSV schema check
+ruff check src tests    # lint
+```
+
+Full details in [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CLAUDE.md`](CLAUDE.md), and
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ---
