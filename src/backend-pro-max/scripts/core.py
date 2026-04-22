@@ -322,6 +322,29 @@ _SYNONYMS = {
     "graphql":     ["api", "schema"],
     "rest":        ["api", "http"],
     "grpc":        ["rpc", "protobuf"],
+    # Product-name aliases — users often drop spaces ("cosmosdb" vs "Cosmos DB").
+    # We expand the no-space form to the multi-token form so BM25 can match.
+    "cosmosdb":    ["cosmos", "db"],
+    "dynamodb":    ["dynamo", "db"],
+    "documentdb": ["document", "db"],
+    "mongodb":     ["mongo", "db"],
+    "couchdb":     ["couch", "db"],
+    "cockroachdb": ["cockroach", "db"],
+    "scylladb":    ["scylla", "db"],
+    "influxdb":    ["influx", "db"],
+    "rocksdb":     ["rocks", "db"],
+    "timescaledb": ["timescale", "db"],
+    "clickhouse":  ["click", "house", "olap"],
+    "bigquery":    ["big", "query"],
+    "bigtable":    ["big", "table"],
+    "elasticsearch": ["elastic", "search"],
+    "opensearch":  ["open", "search"],
+    "rabbitmq":    ["rabbit", "mq", "amqp"],
+    "activemq":    ["active", "mq"],
+    "kubernetes":  ["k8s"],
+    "k8s":         ["kubernetes"],
+    "postgresql":  ["postgres"],
+    "postgres":    ["postgresql"],
 }
 
 
@@ -630,6 +653,8 @@ def compare(names, domain=None, max_per_name=1):
 
     entries = {}
     columns_seen = []
+    missing = []
+    suggestions = {}
     for name in names:
         result = search(name, domain=auto_domain, max_results=max(5, max_per_name * 5))
         rows = result.get("results", [])
@@ -641,7 +666,37 @@ def compare(names, domain=None, max_per_name=1):
             0 if name_l in str(next(iter(r.values()), "")).lower() else 1,
             -float(r.get("_score", 0.0)),
         ))
-        entry = rows[0] if rows else {}
+        top = rows[0] if rows else None
+        # Treat as a real hit only when the identifier column actually
+        # contains the queried name. Otherwise BM25 may surface a tangentially
+        # related row (e.g. searching "cosmosdb" in `database` returns MongoDB
+        # because of the "document" overlap) — that's misleading in a compare
+        # table, so we mark it as missing and look elsewhere.
+        found = bool(top) and name_l in str(next(iter(top.values()), "")).lower()
+        # Normalised match: also accept hits where the user dropped spaces
+        # ("cosmosdb" should match "Cosmos DB").
+        if not found and top:
+            head_l = str(next(iter(top.values()), "")).lower()
+            if re.sub(r"\s+", "", name_l) in re.sub(r"\s+", "", head_l):
+                found = True
+        if found:
+            entry = top
+        else:
+            entry = {}
+            missing.append(name)
+            # Cross-domain fallback: where else does this term actually live?
+            cross = search_all(name, max_results=1)
+            hints = []
+            name_compact = re.sub(r"\s+", "", name_l)
+            for d, hits in cross.get("results", {}).items():
+                if d == auto_domain or not hits:
+                    continue
+                head = str(next(iter(hits[0].values()), "")).strip()
+                head_compact = re.sub(r"\s+", "", head.lower())
+                if name_compact in head_compact:
+                    hints.append({"domain": d, "match": head})
+            if hints:
+                suggestions[name] = hints[:3]
         entries[name] = entry
         for col in entry.keys():
             if col not in columns_seen and col != "_score":
@@ -653,6 +708,8 @@ def compare(names, domain=None, max_per_name=1):
         "names": list(names),
         "columns": columns_seen,
         "entries": entries,
+        "missing": missing,
+        "suggestions": suggestions,
     }
 
 

@@ -131,6 +131,23 @@ def format_compare(result):
         return f"Error: {result['error']}"
     out = [f"## Backend Pro Max — Compare ({result['domain']})",
            f"**Comparing:** {' vs '.join(result['names'])}\n"]
+
+    # Surface zero-hit terms before the table so the user doesn't read a row
+    # full of `—` and assume the tool is broken.
+    missing = result.get("missing") or []
+    suggestions = result.get("suggestions") or {}
+    if missing:
+        out.append(f"> ⚠️  No matches in `{result['domain']}` for: "
+                   + ", ".join(f"**{m}**" for m in missing))
+        for name in missing:
+            hints = suggestions.get(name) or []
+            if hints:
+                pretty = "; ".join(f"`--domain {h['domain']}` → {h['match']}" for h in hints)
+                out.append(f"> &nbsp;&nbsp;↳ try for **{name}**: {pretty}")
+            else:
+                out.append(f"> &nbsp;&nbsp;↳ **{name}** not found in any domain — check spelling or add it to a CSV.")
+        out.append("")
+
     cols = result["columns"]
     if not cols:
         out.append("_No entries found for any of the names._")
