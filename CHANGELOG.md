@@ -4,6 +4,26 @@ All notable changes to **backendpro** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] — 2026-04-22
+
+### Added
+- **Intent Classifier** — auto-detects query intent (`comparison`, `troubleshoot`, `migration`, `incident`, `definition`, `best-practice`, `checklist`) with weighted regex patterns. Structured per-intent templates format output. Override with `--intent <type>`.
+- **Hybrid Retrieval** — optional embedding-based search via `sentence-transformers` + Reciprocal Rank Fusion with BM25. Install with `pip install backendpro[semantic]`. Use `--engine hybrid` or `--engine semantic`. Graceful BM25 fallback.
+- **Cross-Encoder Re-ranking** — optional cross-encoder re-ranking for precision-critical queries. Install with `pip install backendpro[rerank]`. Use `--rerank`. Graceful fallback.
+- **Anti-patterns Domain** — 15 distributed-systems anti-patterns (Distributed Monolith, God Service, Dual Writes, Sync-over-Async, …) with symptoms, root causes, fixes, and severity ratings. 21 domains total.
+- **`templates.py`** — per-intent output formatters with structured field extraction.
+- **`semantic.py`** — embedding index with safe disk cache (numpy + JSON), mtime-based invalidation.
+- **`rerank.py`** — cross-encoder re-ranking with lazy model loading and graceful fallback.
+- **68 new tests** (148 total) covering intent classification, anti-patterns, semantic search, re-ranking, and template formatting.
+
+### Fixed
+- **Pickle deserialization risk** — replaced `pickle.load()` in semantic cache with `numpy.load(allow_pickle=False)` + `json.load()` (CWE-502, #22).
+- **Cache directory permissions** — `.backendpro_cache/` now created with `mode=0o700` (CWE-732, #24).
+- **Semantic fallback warning flood** — warning now prints once per process instead of on every call (#23).
+
+### Changed
+- Documentation updated: README (21 domains, 148 tests, Tier 2 features), `index.html`, `USAGE.md` (`--intent`, `--engine`, `--rerank` flags), `CHANGELOG`.
+
 ## [0.3.0] — 2026-04-22
 
 ### Added
