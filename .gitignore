@@ -41,3 +41,4 @@ htmlcov/
 # Local-only Copilot / agent config (not part of the published skill)
 .github/agents/
 .github/skills/
+.backendpro_cache/

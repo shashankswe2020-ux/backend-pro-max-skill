@@ -42,6 +42,13 @@ dev = [
     "pytest-cov>=4.0",
     "ruff>=0.1.0",
 ]
+semantic = [
+    "sentence-transformers>=2.2.0",
+    "numpy>=1.21.0",
+]
+rerank = [
+    "sentence-transformers>=2.2.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/shashankswe2020-ux/backend-pro-max-skill"
