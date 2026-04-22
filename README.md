@@ -14,7 +14,7 @@ Cursor, Windsurf, GitHub Copilot, Gemini, Continue, or any AI assistant.
 
 [![PyPI](https://img.shields.io/pypi/v/backendpro?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/backendpro/)
 [![CI](https://img.shields.io/github/actions/workflow/status/shashankswe2020-ux/backend-pro-max-skill/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/shashankswe2020-ux/backend-pro-max-skill/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-37_passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
+[![Tests](https://img.shields.io/badge/tests-80_passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
 [![20 Domains](https://img.shields.io/badge/domains-20-blue?style=for-the-badge)](#-domains)
 [![12 Stacks](https://img.shields.io/badge/stacks-12-purple?style=for-the-badge)](#-stacks)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-yellow?style=for-the-badge&logo=python&logoColor=white)](#-prerequisites)

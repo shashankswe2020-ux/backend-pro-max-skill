@@ -4,6 +4,38 @@ All notable changes to **backendpro** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] — 2026-04-22
+
+### Added
+- **Decision Intelligence** — three new commands: `decide`, `adr`, `design` that turn BM25 search into a constraint-aware decision advisor.
+  - `backendpro decide "Kafka vs Pulsar"` — ranked recommendation with constraint scoring.
+  - `backendpro adr "Redis vs Memcached"` — auto-generated Architecture Decision Record (Markdown).
+  - `backendpro design "Postgres for 50M DAU"` — capacity-aware design document with QPS/storage estimates.
+- **Constraint extraction** — queries are parsed for facets (`throughput:high`, `latency:low-ms`, `cloud:aws`, `consistency:strong`) and candidates are scored against constraint columns in CSVs.
+- **`--constraints` flag** — explicit constraint overrides: `--constraints throughput=high,cloud=aws`.
+- **`--out` flag** — write ADR output directly to a file: `backendpro adr "..." --out decision.md`.
+- **Constraint columns** on `databases.csv`, `messaging.csv`, `cache.csv` — Throughput Tier, Latency Tier, Consistency Tier, Cost Tier, Cloud Native.
+- **43 new tests** (80 total, up from 37) covering `decide`, `adr`, `design`, constraint extraction, constraint application, formatters, capacity math, and edge cases.
+- **`_get_name()` helper** — safe row-name extraction replacing fragile `next(iter())` calls.
+- **Named constants** — `_PEAK_FACTOR`, `_DEFAULT_ROW_BYTES`, `_DEFAULT_REPLICATION`, `_DAU_TO_REQUESTS`, `_MAX_FIELD_DISPLAY` replace magic numbers.
+
+### Fixed
+- **Path traversal** in `--out` flag — rejects `..` segments and absolute paths.
+- **ADR TypeError** — removed invalid `query=` kwarg in `adr()` call.
+- **Dead `--constraints`** flag — now wired into search path via `parse_constraints()` + `apply_constraints()`.
+- **Dedup keeps best score** — when multiple domains return the same candidate, the highest-scored row wins.
+- **REPL crash protection** — all REPL handlers wrapped in try/except.
+- **Brace escaping** — curly braces in ADR template strings no longer raise `KeyError`.
+- **Adjective constraint extraction** — "high throughput" → `throughput:high`, "low latency" → `latency:low-ms`.
+- **Help text** for `--constraints` corrected.
+- Removed dead `TEMPLATES_DIR` constant.
+- Unified truncation with `_MAX_FIELD_DISPLAY`.
+
+### Changed
+- Bumped version to **0.3.0**.
+- Landing page (`index.html`) updated with Decision Intelligence cards, terminal demo, and 80-test stats.
+- README updated with Decision Intelligence section, 5 hard demos, and updated badges/smoke tests.
+
 ## [0.2.0] — 2026-04-22
 
 ### Added

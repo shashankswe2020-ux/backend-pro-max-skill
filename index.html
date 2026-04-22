@@ -541,7 +541,7 @@ footer{
     <span class="badge amber">BM25 + Synonyms</span>
     <span class="badge green">Compare Mode</span>
     <span class="badge blue">Interactive REPL</span>
-    <span class="badge amber">37 Tests · CI</span>
+    <span class="badge amber">80 Tests · CI</span>
     <span class="badge">Python 3.8+</span>
     <span class="badge">Zero Dependencies</span>
     <span class="badge">MIT License</span>
@@ -595,6 +595,13 @@ footer{
         <span class="t-key">| Replay       |</span> <span class="t-val">Yes</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="t-key">|</span> <span class="t-val">Limited</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="t-key">|</span>
       </div>
       <div style="margin-top:4px"><span class="t-prompt">$</span> <span class="t-cmd">backendpro --interactive</span> &nbsp;<span class="t-comment"># REPL for design sessions</span></div>
+      <div style="margin-top:4px"><span class="t-prompt">$</span> <span class="t-cmd">backendpro decide "Kafka vs Pulsar vs Pub/Sub" --constraints throughput=high</span></div>
+      <div class="t-output">
+        <span class="t-key">recommendation</span>: <span class="t-val">Apache Pulsar</span> &nbsp;
+        <span class="t-key">candidates</span>: <span class="t-val">5</span><br>
+        <span class="t-key">constraints</span>: <span class="t-val">throughput:high, cloud:gcp</span><br>
+        <span class="t-key">match</span>: <span style="color:var(--green)">2/2 ✓</span>
+      </div>
       <div style="margin-top:4px"><span class="t-prompt">$</span> <span class="t-cursor"></span></div>
     </div>
   </div>
@@ -606,7 +613,7 @@ footer{
   <div class="stat"><div class="stat-num"><span>12</span></div><div class="stat-label">Stacks</div></div>
   <div class="stat"><div class="stat-num">BM<span>25</span></div><div class="stat-label">+ Synonyms</div></div>
   <div class="stat"><div class="stat-num"><span>0</span></div><div class="stat-label">Dependencies</div></div>
-  <div class="stat"><div class="stat-num"><span>37</span></div><div class="stat-label">Tests · CI Green</div></div>
+  <div class="stat"><div class="stat-num"><span>80</span></div><div class="stat-label">Tests · CI Green</div></div>
   <div class="stat"><div class="stat-num"><span>6</span></div><div class="stat-label">AI Tools Supported</div></div>
 </div>
 
@@ -880,8 +887,26 @@ footer{
     <div class="domain-card" style="--card-color:var(--green)">
       <span class="domain-icon">🧪</span>
       <div class="domain-name">tested + linted</div>
-      <div class="domain-desc">37 pytest cases covering ranking quality, edge cases, and domain detection. Ruff lint + CSV validation on Python 3.9 / 3.11 / 3.12.</div>
+      <div class="domain-desc">80 pytest cases covering ranking quality, edge cases, decision intelligence, and domain detection. Ruff lint + CSV validation on Python 3.9 / 3.11 / 3.12.</div>
       <div class="domain-count">Green on every push</div>
+    </div>
+    <div class="domain-card" style="--card-color:var(--cyan)">
+      <span class="domain-icon">🧠</span>
+      <div class="domain-name">decide</div>
+      <div class="domain-desc">Constraint-aware ranked recommendations. Extracts facets (throughput, latency, cloud, consistency) and scores every candidate.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro decide<br>"Kafka vs Pulsar vs Pub/Sub"</code></div>
+      <div class="domain-count">Beats plain LLM comparison</div>
+    </div>
+    <div class="domain-card" style="--card-color:var(--purple)">
+      <span class="domain-icon">📝</span>
+      <div class="domain-name">adr generator</div>
+      <div class="domain-desc">Auto-generates Architecture Decision Records in Markdown with context, options, trade-offs, and citations.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro adr<br>"Redis vs Memcached"</code></div>
+      <div class="domain-count">Markdown ADR output</div>
+    </div>
+    <div class="domain-card" style="--card-color:var(--amber)">
+      <span class="domain-icon">📐</span>
+      <div class="domain-name">design doc</div>
+      <div class="domain-desc">Capacity-aware design documents with QPS estimates, storage projections, and replication calculations.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro design<br>"Postgres for 50M DAU"</code></div>
+      <div class="domain-count">Capacity math included</div>
     </div>
   </div>
 </section>
@@ -1049,7 +1074,7 @@ footer{
     <div class="install-card">
       <div class="install-tool">🧪 Contributors</div>
       <div class="install-sub">Tests, lint &amp; CSV validator</div>
-      <div class="install-code">pip install -e ".[dev]"<br><br>pytest                    # 37 tests<br>ruff check src tests      # lint<br>backendpro-validate       # CSVs</div>
+      <div class="install-code">pip install -e ".[dev]"<br><br>pytest                    # 80 tests<br>ruff check src tests      # lint<br>backendpro-validate       # CSVs</div>
     </div>
   </div>
 </section>
@@ -1097,6 +1122,8 @@ footer{
       <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md#compare-two-or-more-options-side-by-side" target="_blank">backendpro compare</a></li>
       <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md#interactive-repl" target="_blank">--interactive REPL</a></li>
       <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md#freshness--staleness" target="_blank">--stale audit</a></li>
+      <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md" target="_blank">backendpro decide</a></li>
+      <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md" target="_blank">backendpro adr</a></li>
     </ul>
   </div>
   <div class="footer-col">
