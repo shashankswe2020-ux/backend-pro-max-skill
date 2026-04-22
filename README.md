@@ -12,6 +12,7 @@ Cursor, Windsurf, GitHub Copilot, Gemini, Continue, or any AI assistant.
 
 <br />
 
+[![PyPI](https://img.shields.io/pypi/v/backendpro?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/backendpro/)
 [![20 Domains](https://img.shields.io/badge/domains-20-blue?style=for-the-badge)](#-domains)
 [![12 Stacks](https://img.shields.io/badge/stacks-12-purple?style=for-the-badge)](#-stacks)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-yellow?style=for-the-badge&logo=python&logoColor=white)](#-prerequisites)
@@ -71,9 +72,8 @@ model is *instructed* to consult — so its advice cites a row, not a vibe.
 ### Option A — install once, type `backendpro`
 
 ```bash
-# Pure-stdlib install — no runtime deps
-pip install git+https://github.com/shashankswe2020-ux/backend-pro-max-skill
-# or, from a clone:  pip install .
+# Install from PyPI — pure stdlib, zero dependencies
+pip install backendpro
 
 backendpro --list
 backendpro "kafka exactly once delivery"
@@ -83,8 +83,8 @@ backendpro "idempotency" --all
 backendpro "redis cluster" --json
 ```
 
-> 💡 `pipx install git+https://github.com/shashankswe2020-ux/backend-pro-max-skill`
-> works too if you prefer an isolated venv.
+> 💡 `pipx install backendpro` works too if you prefer an isolated venv.
+> You can also install from source: `pip install git+https://github.com/shashankswe2020-ux/backend-pro-max-skill`
 
 ### Option B — run the script directly (no install)
 
