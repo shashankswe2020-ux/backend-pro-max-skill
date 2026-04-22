@@ -233,6 +233,31 @@ src/backend-pro-max/
 docs/                            # ARCHITECTURE.md & USAGE.md
 ```
 
+### Visual architecture
+
+```mermaid
+flowchart TD
+    U["👤 User Query\n&quot;Design a URL shortener with caching&quot;"]:::user
+    S["📜 SKILL.md / skill-content.md\nInstructs model to search before answering"]:::skill
+    C["🔎 backendpro CLI\nBM25 search engine · pure Python stdlib"]:::cli
+    D["📚 20 Domain CSVs\napi · cache · database\nscaling · reliability …"]:::data
+    K["🛠️ 12 Stack CSVs\ngo · java-spring\npython-fastapi …"]:::data
+    A["🌐 Auto-detect / --all\nCross-domain search"]:::data
+    R["📋 Ranked Results\nCited rows · do/don't · code\nseverity · docs URL"]:::result
+    G["✅ Grounded, Citable Answer"]:::answer
+
+    U --> S --> C
+    C --> D & K & A
+    D & K & A --> R --> G
+
+    classDef user     fill:#6366f1,color:#fff,stroke:#4f46e5,stroke-width:2px
+    classDef skill    fill:#8b5cf6,color:#fff,stroke:#7c3aed,stroke-width:2px
+    classDef cli      fill:#0ea5e9,color:#fff,stroke:#0284c7,stroke-width:2px
+    classDef data     fill:#f59e0b,color:#fff,stroke:#d97706,stroke-width:2px
+    classDef result   fill:#10b981,color:#fff,stroke:#059669,stroke-width:2px
+    classDef answer   fill:#22c55e,color:#fff,stroke:#16a34a,stroke-width:2px
+```
+
 ---
 
 ## 🔌 Installation as an AI skill
