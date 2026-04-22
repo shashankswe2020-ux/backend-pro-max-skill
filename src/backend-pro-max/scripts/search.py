@@ -263,19 +263,28 @@ def interactive_loop():
                 print("usage: /stale <domain> <months>")
             continue
         if line.startswith("/decide "):
-            print(format_decide(decide(line[8:].strip())))
+            try:
+                print(format_decide(decide(line[8:].strip())))
+            except Exception as e:
+                print(f"Error: {e}")
             continue
         if line.startswith("/adr "):
-            parts = line[5:].split("|", 1)
-            if len(parts) != 2:
-                print("usage: /adr <title> | <domain1,domain2,...>")
-                continue
-            title = parts[0].strip()
-            domains = [d.strip() for d in parts[1].split(",") if d.strip()]
-            print(format_adr(adr(title, domains)))
+            try:
+                parts = line[5:].split("|", 1)
+                if len(parts) != 2:
+                    print("usage: /adr <title> | <domain1,domain2,...>")
+                    continue
+                title = parts[0].strip()
+                domains = [d.strip() for d in parts[1].split(",") if d.strip()]
+                print(format_adr(adr(title, domains)))
+            except Exception as e:
+                print(f"Error: {e}")
             continue
         if line.startswith("/design "):
-            print(format_design(design(line[8:].strip())))
+            try:
+                print(format_design(design(line[8:].strip())))
+            except Exception as e:
+                print(f"Error: {e}")
             continue
         # Default: plain search
         print(format_output(search(line)))
@@ -323,6 +332,8 @@ def _build_parser():
                         help="Generate a design brief from the query")
     parser.add_argument("--constraints", metavar="EXPR",
                         help="Constraint expression, e.g. 'cloud=gcp,latency=low-ms,consistency=strong'")
+    parser.add_argument("--out", metavar="PATH",
+                        help="Write output to file (used with --adr)")
     return parser
 
 
@@ -354,7 +365,7 @@ def main():
 
     if args.adr:
         domains = [args.domain] if args.domain else []
-        result = adr(args.adr, domains)
+        result = adr(args.adr, domains, out_path=args.out)
         print(json.dumps(result, indent=2, ensure_ascii=False) if args.json else format_adr(result))
         return
 
