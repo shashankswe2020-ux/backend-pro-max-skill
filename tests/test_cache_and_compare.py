@@ -45,6 +45,21 @@ def test_compare_requires_two_names():
     assert "error" in res
 
 
+def test_compare_warns_on_zero_hit_term_and_suggests_domain():
+    """cosmosdb only lives in cloud.csv; comparing it against dynamodb in
+    the auto-detected `database` domain should flag it as missing and
+    point the user at the cloud domain."""
+    core.clear_cache()
+    res = core.compare(["cosmosdb", "dynamodb"])
+    assert "cosmosdb" in res["missing"]
+    assert "dynamodb" not in res["missing"]
+    hints = res["suggestions"].get("cosmosdb", [])
+    assert any(h["domain"] == "cloud" for h in hints), hints
+    # The blanked-out missing entry must not pollute the table with a
+    # misleading neighbour row.
+    assert res["entries"]["cosmosdb"] == {}
+
+
 def test_find_stale_skips_undated_rows(tmp_path: Path, monkeypatch):
     csv_path = tmp_path / "x.csv"
     with open(csv_path, "w", newline="", encoding="utf-8") as f:

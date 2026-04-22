@@ -4,6 +4,15 @@ All notable changes to **backendpro** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] — Unreleased
+
+### Added
+- **Smarter `compare`** — when a queried term has zero hits in the chosen domain, the result no longer silently fills the column with `—`. Instead the entry is blanked, the name is added to a new `missing` list, and `suggestions` point at other domains where the term actually lives (e.g. `compare cosmosdb dynamodb` now hints `try --domain cloud → Cosmos DB`). Markdown output renders a `> ⚠️` warning block above the table.
+- **Product-name synonyms** — query expansion now bridges no-space variants (`cosmosdb` ↔ `cosmos db`, `dynamodb` ↔ `dynamo db`, `mongodb`, `clickhouse`, `bigquery`, `elasticsearch`, `rabbitmq`, `kubernetes`/`k8s`, `postgres`/`postgresql`, etc.).
+
+### Fixed
+- `compare` no longer surfaces a tangentially related row (e.g. MongoDB for `cosmosdb`) just because BM25 scored it highest — matches now require the identifier column to actually contain the queried name (space-insensitive).
+
 ## [0.2.0] — 2026-04-22
 
 ### Added
