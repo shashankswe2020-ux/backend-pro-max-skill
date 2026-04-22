@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-test-validate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Lint with ruff
+        run: ruff check src tests
+
+      - name: Validate every CSV against its declared schema
+        run: python -m backendpro.scripts.validate
+
+      - name: Run pytest with coverage
+        run: pytest --cov=backendpro --cov-report=term-missing
+
+      - name: CLI smoke test
+        run: |
+          backendpro --list
+          backendpro "circuit breaker" -n 2
+          backendpro compare "Kafka" "RabbitMQ" --domain messaging
+          backendpro "idempotency" --all

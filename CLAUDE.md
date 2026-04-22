@@ -21,8 +21,29 @@ assistant (Claude Code, Cursor, Windsurf, Copilot, Gemini, etc.).
 python3 src/backend-pro-max/scripts/search.py "<query>" --domain <domain> [-n <max_results>]
 python3 src/backend-pro-max/scripts/search.py "<query>" --stack <stack>
 python3 src/backend-pro-max/scripts/search.py "<query>" --all          # cross-domain
+python3 src/backend-pro-max/scripts/search.py compare "<A>" "<B>" [--domain <d>]   # side-by-side
+python3 src/backend-pro-max/scripts/search.py --stale --domain <d> --max-age-months 18
+python3 src/backend-pro-max/scripts/search.py --interactive            # REPL
 python3 src/backend-pro-max/scripts/search.py --list                   # list domains & stacks
 ```
+
+If installed as a package (`pip install -e .`):
+
+```bash
+backendpro "<query>"
+backendpro compare "Kafka" "RabbitMQ" --domain messaging
+backendpro --interactive
+backendpro-validate                # validate every CSV against its schema
+```
+
+### Useful flags
+
+- `--max-results / -n N` — cap returned rows (default 5).
+- `--min-score F` — drop weak matches (BM25 score ≤ F).
+- `--max-age-months N` — drop rows whose `Last Updated` is older than N months.
+- `--no-expand` — disable synonym expansion (e.g. `partial failure → compensation, saga`).
+- `--no-scores` — hide BM25 confidence scores in markdown output.
+- `--json` — machine-readable output (always includes `_score`).
 
 ### Domains
 
@@ -107,7 +128,19 @@ python3 src/backend-pro-max/scripts/search.py --list
 python3 src/backend-pro-max/scripts/search.py "circuit breaker"
 python3 src/backend-pro-max/scripts/search.py "virtual threads" --stack java-spring
 python3 src/backend-pro-max/scripts/search.py "idempotency" --all
+python3 src/backend-pro-max/scripts/search.py compare "Kafka" "RabbitMQ" --domain messaging
 ```
+
+## Tests, lint, validation
+
+```bash
+python -m pip install -e ".[dev]"
+pytest                                  # full unit + ranking-quality suite
+python -m backendpro.scripts.validate   # schema-validate every CSV
+ruff check src tests                    # lint
+```
+
+CI runs all three on Python 3.9 / 3.11 / 3.12 (see `.github/workflows/ci.yml`).
 
 ## Prerequisites
 
