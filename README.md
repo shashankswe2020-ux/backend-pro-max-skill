@@ -11,10 +11,7 @@
 
 Backend Pro Max gives an AI assistant a **structured, BM25-searchable**
 knowledge base for **everything a senior backend / distributed-systems
-engineer needs**, modelled after the
-[`ui-ux-pro-max-skill`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)
-repository structure.
-
+engineer needs**
 ---
 
 ## Why?
