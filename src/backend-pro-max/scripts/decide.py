@@ -33,6 +33,12 @@ except ImportError:
 TEMPLATES_DIR = Path(__file__).parent.parent / "templates" / "base"
 
 
+def _get_name(row):
+    """Extract the display name from a KB row with explicit key lookup + fallback."""
+    return (row.get("Name") or row.get("Technology") or row.get("Pattern")
+            or str(next(iter(row.values()), ""))).strip()
+
+
 # ============ CONSTRAINT EXTRACTOR ============
 # Regex patterns to extract structured facets from natural-language requirements.
 
@@ -203,15 +209,14 @@ def decide(requirement, max_candidates=5):
     if column_constraints:
         all_candidates = apply_constraints(all_candidates, column_constraints)
 
-    # Deduplicate by name (first column value).
-    seen = set()
-    unique = []
+    # Deduplicate by name — keep highest-scored row per name.
+    best_by_name = {}
     for c in all_candidates:
-        name = str(next(iter(c.values()), "")).strip().lower()
-        if name not in seen:
-            seen.add(name)
-            unique.append(c)
-    candidates = unique[:max_candidates]
+        name = _get_name(c).lower()
+        score = float(c.get("_score", 0))
+        if name not in best_by_name or score > float(best_by_name[name].get("_score", 0)):
+            best_by_name[name] = c
+    candidates = list(best_by_name.values())[:max_candidates]
 
     return {
         "mode": "decide",
@@ -279,7 +284,7 @@ def adr(title, context_domains, out_path=None):
             all_rows.append(row)
         # Build context paragraph from top result.
         top = result["results"][0]
-        name = str(next(iter(top.values()), "")).strip()
+        name = _get_name(top)
         strengths = top.get("Strengths", top.get("Use Case", ""))
         context_parts.append(
             f"- **{name}** (`{domain}`): {strengths}" if strengths
@@ -291,14 +296,14 @@ def adr(title, context_domains, out_path=None):
 
     # Decision: top-ranked row.
     top_row = all_rows[0]
-    top_name = str(next(iter(top_row.values()), "")).strip()
+    top_name = _get_name(top_row)
     top_domain = top_row.get("_source_domain", "?")
 
     # Alternatives: remaining unique rows.
     alt_parts = []
     seen = {top_name.lower()}
     for row in all_rows[1:]:
-        name = str(next(iter(row.values()), "")).strip()
+        name = _get_name(row)
         if name.lower() in seen:
             continue
         seen.add(name.lower())
@@ -326,11 +331,14 @@ def adr(title, context_domains, out_path=None):
             val = row.get(key, "").strip()
             if val and val not in ref_seen:
                 ref_seen.add(val)
-                name = str(next(iter(row.values()), "")).strip()
+                name = _get_name(row)
                 ref_parts.append(f"- [{name}]({val})")
 
+    # Escape braces in user-supplied title to prevent str.format() KeyError.
+    safe_title = title.replace("{", "{{").replace("}", "}}")
+
     adr_text = _ADR_TEMPLATE.format(
-        title=title,
+        title=safe_title,
         context="\n".join(context_parts) or "_No relevant context found._",
         decision=f"Adopt **{top_name}** (from `{top_domain}` domain).\n\n"
                  + (f"**Strengths:** {top_row.get('Strengths', 'N/A')}" if top_row.get('Strengths') else ""),
@@ -441,7 +449,7 @@ def design(requirement, max_per_section=2):
 
         recs = []
         for row in result["results"]:
-            name = str(next(iter(row.values()), "")).strip()
+            name = _get_name(row)
             strengths = row.get("Strengths", row.get("Use Case", ""))
             weaknesses = row.get("Weaknesses", "")
             recs.append({
@@ -504,7 +512,7 @@ def format_decide(result):
     # Recommendation.
     rec = result.get("recommendation")
     if rec:
-        name = str(next(iter(rec.values()), "")).strip()
+        name = _get_name(rec)
         domain = rec.get("_source_domain", "?")
         out.append(f"### 🏆 Recommendation: **{name}** (`{domain}`)")
         # Show constraint matches.
@@ -521,7 +529,7 @@ def format_decide(result):
         out.append("| # | Name | Domain | Score | Constraints |")
         out.append("| --- | --- | --- | --- | --- |")
         for i, c in enumerate(result["candidates"], 1):
-            name = str(next(iter(c.values()), "")).strip()
+            name = _get_name(c)
             domain = c.get("_source_domain", "?")
             score = c.get("_score", 0)
             cm = c.get("_constraints", {})
@@ -535,7 +543,7 @@ def format_decide(result):
     if result["candidates"]:
         out.append("### Trade-offs")
         for c in result["candidates"][:3]:
-            name = str(next(iter(c.values()), "")).strip()
+            name = _get_name(c)
             strengths = c.get("Strengths", "")
             weaknesses = c.get("Weaknesses", "")
             if strengths or weaknesses:
