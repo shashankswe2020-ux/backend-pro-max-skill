@@ -3,8 +3,8 @@
 > BM25 alone won't scale to 1000s of rows. Upgrade the retrieval pipeline
 > with intent classification, optional semantic search, and anti-pattern coverage.
 
-**Status:** 🔲 Not started
-**Branch:** `feat/tier-2-retrieval-quality` (to be created from `main`)
+**Status:** ✅ Complete
+**Branch:** `feat/tier-2-retrieval-quality`
 **Depends on:** Tier 1 (constraint columns provide structured metadata that re-ranking can exploit)
 
 ---
