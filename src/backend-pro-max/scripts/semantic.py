@@ -9,8 +9,8 @@ Falls back gracefully to BM25 when dependencies are not installed.
 from __future__ import annotations
 
 import hashlib
+import json
 import os
-import pickle
 import sys
 from pathlib import Path
 from typing import Any
@@ -72,29 +72,39 @@ def _cache_key(filepath: Path, search_cols: list[str]) -> str:
     return hashlib.md5(raw.encode()).hexdigest()
 
 
-def _disk_cache_path(key: str) -> Path:
-    return _CACHE_DIR / f"embed_{key}.pkl"
+def _disk_cache_path(key: str, ext: str = ".json") -> Path:
+    return _CACHE_DIR / f"embed_{key}{ext}"
 
 
 def _save_to_disk(key: str, embeddings, texts: list[str]):
-    """Persist embeddings to disk cache."""
+    """Persist embeddings to disk cache using numpy + JSON (no pickle)."""
     try:
-        _CACHE_DIR.mkdir(parents=True, exist_ok=True)
-        with open(_disk_cache_path(key), "wb") as f:
-            pickle.dump({"embeddings": embeddings, "texts": texts}, f)
+        _CACHE_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
+        # Save embeddings as .npy (numpy binary, no pickle)
+        npy_path = _disk_cache_path(key, ".npy")
+        _np.save(str(npy_path), embeddings)
+        # Save texts as JSON
+        json_path = _disk_cache_path(key, ".json")
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(texts, f)
     except OSError:
         pass  # Non-critical — we can rebuild next time
 
 
 def _load_from_disk(key: str):
-    """Load embeddings from disk cache if available."""
-    path = _disk_cache_path(key)
-    if not path.exists():
+    """Load embeddings from disk cache if available (numpy + JSON)."""
+    npy_path = _disk_cache_path(key, ".npy")
+    json_path = _disk_cache_path(key, ".json")
+    if not npy_path.exists() or not json_path.exists():
         return None
     try:
-        with open(path, "rb") as f:
-            return pickle.load(f)  # noqa: S301
-    except (OSError, pickle.UnpicklingError, EOFError):
+        if not _load_deps():
+            return None
+        embeddings = _np.load(str(npy_path), allow_pickle=False)
+        with open(json_path, encoding="utf-8") as f:
+            texts = json.load(f)
+        return {"embeddings": embeddings, "texts": texts}
+    except (OSError, ValueError, json.JSONDecodeError):
         return None
 
 

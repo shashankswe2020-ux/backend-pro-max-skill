@@ -391,6 +391,16 @@ User query ──▶ BM25 (stdlib) ──▶ Structured rows ──▶ Agent con
 | **Reproducibility** | Low (embedding drift, LLM temperature) | High (same query = same rows = same scores) |
 | **Auditability** | "The LLM said so" | "Row `pattern:Saga` scored 8.42 on BM25" |
 
+### What actually breaks vs what this fixes
+
+| Problem in RAG + LLM | What Backend Pro Max does |
+|---|---|
+| Different answers every run | Same input → same decisions |
+| Loses architectural context | Persists system decisions |
+| Retrieves noisy chunks | Retrieves complete decision units |
+| LLM hallucinates tradeoffs | Explicit scoring + constraints |
+| No explainability | Every decision is traceable |
+
 ### When you'd still want RAG
 
 - You have **unstructured documents** (PDFs, wikis, Confluence) that can't be

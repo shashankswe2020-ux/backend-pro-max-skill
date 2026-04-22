@@ -448,8 +448,12 @@ def _is_stale(row, max_age_months):
     return _months_since(dt) > max_age_months
 
 
+_warned_semantic = False
+
+
 def _search_csv(filepath, search_cols, output_cols, query, max_results,
                 *, min_score=0.0, max_age_months=None, expand=True, engine="bm25"):
+    global _warned_semantic
     if not filepath.exists():
         return []
 
@@ -482,12 +486,14 @@ def _search_csv(filepath, search_cols, output_cols, query, max_results,
             else:
                 ranked = bm25_ranked
         else:
-            import sys as _sys
-            print(
-                "⚠️  sentence-transformers not installed — falling back to BM25. "
-                "Install with: pip install backendpro[semantic]",
-                file=_sys.stderr,
-            )
+            if not _warned_semantic:
+                _warned_semantic = True
+                import sys as _sys
+                print(
+                    "⚠️  sentence-transformers not installed — falling back to BM25. "
+                    "Install with: pip install backendpro[semantic]",
+                    file=_sys.stderr,
+                )
             ranked = bm25_ranked
     else:
         ranked = bm25_ranked
