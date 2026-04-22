@@ -1,17 +1,27 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Backend Pro Max Core - BM25 search engine for backend / distributed-systems
 knowledge bases.
 
 Pure standard-library implementation (Python 3.8+). No external dependencies.
+
+Public API (stable):
+    search(query, domain=None, max_results=5, *, min_score=0.0, max_age_months=None)
+    search_stack(query, stack, max_results=5, *, min_score=0.0)
+    search_all(query, max_results=2, *, min_score=0.0)
+    compare(names, domain=None, max_per_name=1)
+    detect_domain(query)
+    find_stale(domain, months)
+    clear_cache()
+    CSV_CONFIG, STACK_CONFIG, AVAILABLE_STACKS, MAX_RESULTS
 """
 
 import csv
 import re
-from pathlib import Path
-from math import log
 from collections import defaultdict
+from datetime import datetime
+from math import log
+from pathlib import Path
 
 # ============ CONFIGURATION ============
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -39,6 +49,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Category", "Problem", "Solution", "When to Use",
             "When NOT to Use", "Trade-offs", "Related Patterns", "Reference",
+            "Last Updated",
         ],
     },
     "database": {
@@ -143,7 +154,7 @@ CSV_CONFIG = {
     },
     "architecture": {
         "file": "architecture.csv",
-        "search_cols": ["Name", "Category", "Use Case", "Keywords"],
+        "search_cols": ["Name", "Category", "When to Use", "Keywords"],
         "output_cols": [
             "Name", "Category", "When to Use", "When NOT to Use", "Strengths",
             "Weaknesses", "Team Size", "Operational Cost", "Notes",
@@ -273,26 +284,158 @@ class BM25:
 
 # ============ SEARCH FUNCTIONS ============
 def _load_csv(filepath):
-    with open(filepath, 'r', encoding='utf-8', newline='') as f:
+    with open(filepath, encoding='utf-8', newline='') as f:
         return list(csv.DictReader(f))
 
 
-def _search_csv(filepath, search_cols, output_cols, query, max_results):
-    if not filepath.exists():
-        return []
+# ----- Synonym expansion (lightweight hybrid search) -----
+# Map a token -> list of additional tokens to add to the query. Keep it
+# conservative: only well-known backend / distributed-systems aliases.
+_SYNONYMS = {
+    "failure":     ["fault", "outage", "error"],
+    "partial":     ["compensation", "rollback"],
+    "compensate":  ["saga", "rollback"],
+    "rollback":    ["compensation", "saga"],
+    "retry":       ["backoff", "idempotent", "idempotency"],
+    "idempotent":  ["idempotency", "deduplication"],
+    "queue":       ["broker", "messaging", "topic"],
+    "broker":      ["queue", "messaging"],
+    "pubsub":      ["topic", "broker", "messaging"],
+    "throttle":    ["rate", "limit", "ratelimit"],
+    "ratelimit":   ["throttle", "quota"],
+    "latency":     ["performance", "p99", "tail"],
+    "throughput":  ["performance", "qps", "rps"],
+    "outage":      ["failure", "incident", "downtime"],
+    "incident":    ["outage", "postmortem", "runbook"],
+    "consensus":   ["raft", "paxos", "quorum"],
+    "consistency": ["linearizable", "causal", "quorum"],
+    "shard":       ["partition", "sharding"],
+    "partition":   ["shard", "sharding"],
+    "replica":     ["replication", "follower"],
+    "cache":       ["caching", "memoization"],
+    "auth":        ["authentication", "authorization", "oauth", "jwt"],
+    "secret":      ["vault", "kms", "credentials"],
+    "trace":       ["tracing", "span", "opentelemetry"],
+    "log":         ["logging", "logs"],
+    "metric":      ["metrics", "prometheus"],
+    "ddd":         ["domain", "bounded", "context"],
+    "graphql":     ["api", "schema"],
+    "rest":        ["api", "http"],
+    "grpc":        ["rpc", "protobuf"],
+}
+
+
+def _expand_query(query):
+    """Append synonyms for known tokens. Returns the augmented query string."""
+    tokens = re.findall(r'\w+', query.lower())
+    extras = []
+    for t in tokens:
+        if t in _SYNONYMS:
+            extras.extend(_SYNONYMS[t])
+    if not extras:
+        return query
+    return query + " " + " ".join(extras)
+
+
+# ----- Index cache (lazy, mtime-invalidated) -----
+# _INDEX_CACHE[filepath_str] = {"mtime": float, "data": [rows], "bm25": BM25, "search_cols": [...]}
+_INDEX_CACHE = {}
+
+
+def clear_cache():
+    """Drop all cached BM25 indexes (useful for tests / long-running processes)."""
+    _INDEX_CACHE.clear()
+
+
+def _get_index(filepath, search_cols):
+    """Return (data, bm25) for filepath, building & caching on first use,
+    invalidating when the file's mtime changes or search_cols changes."""
+    key = str(filepath)
+    try:
+        mtime = filepath.stat().st_mtime
+    except OSError:
+        return None, None
+
+    cached = _INDEX_CACHE.get(key)
+    if (
+        cached
+        and cached["mtime"] == mtime
+        and cached["search_cols"] == tuple(search_cols)
+    ):
+        return cached["data"], cached["bm25"]
 
     data = _load_csv(filepath)
     documents = [" ".join(str(row.get(col, "")) for col in search_cols) for row in data]
-
     bm25 = BM25()
     bm25.fit(documents)
-    ranked = bm25.score(query)
+    _INDEX_CACHE[key] = {
+        "mtime": mtime,
+        "data": data,
+        "bm25": bm25,
+        "search_cols": tuple(search_cols),
+    }
+    return data, bm25
+
+
+# ----- Freshness helpers -----
+_DATE_FORMATS = ("%Y-%m-%d", "%Y/%m/%d", "%Y-%m", "%Y")
+
+
+def _parse_date(raw):
+    raw = (raw or "").strip()
+    if not raw:
+        return None
+    for fmt in _DATE_FORMATS:
+        try:
+            return datetime.strptime(raw, fmt)
+        except ValueError:
+            continue
+    return None
+
+
+def _months_since(dt, now=None):
+    now = now or datetime.now()
+    return (now.year - dt.year) * 12 + (now.month - dt.month)
+
+
+def _is_stale(row, max_age_months):
+    """True if row has a Last Updated column older than max_age_months.
+    Rows with no/invalid date are NOT considered stale (avoid false positives)."""
+    if max_age_months is None:
+        return False
+    dt = _parse_date(row.get("Last Updated", "") or row.get("Updated", ""))
+    if dt is None:
+        return False
+    return _months_since(dt) > max_age_months
+
+
+def _search_csv(filepath, search_cols, output_cols, query, max_results,
+                *, min_score=0.0, max_age_months=None, expand=True):
+    if not filepath.exists():
+        return []
+
+    data, bm25 = _get_index(filepath, search_cols)
+    if data is None or bm25 is None or bm25.N == 0:
+        return []
+
+    effective_query = _expand_query(query) if expand else query
+    ranked = bm25.score(effective_query)
 
     results = []
-    for idx, score in ranked[:max_results]:
-        if score > 0:
-            row = data[idx]
-            results.append({col: row.get(col, "") for col in output_cols if col in row})
+    for idx, score in ranked:
+        if len(results) >= max_results:
+            break
+        if score <= min_score:
+            continue
+        row = data[idx]
+        if max_age_months is not None and _is_stale(row, max_age_months):
+            continue
+        out = {col: row.get(col, "") for col in output_cols if col in row}
+        # Surface "Last Updated" if present even when not in output_cols
+        if "Last Updated" in row and "Last Updated" not in out:
+            out["Last Updated"] = row["Last Updated"]
+        out["_score"] = round(float(score), 4)
+        results.append(out)
     return results
 
 
@@ -390,8 +533,19 @@ def detect_domain(query):
     return best if scores[best] > 0 else "pattern"
 
 
-def search(query, domain=None, max_results=MAX_RESULTS):
-    """Main search function with auto-domain detection."""
+def search(query, domain=None, max_results=MAX_RESULTS,
+           *, min_score=0.0, max_age_months=None, expand=True):
+    """Main search function with auto-domain detection.
+
+    Args:
+        query: Search string.
+        domain: Force a specific domain (auto-detected if None).
+        max_results: Cap on returned rows.
+        min_score: Drop rows whose BM25 score is <= this (default 0.0).
+        max_age_months: If set, drop rows whose `Last Updated` column is older
+            than this many months. Rows without a date are kept.
+        expand: Apply synonym expansion to the query (default True).
+    """
     if domain is None:
         domain = detect_domain(query)
 
@@ -403,7 +557,10 @@ def search(query, domain=None, max_results=MAX_RESULTS):
     if not filepath.exists():
         return {"error": f"File not found: {filepath}", "domain": domain}
 
-    results = _search_csv(filepath, config["search_cols"], config["output_cols"], query, max_results)
+    results = _search_csv(
+        filepath, config["search_cols"], config["output_cols"], query, max_results,
+        min_score=min_score, max_age_months=max_age_months, expand=expand,
+    )
 
     return {
         "domain": domain,
@@ -414,7 +571,8 @@ def search(query, domain=None, max_results=MAX_RESULTS):
     }
 
 
-def search_stack(query, stack, max_results=MAX_RESULTS):
+def search_stack(query, stack, max_results=MAX_RESULTS,
+                 *, min_score=0.0, expand=True):
     """Search stack-specific guidelines."""
     if stack not in STACK_CONFIG:
         return {"error": f"Unknown stack: {stack}. Available: {', '.join(AVAILABLE_STACKS)}"}
@@ -423,8 +581,10 @@ def search_stack(query, stack, max_results=MAX_RESULTS):
     if not filepath.exists():
         return {"error": f"Stack file not found: {filepath}", "stack": stack}
 
-    results = _search_csv(filepath, _STACK_COLS["search_cols"], _STACK_COLS["output_cols"],
-                          query, max_results)
+    results = _search_csv(
+        filepath, _STACK_COLS["search_cols"], _STACK_COLS["output_cols"],
+        query, max_results, min_score=min_score, expand=expand,
+    )
 
     return {
         "domain": "stack",
@@ -436,15 +596,91 @@ def search_stack(query, stack, max_results=MAX_RESULTS):
     }
 
 
-def search_all(query, max_results=2):
+def search_all(query, max_results=2, *, min_score=0.0, expand=True):
     """Cross-domain search: returns top hits across every domain CSV."""
     aggregated = {}
     for domain, config in CSV_CONFIG.items():
         filepath = DATA_DIR / config["file"]
         if not filepath.exists():
             continue
-        hits = _search_csv(filepath, config["search_cols"], config["output_cols"],
-                           query, max_results)
+        hits = _search_csv(
+            filepath, config["search_cols"], config["output_cols"],
+            query, max_results, min_score=min_score, expand=expand,
+        )
         if hits:
             aggregated[domain] = hits
     return {"query": query, "domains": list(aggregated.keys()), "results": aggregated}
+
+
+# ============ DECISION HELPERS ============
+def compare(names, domain=None, max_per_name=1):
+    """Side-by-side comparison of two or more named entries.
+
+    Each name is searched independently (in `domain` if given, else
+    auto-detected from the joined names). Returns a dict with one entry
+    per name plus a `columns` union for easy table rendering.
+    """
+    if not names or len(names) < 2:
+        return {"error": "compare needs at least two names."}
+
+    auto_domain = domain or detect_domain(" ".join(names))
+    config = CSV_CONFIG.get(auto_domain)
+    if config is None:
+        return {"error": f"Unknown domain: {auto_domain}"}
+
+    entries = {}
+    columns_seen = []
+    for name in names:
+        result = search(name, domain=auto_domain, max_results=max(5, max_per_name * 5))
+        rows = result.get("results", [])
+        # Prefer rows whose first (identifier) column literally contains the
+        # query name — staff engineers expect "compare Kafka" to surface the
+        # Kafka row, not whatever happens to mention Kafka most often.
+        name_l = name.lower()
+        rows.sort(key=lambda r: (
+            0 if name_l in str(next(iter(r.values()), "")).lower() else 1,
+            -float(r.get("_score", 0.0)),
+        ))
+        entry = rows[0] if rows else {}
+        entries[name] = entry
+        for col in entry.keys():
+            if col not in columns_seen and col != "_score":
+                columns_seen.append(col)
+
+    return {
+        "mode": "compare",
+        "domain": auto_domain,
+        "names": list(names),
+        "columns": columns_seen,
+        "entries": entries,
+    }
+
+
+def find_stale(domain, months):
+    """Return rows in `domain` whose `Last Updated` is older than `months`.
+    Rows without a date are skipped (not flagged)."""
+    config = CSV_CONFIG.get(domain)
+    if config is None:
+        return {"error": f"Unknown domain: {domain}"}
+    filepath = DATA_DIR / config["file"]
+    if not filepath.exists():
+        return {"error": f"File not found: {filepath}"}
+
+    data = _load_csv(filepath)
+    stale = []
+    for row in data:
+        dt = _parse_date(row.get("Last Updated", "") or row.get("Updated", ""))
+        if dt is None:
+            continue
+        if _months_since(dt) > months:
+            entry = {col: row.get(col, "") for col in config["output_cols"] if col in row}
+            entry["Last Updated"] = row.get("Last Updated", row.get("Updated", ""))
+            stale.append(entry)
+    return {
+        "domain": domain,
+        "file": config["file"],
+        "older_than_months": months,
+        "count": len(stale),
+        "results": stale,
+    }
+

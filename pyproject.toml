@@ -36,6 +36,13 @@ classifiers = [
 # Pure standard-library — no runtime dependencies.
 dependencies = []
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/shashankswe2020-ux/backend-pro-max-skill"
 Repository = "https://github.com/shashankswe2020-ux/backend-pro-max-skill"
@@ -43,6 +50,7 @@ Issues = "https://github.com/shashankswe2020-ux/backend-pro-max-skill/issues"
 
 [project.scripts]
 backendpro = "backendpro.scripts.search:main"
+backendpro-validate = "backendpro.scripts.validate:main"
 
 # ------------------------------------------------------------------
 # The on-disk source layout uses a hyphenated directory name
@@ -65,3 +73,25 @@ backendpro = [
     "data/stacks/*.csv",
     "templates/base/*.md",
 ]
+
+# ------------------------------------------------------------------
+# Tooling
+# ------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 110
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = [
+    "E501",  # line length is governed by formatter
+    "B008",  # default arg call is fine for argparse
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]
