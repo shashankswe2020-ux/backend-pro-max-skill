@@ -6,13 +6,10 @@ installed. BM25 fallback behaviour is always tested.
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 from unittest import mock
 
 import pytest
-
 from core import clear_cache, search, search_all
-
 
 # Detect whether sentence-transformers is available.
 try:
@@ -83,6 +80,7 @@ class TestSemanticModuleAPI:
         with mock.patch.dict(sys.modules, {"sentence_transformers": None}):
             # Re-import to pick up the mock
             import importlib
+
             import semantic
             importlib.reload(semantic)
             # is_available tries to import; with None in sys.modules it will fail
@@ -109,7 +107,8 @@ class TestSemanticModuleAPI:
         assert reciprocal_rank_fusion([], []) == []
 
     def test_clear_cache(self):
-        from semantic import clear_cache as sem_clear, _EMBED_CACHE
+        from semantic import _EMBED_CACHE
+        from semantic import clear_cache as sem_clear
         _EMBED_CACHE["test_key"] = {"embeddings": None, "texts": []}
         sem_clear()
         assert "test_key" not in _EMBED_CACHE

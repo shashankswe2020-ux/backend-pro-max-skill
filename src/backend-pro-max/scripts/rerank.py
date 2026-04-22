@@ -10,7 +10,6 @@ Falls back gracefully when not installed.
 from __future__ import annotations
 
 import sys
-from typing import Any
 
 _cross_encoder = None
 _MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"

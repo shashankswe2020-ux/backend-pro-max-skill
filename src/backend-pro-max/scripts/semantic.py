@@ -9,7 +9,6 @@ Falls back gracefully to BM25 when dependencies are not installed.
 from __future__ import annotations
 
 import hashlib
-import json
 import os
 import pickle
 import sys

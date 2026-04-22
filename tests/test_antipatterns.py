@@ -2,10 +2,8 @@
 from __future__ import annotations
 
 import csv
-from pathlib import Path
 
 from core import CSV_CONFIG, DATA_DIR, clear_cache, detect_domain, search
-
 
 ANTIPATTERN_CSV = DATA_DIR / "anti-patterns.csv"
 

@@ -75,15 +75,15 @@ structured for the user's actual need, not a generic row dump:
 
 ### Acceptance Criteria
 
-- [ ] `classify_intent("what is a saga")` → `Intent.DEFINITION`
-- [ ] `classify_intent("kafka consumer lag fix")` → `Intent.TROUBLESHOOT`
-- [ ] `classify_intent("migrate from mysql to postgres")` → `Intent.MIGRATION`
-- [ ] `classify_intent("kafka vs rabbitmq")` → `Intent.COMPARISON`
-- [ ] Output for troubleshoot queries shows Symptom → Root Cause → Fix → Verify structure
-- [ ] `--intent troubleshoot` overrides auto-detection
-- [ ] JSON output includes `"intent"` field
-- [ ] Existing tests unbroken (general intent = backward-compatible output)
-- [ ] `pytest tests/test_intent.py` passes with ≥20 classification assertions
+- [x] `classify_intent("what is a saga")` → `Intent.DEFINITION`
+- [x] `classify_intent("kafka consumer lag fix")` → `Intent.TROUBLESHOOT`
+- [x] `classify_intent("migrate from mysql to postgres")` → `Intent.MIGRATION`
+- [x] `classify_intent("kafka vs rabbitmq")` → `Intent.COMPARISON`
+- [x] Output for troubleshoot queries shows Symptom → Root Cause → Fix → Verify structure
+- [x] `--intent troubleshoot` overrides auto-detection
+- [x] JSON output includes `"intent"` field
+- [x] Existing tests unbroken (general intent = backward-compatible output)
+- [x] `pytest tests/test_intent.py` passes with ≥20 classification assertions
 
 ### Verification
 
@@ -128,15 +128,15 @@ merge BM25 and embedding rankings.
 
 ### Acceptance Criteria
 
-- [ ] `pip install backendpro` still has zero dependencies
-- [ ] `pip install backendpro[semantic]` installs `sentence-transformers`
-- [ ] `backendpro "how to avoid losing messages on failover" --engine hybrid` returns relevant messaging rows
-- [ ] BM25-only still works identically when `sentence-transformers` is not installed
-- [ ] `--engine semantic` with missing package prints warning and falls back to BM25
-- [ ] Embedding cache stored in `.backendpro_cache/` (gitignored), invalidated on CSV mtime change
-- [ ] First query builds index (~5s), subsequent queries are sub-100ms
-- [ ] `pytest tests/test_semantic.py` passes (skips if `sentence-transformers` not installed)
-- [ ] Existing 37+ tests unbroken
+- [x] `pip install backendpro` still has zero dependencies
+- [x] `pip install backendpro[semantic]` installs `sentence-transformers`
+- [x] `backendpro "how to avoid losing messages on failover" --engine hybrid` returns relevant messaging rows
+- [x] BM25-only still works identically when `sentence-transformers` is not installed
+- [x] `--engine semantic` with missing package prints warning and falls back to BM25
+- [x] Embedding cache stored in `.backendpro_cache/` (gitignored), invalidated on CSV mtime change
+- [x] First query builds index (~5s), subsequent queries are sub-100ms
+- [x] `pytest tests/test_semantic.py` passes (skips if `sentence-transformers` not installed)
+- [x] Existing 37+ tests unbroken
 
 ### Verification
 
@@ -180,12 +180,12 @@ Can be combined: `pip install backendpro[semantic,rerank]`.
 
 ### Acceptance Criteria
 
-- [ ] `pip install backendpro[rerank]` installs cross-encoder deps
-- [ ] `backendpro "partial failure handling" --rerank` re-orders BM25 top-20
-- [ ] Without `[rerank]` installed, `--rerank` prints info message and returns BM25 results
-- [ ] Reranker adds `_rerank_score` to each result in JSON mode
-- [ ] Latency: reranking top-20 completes in <500ms on CPU
-- [ ] `pytest tests/test_rerank.py` passes (skips if deps not installed)
+- [x] `pip install backendpro[rerank]` installs cross-encoder deps
+- [x] `backendpro "partial failure handling" --rerank` re-orders BM25 top-20
+- [x] Without `[rerank]` installed, `--rerank` prints info message and returns BM25 results
+- [x] Reranker adds `_rerank_score` to each result in JSON mode
+- [x] Latency: reranking top-20 completes in <500ms on CPU
+- [x] `pytest tests/test_rerank.py` passes (skips if deps not installed)
 
 ### Verification
 
@@ -243,13 +243,13 @@ Name,Category,Symptom,Root Cause,Why It's Tempting,Fix,Related Patterns,Severity
 
 ### Acceptance Criteria
 
-- [ ] `backendpro --list` shows `antipattern` domain
-- [ ] `backendpro "distributed monolith"` auto-detects `antipattern` domain (or at least returns relevant rows)
-- [ ] `backendpro "dual writes" --domain antipattern` returns the row with Symptom/Root Cause/Fix
-- [ ] `backendpro-validate` passes with the new CSV
-- [ ] Each row has: Name, Category, Symptom, Root Cause, Fix, Severity, Last Updated
-- [ ] ≥15 rows in initial CSV
-- [ ] `pytest tests/test_antipatterns.py` passes
+- [x] `backendpro --list` shows `antipattern` domain
+- [x] `backendpro "distributed monolith"` auto-detects `antipattern` domain (or at least returns relevant rows)
+- [x] `backendpro "dual writes" --domain antipattern` returns the row with Symptom/Root Cause/Fix
+- [x] `backendpro-validate` passes with the new CSV
+- [x] Each row has: Name, Category, Symptom, Root Cause, Fix, Severity, Last Updated
+- [x] ≥15 rows in initial CSV
+- [x] `pytest tests/test_antipatterns.py` passes
 
 ### Verification
 
@@ -302,26 +302,26 @@ pytest tests/ -v  # regression
 
 ### After Phase A
 
-- [ ] `antipattern` domain queryable, ≥15 rows, validator passes
-- [ ] Intent classifier auto-routes queries to correct output template
-- [ ] JSON output includes `"intent"` field
-- [ ] All existing tests pass + ≥25 new test cases across `test_intent.py` and `test_antipatterns.py`
+- [x] `antipattern` domain queryable, ≥15 rows, validator passes
+- [x] Intent classifier auto-routes queries to correct output template
+- [x] JSON output includes `"intent"` field
+- [x] All existing tests pass + ≥25 new test cases across `test_intent.py` and `test_antipatterns.py`
 
 ### After Phase B
 
-- [ ] `pip install backendpro[semantic]` enables hybrid search
-- [ ] Default install unchanged (zero-dep BM25)
-- [ ] Conceptual queries ("how to avoid message loss") find relevant rows via embeddings
-- [ ] Embedding cache works (sub-100ms repeat queries)
-- [ ] ≥10 new test cases in `test_semantic.py`
+- [x] `pip install backendpro[semantic]` enables hybrid search
+- [x] Default install unchanged (zero-dep BM25)
+- [x] Conceptual queries ("how to avoid message loss") find relevant rows via embeddings
+- [x] Embedding cache works (sub-100ms repeat queries)
+- [x] ≥10 new test cases in `test_semantic.py`
 
 ### After Phase C (Tier 2 complete)
 
-- [ ] `--rerank` available for precision boost
-- [ ] Full pipeline: intent → hybrid retrieval → rerank → intent-formatted output
-- [ ] ≥40 new test cases total for Tier 2
-- [ ] `ruff check src tests` clean
-- [ ] `backendpro-validate` passes
+- [x] `--rerank` available for precision boost
+- [x] Full pipeline: intent → hybrid retrieval → rerank → intent-formatted output
+- [x] ≥40 new test cases total for Tier 2 (67 actual)
+- [x] `ruff check src tests` clean
+- [x] `backendpro-validate` passes
 - [ ] README updated with retrieval quality features
 - [ ] CHANGELOG entry
 
