@@ -334,6 +334,78 @@ graph LR
 
 ---
 
+## 🧬 How is this different from RAG + LLM?
+
+At first glance Backend Pro Max looks like a RAG system — it retrieves
+knowledge and feeds it to a model. But the architecture is fundamentally
+different, and the difference matters.
+
+### The standard RAG pipeline
+
+```
+User query ──▶ Embed ──▶ Vector DB ──▶ Top-K chunks ──▶ LLM ──▶ Answer
+```
+
+RAG embeds your docs into a vector store, retrieves the nearest chunks, and
+stuffs them into the prompt. The LLM then *generates* an answer from those
+chunks. This works, but has well-known failure modes:
+
+| Problem | What happens |
+|---------|-------------|
+| **Chunk boundary corruption** | A CSV row about "Saga pattern" gets split mid-sentence; the LLM sees half a trade-off |
+| **Semantic drift** | "connection pool exhausted" embeds near "swimming pool" — wrong chunks retrieved |
+| **No structure in, no structure out** | Chunks are flat text; the LLM has to *infer* which part is "when to use" vs "when not to" |
+| **Hallucination laundering** | The LLM cites a retrieved chunk but subtly changes the recommendation |
+| **Non-determinism** | Same query, different embedding model version → different chunks → different answer |
+| **Cold start cost** | Embedding 20 CSVs requires a model download, GPU/CPU time, and a vector DB |
+| **Dependency weight** | `sentence-transformers` + `faiss` + `chromadb` = 500 MB+ before you write a line of code |
+
+### The Backend Pro Max approach
+
+```
+User query ──▶ BM25 (stdlib) ──▶ Structured rows ──▶ Agent context
+                                  (not chunks)        (not generation)
+```
+
+| Design choice | Why |
+|---------------|-----|
+| **BM25 over structured CSV rows** | Each row is a *complete, self-contained* knowledge unit with named columns (`Name`, `When to Use`, `When NOT to Use`, `Trade-offs`, `Severity`). No chunk splitting, no boundary corruption. |
+| **Deterministic ranking** | Same query → same BM25 scores → same results. Every time. Reviewable, testable, reproducible. |
+| **Zero dependencies by default** | Pure Python stdlib. No embedding model, no vector DB, no GPU. `pip install backendpro` and you're done in 2 seconds. |
+| **Intent classification, not generation** | The classifier routes your query to a *structured template* (troubleshoot → Symptom/Root Cause/Fix). The model fills in from retrieved rows — it doesn't hallucinate a structure. |
+| **Constraint columns, not vibes** | `Throughput Tier: very-high`, `Latency Tier: sub-ms`, `Cloud Native: aws,gcp` — structured metadata that the `decide` command scores programmatically. No embedding similarity guesswork. |
+| **The model is the consumer, not the generator** | Retrieved rows go into the agent's context as *facts to cite*. The model's job is to explain and compare them — not to generate knowledge from noisy chunks. |
+| **Optional semantic upgrade** | `pip install backendpro[semantic]` adds embedding-based hybrid search for conceptual queries. But it's an *addition* to BM25, not a replacement — and BM25 alone covers 95% of queries. |
+
+### Side by side
+
+| | RAG + LLM | Backend Pro Max |
+|---|---|---|
+| **Retrieval** | Embedding similarity (approximate) | BM25 keyword match (exact) + optional hybrid |
+| **Unit of retrieval** | Text chunk (arbitrary boundary) | Structured row (complete knowledge unit) |
+| **Ranking** | Cosine similarity (non-deterministic across model versions) | BM25 score (deterministic, testable) |
+| **Output structure** | LLM-generated (variable) | Template-driven by intent (consistent) |
+| **Constraint matching** | None (hope the LLM reads the chunk correctly) | Programmatic column-level scoring |
+| **Cold start** | Download model + build index (minutes) | Zero (pure stdlib, sub-ms first query) |
+| **Dependencies** | 500 MB+ (transformers, vector DB, numpy) | 0 (stdlib only) |
+| **Reproducibility** | Low (embedding drift, LLM temperature) | High (same query = same rows = same scores) |
+| **Auditability** | "The LLM said so" | "Row `pattern:Saga` scored 8.42 on BM25" |
+
+### When you'd still want RAG
+
+- You have **unstructured documents** (PDFs, wikis, Confluence) that can't be
+  easily tabulated into CSV rows with named columns.
+- Your knowledge base is **huge** (100K+ documents) and keyword matching
+  produces too many false negatives for conceptual queries.
+- You need **cross-document reasoning** where the answer spans multiple sources.
+
+Backend Pro Max is designed for **curated, structured, expert-reviewed
+knowledge** — the kind a staff engineer would put in a decision matrix, not in
+a wiki page. For that use case, structured retrieval beats RAG on every
+dimension that matters: precision, reproducibility, auditability, and speed.
+
+---
+
 ## 📚 Domains
 
 | Domain          | What's in it                                                      |
