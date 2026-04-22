@@ -185,6 +185,24 @@ comparisons that catch LLMs off-guard:
 <details>
 <summary><strong>1. Kafka vs Pulsar vs Pub/Sub</strong> — <code>decide "Kafka vs Pulsar vs Pub/Sub for high-throughput event streaming on GCP with ordering guarantees"</code></summary>
 
+```mermaid
+graph LR
+    Q["🔍 Query: Kafka vs Pulsar vs Pub/Sub<br/>high-throughput · GCP · ordering"] --> E["⚙️ Constraint Extraction"]
+    E --> C1["throughput: high"]
+    E --> C2["cloud: gcp"]
+    E --> C3["ordering: true"]
+    C1 & C2 & C3 --> S["📊 Score & Rank"]
+    S --> R1["🥇 Apache Pulsar<br/>2/2 constraints ✅"]
+    S --> R2["🥈 Apache Kafka<br/>2/2 constraints ✅"]
+    S --> R3["🥉 Google Pub/Sub<br/>2/2 constraints ✅"]
+    S --> R4["4. Redpanda"]
+    S --> R5["5. NATS JetStream"]
+
+    style R1 fill:#22d67a,color:#000,stroke:#16a34a
+    style R2 fill:#5b9cf6,color:#000,stroke:#3b82f6
+    style R3 fill:#f5c842,color:#000,stroke:#d97706
+```
+
 - **Recommendation:** Apache Pulsar (highest combined score)
 - **5 candidates returned** across messaging domain
 - **Constraints extracted:** `throughput:high`, `cloud:gcp`, `ordering:true`
@@ -195,6 +213,24 @@ comparisons that catch LLMs off-guard:
 
 <details>
 <summary><strong>2. Redis vs Memcached</strong> — <code>decide "Redis vs Memcached for low-latency session cache on AWS"</code></summary>
+
+```mermaid
+graph LR
+    Q["🔍 Query: Redis vs Memcached<br/>low-latency · session cache · AWS"] --> E["⚙️ Constraint Extraction"]
+    E --> C1["cloud: aws"]
+    E --> C2["throughput: high"]
+    E --> C3["latency: low-ms"]
+    C1 & C2 & C3 --> S["📊 Score & Rank"]
+    S --> R1["🥇 Redis<br/>3/3 constraints ✅"]
+    S --> R2["🥈 Redis Cluster<br/>3/3 constraints ✅"]
+    S --> R3["🥉 Memcached<br/>3/3 constraints ✅"]
+    S --> R4["4. In-process LRU"]
+    S --> R5["5. L1+L2 Hybrid"]
+
+    style R1 fill:#22d67a,color:#000,stroke:#16a34a
+    style R2 fill:#5b9cf6,color:#000,stroke:#3b82f6
+    style R3 fill:#f5c842,color:#000,stroke:#d97706
+```
 
 - **Recommendation:** Redis (highest score)
 - **5 candidates** across cache + database domains
@@ -207,6 +243,22 @@ comparisons that catch LLMs off-guard:
 <details>
 <summary><strong>3. Monolith vs Microservices</strong> — <code>decide "monolith vs microservices for a 10-person startup"</code></summary>
 
+```mermaid
+graph LR
+    Q["🔍 Query: monolith vs microservices<br/>10-person startup"] --> E["⚙️ Constraint Extraction"]
+    E --> C0["No constraint columns<br/>on architecture domain"]
+    C0 --> S["📊 Pure BM25 Ranking"]
+    S --> R1["🥇 Monolith<br/>Best relevance match"]
+    S --> R2["🥈 Modular Monolith<br/>Strong #2"]
+    S --> R3["🥉 Microservices"]
+    S --> R4["4. Serverless/FaaS"]
+    S --> R5["5. Hexagonal Architecture"]
+
+    style R1 fill:#22d67a,color:#000,stroke:#16a34a
+    style R2 fill:#5b9cf6,color:#000,stroke:#3b82f6
+    style R3 fill:#f5c842,color:#000,stroke:#d97706
+```
+
 - **Recommendation:** Monolith (highest BM25 score)
 - **5 candidates** across architecture + patterns domains
 - No constraint columns on architecture domain — pure relevance ranking
@@ -216,6 +268,25 @@ comparisons that catch LLMs off-guard:
 
 <details>
 <summary><strong>4. Postgres vs DynamoDB</strong> — <code>decide "Postgres vs DynamoDB for 50M DAU e-commerce with strong consistency on multi-cloud"</code></summary>
+
+```mermaid
+graph LR
+    Q["🔍 Query: Postgres vs DynamoDB<br/>50M DAU · strong consistency · multi-cloud"] --> E["⚙️ Constraint Extraction"]
+    E --> C1["throughput: high"]
+    E --> C2["cloud: multi-cloud"]
+    E --> C3["consistency: strong"]
+    C1 & C2 & C3 --> S["📊 Score & Rank"]
+    S --> R1["🥇 Spanner / TiDB<br/>3/3 constraints ✅"]
+    S --> R2["🥈 CockroachDB<br/>3/3 constraints ✅"]
+    S --> R3["🥉 Postgres<br/>2/3 constraints ⚠️"]
+    S --> R4["4. DynamoDB<br/>1/3 constraints"]
+    S --> R5["5. Cassandra"]
+
+    style R1 fill:#22d67a,color:#000,stroke:#16a34a
+    style R2 fill:#5b9cf6,color:#000,stroke:#3b82f6
+    style R3 fill:#f5c842,color:#000,stroke:#d97706
+    style R4 fill:#f56060,color:#000,stroke:#dc2626
+```
 
 - **Recommendation:** Spanner / TiDB (surprise — neither of the two named!)
 - **5 candidates** across database + consistency + scaling domains
@@ -227,6 +298,27 @@ comparisons that catch LLMs off-guard:
 
 <details>
 <summary><strong>5. REST vs GraphQL</strong> — <code>decide "REST vs GraphQL for a public API with low latency"</code></summary>
+
+```mermaid
+graph LR
+    Q["🔍 Query: REST vs GraphQL<br/>public API · low latency"] --> E["⚙️ Constraint Extraction"]
+    E --> C1["latency: low-ms"]
+    C1 --> S["📊 Score & Rank"]
+    S --> R1["🥇 REST<br/>api domain"]
+    S --> R2["🥈 GraphQL<br/>api domain"]
+    S --> R3["🥉 Tail Latency<br/>⚡ performance domain"]
+    S --> R4["4. gRPC"]
+    S --> R5["5. Cold Starts<br/>⚡ performance domain"]
+
+    S -.->|"cross-domain"| PD["⚡ performance"]
+    S -.->|"primary"| AD["🔌 api"]
+
+    style R1 fill:#22d67a,color:#000,stroke:#16a34a
+    style R2 fill:#5b9cf6,color:#000,stroke:#3b82f6
+    style R3 fill:#f5c842,color:#000,stroke:#d97706
+    style PD fill:#fb8c3e,color:#000,stroke:#d97706
+    style AD fill:#a78bfa,color:#000,stroke:#7c3aed
+```
 
 - **Recommendation:** Based on API-domain BM25 ranking
 - **5 candidates** across api + performance domains
