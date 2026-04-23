@@ -3,8 +3,8 @@
 > The single biggest distribution multiplier in 2026: make every MCP-aware IDE
 > and agent framework a first-class consumer of Backend Pro Max.
 
-**Status:** 🔲 Not started
-**Branch:** `feat/tier-3-agent-mcp` (to be created from `main`)
+**Status:** ✅ Complete
+**Branch:** `feat/tier-3-agent-mcp`
 **Depends on:** Tier 1 (`decide`, `adr`, `design` commands to expose as tools), Tier 2 (intent classifier enriches tool responses)
 
 ---

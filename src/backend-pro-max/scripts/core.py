@@ -216,6 +216,110 @@ CSV_CONFIG = {
             "Fix", "Related Patterns", "Severity", "Last Updated",
         ],
     },
+    "cost": {
+        "file": "cost.csv",
+        "search_cols": ["Name", "Category", "Cloud", "Service", "Cost Driver", "Mitigation"],
+        "output_cols": [
+            "Name", "Category", "Cloud", "Service", "Cost Driver", "Mitigation",
+            "Order of Magnitude", "Gotcha", "Source URL", "Last Updated",
+        ],
+    },
+    "migration": {
+        "file": "migration.csv",
+        "search_cols": ["Name", "Category", "Strategy", "From", "To", "Risk"],
+        "output_cols": [
+            "Name", "Category", "Strategy", "From", "To", "Risk", "Rollback Plan",
+            "Duration Estimate", "Gotcha", "Related Patterns", "Source URL", "Last Updated",
+        ],
+    },
+    "incident": {
+        "file": "incident.csv",
+        "search_cols": ["Name", "Category", "Severity", "Symptom", "Root Cause", "Mitigation"],
+        "output_cols": [
+            "Name", "Category", "Severity", "Symptom", "Root Cause", "Mitigation",
+            "Communication Template", "Postmortem Checklist", "Source URL", "Last Updated",
+        ],
+    },
+    "capacity": {
+        "file": "capacity.csv",
+        "search_cols": ["Name", "Category", "Formula", "Inputs", "Rule of Thumb"],
+        "output_cols": [
+            "Name", "Category", "Formula", "Inputs", "Example Calculation",
+            "Rule of Thumb", "Gotcha", "Source URL", "Last Updated",
+        ],
+    },
+    "compliance": {
+        "file": "compliance.csv",
+        "search_cols": ["Name", "Standard", "Category", "Engineering Requirement", "Verification Method"],
+        "output_cols": [
+            "Name", "Standard", "Category", "Engineering Requirement", "Verification Method",
+            "Gotcha", "Penalty", "Source URL", "Last Updated",
+        ],
+    },
+    "multi-tenant": {
+        "file": "multi-tenant.csv",
+        "search_cols": ["Name", "Category", "Strategy", "Isolation Level", "Strengths", "Weaknesses"],
+        "output_cols": [
+            "Name", "Category", "Strategy", "Isolation Level", "Strengths", "Weaknesses",
+            "When to Use", "Gotcha", "Source URL", "Last Updated",
+        ],
+    },
+    "release": {
+        "file": "release.csv",
+        "search_cols": ["Name", "Category", "Strategy", "Risk", "Tooling"],
+        "output_cols": [
+            "Name", "Category", "Strategy", "Risk", "Rollback Time", "Blast Radius",
+            "Tooling", "Gotcha", "Source URL", "Last Updated",
+        ],
+    },
+    "ml-platform": {
+        "file": "ml-platform.csv",
+        "search_cols": ["Name", "Category", "Use Case", "Strengths", "Alternatives"],
+        "output_cols": [
+            "Name", "Category", "Use Case", "Strengths", "Weaknesses",
+            "Alternatives", "Gotcha", "Source URL", "Last Updated",
+        ],
+    },
+    "edge": {
+        "file": "edge.csv",
+        "search_cols": ["Name", "Category", "Runtime", "Use Case", "Strengths"],
+        "output_cols": [
+            "Name", "Category", "Runtime", "Use Case", "Strengths", "Weaknesses",
+            "Consistency Model", "Gotcha", "Source URL", "Last Updated",
+        ],
+    },
+    "mobile-backend": {
+        "file": "mobile-backend.csv",
+        "search_cols": ["Name", "Category", "Pattern", "Use Case", "Strengths"],
+        "output_cols": [
+            "Name", "Category", "Pattern", "Use Case", "Strengths", "Weaknesses",
+            "Gotcha", "Source URL", "Last Updated",
+        ],
+    },
+    "api-contract": {
+        "file": "api-contract.csv",
+        "search_cols": ["Name", "Category", "Strategy", "Tooling", "Strengths"],
+        "output_cols": [
+            "Name", "Category", "Strategy", "Tooling", "Strengths", "Weaknesses",
+            "When to Use", "Gotcha", "Source URL", "Last Updated",
+        ],
+    },
+    "interview": {
+        "file": "interview.csv",
+        "search_cols": ["Name", "Category", "Level", "Key Signals", "Common Mistakes"],
+        "output_cols": [
+            "Name", "Category", "Level", "Key Signals", "Common Mistakes",
+            "Evaluation Criteria", "Source URL", "Last Updated",
+        ],
+    },
+    "latency": {
+        "file": "latency-numbers.csv",
+        "search_cols": ["Operation", "Category", "Latency", "Notes", "Hardware Era"],
+        "output_cols": [
+            "Operation", "Category", "Latency", "Order of Magnitude",
+            "Hardware Era", "Notes", "Source URL", "Last Updated",
+        ],
+    },
 }
 
 STACK_CONFIG = {
@@ -641,6 +745,57 @@ _DOMAIN_KEYWORDS = {
                       "sync-over-async", "sync over async", "premature microservice",
                       "missing idempotency", "secrets in env", "polling instead",
                       "time-based cache", "bad practice", "code smell", "pitfall"],
+    "cost":          ["cost", "pricing", "egress", "data transfer", "finops", "billing",
+                      "expensive", "cheap", "price", "spend", "budget", "invoice",
+                      "cross-az", "nat gateway", "reserved instance", "spot instance",
+                      "on-demand", "savings plan"],
+    "migration":     ["migrate", "migration", "strangler", "strangler fig", "dual write",
+                      "cutover", "zero-downtime", "expand-contract", "blue-green migration",
+                      "trickle", "parallel run", "cloud migration", "database migration",
+                      "replatform", "lift and shift"],
+    "incident":      ["incident", "outage", "postmortem", "severity", "sev1", "sev2",
+                      "imoc", "incident commander", "status page", "runbook",
+                      "blameless", "cascading failure", "root cause analysis", "rca",
+                      "communication template", "war room"],
+    "capacity":      ["capacity", "little's law", "littles law", "amdahl", "usl",
+                      "qps calculation", "storage estimation", "bandwidth estimation",
+                      "back of envelope", "back-of-envelope", "connection pool size",
+                      "partition sizing", "queue theory"],
+    "compliance":    ["compliance", "soc2", "soc 2", "hipaa", "pci", "pci-dss", "gdpr",
+                      "ccpa", "audit", "data residency", "encryption at rest",
+                      "data breach notification", "right to deletion", "consent",
+                      "regulatory", "data protection"],
+    "multi-tenant":  ["multi-tenant", "multitenant", "tenant", "tenancy", "noisy neighbor",
+                      "noisy neighbour", "tenant isolation", "pool model", "silo model",
+                      "row-level security", "rls", "shared nothing", "shared everything",
+                      "per-tenant"],
+    "release":       ["release", "deployment strategy", "canary", "blue-green", "blue green",
+                      "rolling update", "feature flag", "feature toggle", "dark launch",
+                      "progressive delivery", "gitops", "deployment freeze", "rollback",
+                      "release train", "immutable infrastructure", "ring deployment"],
+    "ml-platform":   ["ml platform", "mlops", "feature store", "model registry",
+                      "experiment tracking", "training serving skew", "ml pipeline",
+                      "model monitoring", "gpu management", "rag", "retrieval augmented",
+                      "vector database", "fine-tuning", "fine tuning", "lora", "qlora"],
+    "edge":          ["edge compute", "edge computing", "cloudflare workers", "fastly compute",
+                      "lambda@edge", "cloudfront functions", "vercel edge", "durable objects",
+                      "wasi", "webassembly", "wasm", "edge kv", "edge database"],
+    "mobile-backend": ["mobile backend", "mobile api", "bff", "backend for frontend",
+                       "offline-first", "offline first", "push notification", "apns", "fcm",
+                       "token refresh", "app startup", "image optimization",
+                       "optimistic ui", "mobile sync"],
+    "api-contract":  ["api contract", "openapi", "swagger", "graphql federation",
+                      "schema evolution", "schema registry", "protobuf", "asyncapi",
+                      "contract testing", "pact", "api versioning", "hateoas",
+                      "grpc-web", "api gateway pattern", "code generation", "codegen"],
+    "interview":     ["interview", "system design interview", "rubric", "evaluation criteria",
+                      "key signals", "leveling", "staff engineer interview",
+                      "trade-off analysis", "back of envelope", "hiring",
+                      "system design rubric", "behavioral interview"],
+    "latency":       ["latency numbers", "latency reference", "l1 cache", "l2 cache",
+                      "memory latency", "disk latency", "nvme latency", "network latency",
+                      "cross-region latency", "ssd latency", "hdd seek",
+                      "latency comparison", "speed of light"],
 }
 
 
