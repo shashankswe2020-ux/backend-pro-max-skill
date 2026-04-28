@@ -536,12 +536,13 @@ footer{
   <div class="hero-glow"></div>
 
   <div class="hero-badges">
-    <span class="badge green">21 Domains</span>
+    <span class="badge green">34 Domains</span>
     <span class="badge blue">12 Stacks</span>
     <span class="badge amber">BM25 + Synonyms</span>
     <span class="badge green">Compare Mode</span>
     <span class="badge blue">Interactive REPL</span>
-    <span class="badge amber">148 Tests · CI</span>
+    <span class="badge amber">332 Tests · CI</span>
+    <span class="badge">100% Source Citations</span>
     <span class="badge">Python 3.8+</span>
     <span class="badge">Zero Dependencies</span>
     <span class="badge">MIT License</span>
@@ -555,7 +556,7 @@ footer{
   </h1>
 
   <p class="hero-desc">
-    Curated, BM25-searchable backend &amp; distributed-systems intelligence across <strong style="color:var(--text)">21 domains</strong> and <strong style="color:var(--text)">12 language stacks</strong> — drop it into Claude Code, Cursor, Copilot, or any AI assistant.
+    Curated, BM25-searchable backend &amp; distributed-systems intelligence across <strong style="color:var(--text)">34 domains</strong> and <strong style="color:var(--text)">12 language stacks</strong> — every row sourced, auditable, and freshness-tracked. Drop it into Claude Code, Cursor, Copilot, or any AI assistant.
   </p>
 
   <div class="hero-actions">
@@ -893,7 +894,7 @@ footer{
     <div class="domain-card" style="--card-color:var(--green)">
       <span class="domain-icon">🧪</span>
       <div class="domain-name">tested + linted</div>
-      <div class="domain-desc">148 pytest cases covering ranking quality, edge cases, decision intelligence, intent classification, and domain detection. Ruff lint + CSV validation on Python 3.9 / 3.11 / 3.12.</div>
+      <div class="domain-desc">332 pytest cases covering ranking quality, edge cases, decision intelligence, intent classification, trust/verifiability, freshness, provenance, and conflict detection. Ruff lint + CSV validation on Python 3.9 / 3.11 / 3.12.</div>
       <div class="domain-count">Green on every push</div>
     </div>
     <div class="domain-card" style="--card-color:var(--blue)">
@@ -931,6 +932,24 @@ footer{
       <div class="domain-name">design doc</div>
       <div class="domain-desc">Capacity-aware design documents with QPS estimates, storage projections, and replication calculations.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro design<br>"Postgres for 50M DAU"</code></div>
       <div class="domain-count">Capacity math included</div>
+    </div>
+    <div class="domain-card" style="--card-color:var(--green)">
+      <span class="domain-icon">🔗</span>
+      <div class="domain-name">source citations</div>
+      <div class="domain-desc">Every row carries a Source URL, Source Type, and Last Updated date. 100% coverage across 685 rows — official docs, RFCs, papers, OWASP cheat sheets.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro-validate --strict</code></div>
+      <div class="domain-count">685/685 rows sourced</div>
+    </div>
+    <div class="domain-card" style="--card-color:var(--red)">
+      <span class="domain-icon">⚠️</span>
+      <div class="domain-name">conflict detector</div>
+      <div class="domain-desc">12 curated architectural tension rules surface trade-offs: retry vs latency, cache vs consistency, outbox vs CDC, sharding vs joins, and more.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro conflicts<br>--domain cache</code></div>
+      <div class="domain-count">Known trade-offs surfaced</div>
+    </div>
+    <div class="domain-card" style="--card-color:var(--amber)">
+      <span class="domain-icon">🕐</span>
+      <div class="domain-name">auto-freshness</div>
+      <div class="domain-desc">Weekly GitHub Action flags stale rows (&gt;18 months) and broken Source URLs. Opens issues per domain — no manual auditing needed.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro-validate<br>--check-urls</code></div>
+      <div class="domain-count">Weekly automated audit</div>
     </div>
   </div>
 </section>
@@ -1098,7 +1117,7 @@ footer{
     <div class="install-card">
       <div class="install-tool">🧪 Contributors</div>
       <div class="install-sub">Tests, lint &amp; CSV validator</div>
-      <div class="install-code">pip install -e ".[dev]"<br><br>pytest                    # 148 tests<br>ruff check src tests      # lint<br>backendpro-validate       # CSVs</div>
+      <div class="install-code">pip install -e ".[dev]"<br><br>pytest                    # 332 tests<br>ruff check src tests      # lint<br>backendpro-validate       # CSVs</div>
     </div>
   </div>
 </section>
