@@ -17,12 +17,18 @@ def _tmpdir():
 
 # ── Obsidian ─────────────────────────────────────────────────────────────
 def test_obsidian_creates_files():
-    """Obsidian export creates .md files."""
+    """Obsidian export creates .md files in domain subfolders."""
     out = _tmpdir()
     result = export.export_obsidian(out)
     assert result["format"] == "obsidian"
     assert result["files"] > 0
-    md_files = [f for f in os.listdir(out) if f.endswith(".md")]
+    # Domain subfolders should exist
+    subdirs = [d for d in os.listdir(out) if os.path.isdir(os.path.join(out, d))]
+    assert len(subdirs) > 1
+    # .md files inside subfolders
+    md_files = []
+    for root, _dirs, files in os.walk(out):
+        md_files.extend(f for f in files if f.endswith(".md") and f != "_Index.md")
     assert len(md_files) > 1
 
 
@@ -41,9 +47,10 @@ def test_obsidian_frontmatter():
     """Each Obsidian note has YAML frontmatter."""
     out = _tmpdir()
     export.export_obsidian(out, domain="cache")
-    md_files = [f for f in os.listdir(out) if f.endswith(".md") and f != "_Index.md"]
+    domain_dir = os.path.join(out, "cache")
+    md_files = [f for f in os.listdir(domain_dir) if f.endswith(".md") and f != "_Index.md"]
     assert len(md_files) > 0
-    content = open(os.path.join(out, md_files[0]), encoding="utf-8").read()
+    content = open(os.path.join(domain_dir, md_files[0]), encoding="utf-8").read()
     assert content.startswith("---")
     assert "domain: cache" in content
     assert "citation:" in content
@@ -53,13 +60,12 @@ def test_obsidian_wikilinks():
     """Notes with related items contain wikilinks."""
     out = _tmpdir()
     export.export_obsidian(out, domain="pattern")
-    # Check at least one file has wikilinks in body
+    domain_dir = os.path.join(out, "pattern")
     found_wikilink = False
-    for f in os.listdir(out):
+    for f in os.listdir(domain_dir):
         if f == "_Index.md" or not f.endswith(".md"):
             continue
-        content = open(os.path.join(out, f), encoding="utf-8").read()
-        # Split off frontmatter
+        content = open(os.path.join(domain_dir, f), encoding="utf-8").read()
         parts = content.split("---", 2)
         if len(parts) >= 3 and "[[" in parts[2]:
             found_wikilink = True
@@ -151,8 +157,9 @@ def test_all_formats_same_row_count():
     export.export_obsidian(out_obs, domain="messaging")
     export.export_notion(out_not, domain="messaging")
     export.export_org(out_org, domain="messaging")
-    # Obsidian: md files minus _Index.md
-    obs_count = len([f for f in os.listdir(out_obs) if f.endswith(".md") and f != "_Index.md"])
+    # Obsidian: md files in messaging subfolder minus _Index.md
+    msg_dir = os.path.join(out_obs, "messaging")
+    obs_count = len([f for f in os.listdir(msg_dir) if f.endswith(".md") and f != "_Index.md"])
     # Notion: rows in CSV
     with open(os.path.join(out_not, "messaging.csv"), encoding="utf-8") as f:
         not_count = len(list(csv.DictReader(f)))

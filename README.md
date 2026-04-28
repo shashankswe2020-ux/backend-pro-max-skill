@@ -685,7 +685,7 @@ MCP-aware IDE or agent framework can consume all 8 tools natively.
 ### Install
 
 ```bash
-pip install backendpro[mcp]    # adds the mcp SDK as an optional extra
+pip install 'backendpro[mcp]'  # quotes required in zsh; adds the mcp SDK as an optional extra
 ```
 
 > Core `pip install backendpro` still works with zero dependencies — MCP is fully optional.
@@ -709,6 +709,24 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
   }
 }
 ```
+
+> **⚠️ Troubleshooting: "No such file or directory"**
+> If the MCP client can't find `backendpro-mcp`, use the full path instead:
+> ```bash
+> which backendpro-mcp   # find the full path
+> ```
+> Then use it in the config:
+> ```jsonc
+> {
+>   "mcpServers": {
+>     "backendpro": {
+>       "command": "/opt/anaconda3/bin/backendpro-mcp"
+>     }
+>   }
+> }
+> ```
+> This is common when using conda, pyenv, or virtualenvs where the binary
+> isn't on the system PATH that the MCP client inherits.
 
 ### Available MCP tools
 

@@ -14,13 +14,14 @@ from __future__ import annotations
 import argparse
 import csv
 import re
+import json
 from datetime import datetime
 from pathlib import Path
 
 try:
-    from .core import CSV_CONFIG
+    from .core import CSV_CONFIG, BM25
 except ImportError:
-    from core import CSV_CONFIG  # type: ignore[no-redef]
+    from core import CSV_CONFIG, BM25  # type: ignore[no-redef]
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -74,6 +75,8 @@ def _obsidian_frontmatter(domain: str, row: dict[str, str], name_col: str) -> st
     """Generate YAML frontmatter for an Obsidian note."""
     lines = ["---"]
     lines.append(f"domain: {domain}")
+    lines.append(f"tags:")
+    lines.append(f"  - domain/{domain}")
     for k, v in row.items():
         if k == name_col or not v.strip():
             continue
@@ -90,7 +93,8 @@ def _obsidian_frontmatter(domain: str, row: dict[str, str], name_col: str) -> st
     return "\n".join(lines)
 
 
-def _obsidian_body(domain: str, row: dict[str, str], name_col: str) -> str:
+def _obsidian_body(domain: str, row: dict[str, str], name_col: str,
+                   bm25_links: list[tuple[str, float]] | None = None) -> str:
     """Generate the body of an Obsidian note."""
     name = row.get(name_col, "Unknown")
     lines = [f"# {name}", ""]
@@ -102,7 +106,7 @@ def _obsidian_body(domain: str, row: dict[str, str], name_col: str) -> str:
         lines.append(v.strip())
         lines.append("")
 
-    # Add wikilinks for related items
+    # Add wikilinks for related items (use slug for link target, display name as alias)
     related_fields = ("Related Patterns", "Alternatives", "Related")
     for field in related_fields:
         if field in row and row[field].strip():
@@ -110,48 +114,191 @@ def _obsidian_body(domain: str, row: dict[str, str], name_col: str) -> str:
             if items:
                 lines.append("## Related")
                 for item in items:
-                    lines.append(f"- [[{item}]]")
+                    lines.append(f"- [[{_slugify(item)}|{item}]]")
                 lines.append("")
                 break
+
+    # Add BM25-computed cross-domain links
+    if bm25_links:
+        lines.append("## 🔍 BM25 Related")
+        lines.append("> *Auto-generated from BM25 index similarity scores*")
+        lines.append("")
+        for related_slug, score in bm25_links:
+            parts = related_slug.split("/", 1)
+            display_domain = parts[0].replace("-", " ").title() if len(parts) > 1 else ""
+            entry_slug = parts[1] if len(parts) > 1 else parts[0]
+            display_name = entry_slug.replace("-", " ").title()
+            score_pct = min(int(score * 20), 5)  # normalize to 0-5 bars
+            score_bar = "█" * score_pct + "░" * max(0, 5 - score_pct)
+            lines.append(f"- [[{related_slug}|{display_name}]] `{score_bar} {score:.1f}` _{display_domain}_")
+        lines.append("")
 
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------------------
+# BM25 similarity graph
+# ---------------------------------------------------------------------------
+
+def _build_bm25_links(
+    rows: list[tuple[str, str, dict[str, str]]],
+    top_k: int = 5,
+    min_score: float = 0.5,
+) -> dict[str, list[tuple[str, float]]]:
+    """Compute BM25 similarity between all entries → {dom/slug: [(related, score)]}."""
+    slugs: list[str] = []
+    documents: list[str] = []
+    for dom, name_col, row in rows:
+        name = row.get(name_col, "Unknown").strip()
+        if not name:
+            continue
+        slugs.append(f"{dom}/{_slugify(name)}")
+        documents.append(" ".join(v.strip() for v in row.values() if v.strip()))
+
+    if not documents:
+        return {}
+
+    engine = BM25()
+    engine.fit(documents)
+
+    links: dict[str, list[tuple[str, float]]] = {}
+    for i, (dom, name_col, row) in enumerate(rows):
+        name = row.get(name_col, "Unknown").strip()
+        if not name:
+            continue
+        slug = slugs[i]
+        query = name
+        for extra in ("Keywords", "Use Case", "Description"):
+            if row.get(extra, "").strip():
+                query += " " + row[extra].strip()
+                break
+
+        scored = engine.score(query)
+        related: list[tuple[str, float]] = []
+        for idx, score in scored:
+            if idx == i or score < min_score:
+                continue
+            # Prefer cross-domain links
+            related.append((slugs[idx], score))
+            if len(related) >= top_k:
+                break
+        links[slug] = related
+
+    return links
+
+
+# 34 distinct hues spread across the color wheel for domain groups
+_DOMAIN_COLORS = [
+    "#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16",
+    "#22c55e", "#10b981", "#14b8a6", "#06b6d4", "#0ea5e9",
+    "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#d946ef",
+    "#ec4899", "#f43f5e", "#fb923c", "#fbbf24", "#a3e635",
+    "#34d399", "#2dd4bf", "#22d3ee", "#38bdf8", "#818cf8",
+    "#a78bfa", "#c084fc", "#e879f9", "#f472b6", "#fb7185",
+    "#fdba74", "#fcd34d", "#bef264", "#6ee7b7",
+]
+
+
+def _write_obsidian_graph_config(vault_dir: Path, domains: list[str]) -> None:
+    """Write .obsidian/workspace.json with color-coded tag groups per domain."""
+    obsidian_dir = vault_dir / ".obsidian"
+    obsidian_dir.mkdir(parents=True, exist_ok=True)
+
+    groups = []
+    for i, dom in enumerate(domains):
+        color = _DOMAIN_COLORS[i % len(_DOMAIN_COLORS)]
+        rgb = int(color.lstrip("#"), 16)
+        groups.append({
+            "query": f"tag:#domain/{dom}",
+            "color": {"a": 1, "rgb": rgb},
+        })
+
+    # Workspace with a graph leaf that has colorGroups baked in
+    workspace = {
+        "main": {
+            "id": "main",
+            "type": "split",
+            "children": [
+                {
+                    "id": "graph-leaf",
+                    "type": "leaf",
+                    "state": {
+                        "type": "graph",
+                        "state": {
+                            "options": {
+                                "colorGroups": groups,
+                                "showTags": False,
+                                "showOrphans": True,
+                                "showAttachments": False,
+                            }
+                        },
+                    },
+                }
+            ],
+            "direction": "vertical",
+        },
+        "active": "graph-leaf",
+    }
+
+    (obsidian_dir / "workspace.json").write_text(
+        json.dumps(workspace, indent=2), encoding="utf-8"
+    )
+
+
 def export_obsidian(out_dir: str, *, domain: str | None = None) -> dict:
-    """Export KB to an Obsidian vault (one .md per row + _Index.md)."""
+    """Export KB to an Obsidian vault with domain subfolders + _Index.md."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
 
     rows = _all_domain_rows(domain)
     file_count = 0
-    index_entries: dict[str, list[str]] = {}
+    index_entries: dict[str, list[tuple[str, str]]] = {}
+
+    # Build BM25 similarity links across all entries
+    bm25_links = _build_bm25_links(rows)
 
     for dom, name_col, row in rows:
         name = row.get(name_col, "Unknown").strip()
         if not name:
             continue
         slug = _slugify(name)
-        filename = f"{slug}.md"
+        full_slug = f"{dom}/{slug}"
+        dom_dir = out / dom
+        dom_dir.mkdir(parents=True, exist_ok=True)
 
         frontmatter = _obsidian_frontmatter(dom, row, name_col)
-        body = _obsidian_body(dom, row, name_col)
+        entry_links = bm25_links.get(full_slug, [])
+        body = _obsidian_body(dom, row, name_col, bm25_links=entry_links)
         content = f"{frontmatter}\n\n{body}"
 
-        (out / filename).write_text(content, encoding="utf-8")
+        (dom_dir / f"{slug}.md").write_text(content, encoding="utf-8")
         file_count += 1
 
-        index_entries.setdefault(dom, []).append(f"- [[{name}]]")
+        index_entries.setdefault(dom, []).append((slug, name))
 
-    # Generate _Index.md (Map of Content)
+    # Generate per-domain _Index.md inside each folder
+    for dom in sorted(index_entries.keys()):
+        dom_title = dom.replace("-", " ").title()
+        dom_lines = [f"# {dom_title}", ""]
+        for slug, display_name in sorted(index_entries[dom], key=lambda x: x[1]):
+            dom_lines.append(f"- [[{slug}|{display_name}]]")
+        dom_lines.append("")
+        (out / dom / "_Index.md").write_text("\n".join(dom_lines), encoding="utf-8")
+        file_count += 1
+
+    # Generate root _Index.md (Map of Content) linking to domain indexes
     index_lines = ["# Backend Pro Max — Knowledge Base Index", ""]
     for dom in sorted(index_entries.keys()):
-        index_lines.append(f"## {dom.replace('-', ' ').title()}")
-        for entry in sorted(index_entries[dom]):
-            index_lines.append(entry)
-        index_lines.append("")
+        dom_title = dom.replace("-", " ").title()
+        count = len(index_entries[dom])
+        index_lines.append(f"- [[{dom}/_Index|{dom_title}]] ({count} entries)")
+    index_lines.append("")
 
     (out / "_Index.md").write_text("\n".join(index_lines), encoding="utf-8")
     file_count += 1
+
+    # Generate .obsidian/graph.json with color-coded domain groups
+    _write_obsidian_graph_config(out, sorted(index_entries.keys()))
 
     return {"format": "obsidian", "files": file_count, "out_dir": str(out)}
 
