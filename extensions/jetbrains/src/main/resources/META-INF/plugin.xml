@@ -1,0 +1,27 @@
+<idea-plugin>
+    <id>com.backendpro.intellij</id>
+    <name>Backend Pro Max</name>
+    <version>0.1.0</version>
+    <vendor url="https://github.com/shashankswe2020-ux/backend-pro-max-skill">backendpro</vendor>
+
+    <description><![CDATA[
+    Search 30+ backend & distributed-systems knowledge domains from your JetBrains IDE.
+    Requires the backendpro CLI (pip install backendpro).
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <actions>
+        <group id="BackendProGroup" text="Backend Pro Max" popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <action id="BackendPro.Search"
+                    class="com.backendpro.intellij.SearchAction"
+                    text="Search Knowledge Base"
+                    description="Search Backend Pro Max knowledge base"/>
+            <action id="BackendPro.ExplainSelection"
+                    class="com.backendpro.intellij.ExplainSelectionAction"
+                    text="Explain Selection"
+                    description="Explain selected text using Backend Pro Max"/>
+        </group>
+    </actions>
+</idea-plugin>

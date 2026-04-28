@@ -1,0 +1,188 @@
+# Backend Pro Max — Lint Rules
+# Each rule detects an anti-pattern by regex and links to a BPM citation.
+# Format:
+#   id:        Unique rule identifier (BPM-LNNN)
+#   name:      Human-readable rule name
+#   pattern:   Regex pattern to match (applied per-line)
+#   languages: List of file extensions this rule applies to (empty = all)
+#   severity:  error | warning | info
+#   message:   Explanation shown to the developer
+#   fix:       Suggested fix
+#   citation:  BPM citation token
+
+rules:
+  - id: BPM-L001
+    name: Blocking sleep in HTTP handler (Go)
+    pattern: 'time\.Sleep'
+    languages: [go]
+    severity: warning
+    message: "time.Sleep blocks the goroutine in an HTTP handler, causing latency spikes under load."
+    fix: "Use context-aware delays: select { case <-ctx.Done(): ... case <-time.After(d): ... }"
+    citation: "[BPM:performance.sync-over-async]"
+
+  - id: BPM-L002
+    name: Missing context.Context parameter (Go)
+    pattern: 'func\s+\w+\([^)]*\)\s*(?:\([^)]*\)\s*)?{'
+    negative_pattern: 'func\s+\w+\([^)]*ctx\s+context\.Context[^)]*\)'
+    languages: [go]
+    severity: info
+    message: "Public function lacks a context.Context parameter — breaks deadline/cancellation propagation."
+    fix: "Add ctx context.Context as the first parameter."
+    citation: "[BPM:reliability.context-propagation]"
+    match_mode: func_missing
+    description: "Flags Go functions that lack a context.Context parameter."
+
+  - id: BPM-L003
+    name: HTTP request without timeout (Python)
+    pattern: 'requests\.(get|post|put|patch|delete|head|options)\('
+    negative_pattern: 'timeout\s*='
+    languages: [py]
+    severity: error
+    message: "requests call without timeout= can hang indefinitely."
+    fix: "Add timeout=(connect, read), e.g. timeout=(5, 30)."
+    citation: "[BPM:reliability.unbounded-timeout]"
+    match_mode: line_without
+
+  - id: BPM-L004
+    name: Sync HTTP in async function (Python)
+    pattern: 'requests\.(get|post|put|patch|delete|head|options)\('
+    languages: [py]
+    severity: error
+    message: "Synchronous requests.* call inside an async function blocks the event loop."
+    fix: "Use httpx.AsyncClient or aiohttp instead of requests."
+    citation: "[BPM:performance.sync-in-async]"
+    match_mode: async_block
+
+  - id: BPM-L005
+    name: Thread.sleep in Spring controller (Java)
+    pattern: 'Thread\.sleep'
+    languages: [java, kt]
+    severity: warning
+    message: "Thread.sleep in a request handler blocks a servlet thread."
+    fix: "Use CompletableFuture.delayedExecutor, @Async, or reactive delay."
+    citation: "[BPM:performance.blocking-sleep]"
+
+  - id: BPM-L006
+    name: Retry without backoff
+    pattern: 'while.*retr(y|ies)'
+    negative_pattern: 'sleep|delay|backoff|wait|jitter'
+    languages: []
+    severity: warning
+    message: "Retry loop without delay/backoff can cause thundering-herd and resource exhaustion."
+    fix: "Add exponential backoff with jitter between retries."
+    citation: "[BPM:reliability.unbounded-retry]"
+    match_mode: block_without
+
+  - id: BPM-L007
+    name: Secrets in env files
+    pattern: '(?:SECRET\w*|PASSWORD\w*|API_KEY\w*|PRIVATE_KEY\w*|\w*TOKEN)\s*=\s*\S+'
+    languages: [env]
+    severity: error
+    message: "Hardcoded secret in .env file — risk of committing credentials."
+    fix: "Use a secrets manager (Vault, AWS Secrets Manager) or .env.local in .gitignore."
+    citation: "[BPM:security.secrets-in-env]"
+
+  - id: BPM-L008
+    name: POST without idempotency key
+    pattern: '@(Post(Mapping)?|app\.(post|router\.post)|post\()'
+    negative_pattern: 'idempoten'
+    languages: [java, py, ts, js, kt]
+    severity: info
+    message: "POST endpoint without idempotency key check — retries may cause duplicates."
+    fix: "Accept an Idempotency-Key header and deduplicate on the server."
+    citation: "[BPM:reliability.missing-idempotency]"
+    match_mode: block_without
+
+  - id: BPM-L009
+    name: SELECT * in production code
+    pattern: 'SELECT\s+\*\s+FROM'
+    languages: [py, java, go, ts, js, rb, rs, kt]
+    severity: warning
+    message: "SELECT * fetches unnecessary columns, increasing latency and memory."
+    fix: "Explicitly list the columns you need."
+    citation: "[BPM:performance.select-star]"
+
+  - id: BPM-L010
+    name: Bare except clause (Python)
+    pattern: 'except\s*:'
+    languages: [py]
+    severity: warning
+    message: "Bare except catches SystemExit/KeyboardInterrupt — errors are silently swallowed."
+    fix: "Catch specific exceptions: except (ValueError, IOError) as e:"
+    citation: "[BPM:reliability.silent-failure]"
+
+  - id: BPM-L011
+    name: Hardcoded port or host
+    pattern: '(["''])(?:0\.0\.0\.0|127\.0\.0\.1|localhost):\d{4,5}\1'
+    languages: []
+    severity: warning
+    message: "Hardcoded host:port — not configurable across environments."
+    fix: "Read from environment variable or config file."
+    citation: "[BPM:architecture.hardcoded-config]"
+
+  - id: BPM-L012
+    name: console.log left in production code
+    pattern: 'console\.(log|debug|info)\('
+    languages: [ts, js]
+    severity: info
+    message: "console.log left in code — use a structured logger."
+    fix: "Use a structured logger (pino, winston) with log levels."
+    citation: "[BPM:observability.unstructured-logging]"
+
+  - id: BPM-L013
+    name: panic in library code (Go)
+    pattern: '\bpanic\('
+    languages: [go]
+    severity: warning
+    message: "panic in library/handler code crashes the process instead of returning an error."
+    fix: "Return an error instead of panicking."
+    citation: "[BPM:reliability.panic-in-library]"
+
+  - id: BPM-L014
+    name: Unbounded query without LIMIT
+    pattern: '(\.find\(|\.query\(|SELECT\s+)'
+    negative_pattern: 'LIMIT|limit|\.limit\(|\.top\(|\.take\('
+    languages: [py, java, go, ts, js, rb]
+    severity: warning
+    message: "Database query without LIMIT can return unbounded rows, causing OOM."
+    fix: "Always set a LIMIT/pagination on queries that could return large result sets."
+    citation: "[BPM:performance.unbounded-query]"
+    match_mode: line_without
+
+  - id: BPM-L015
+    name: eval() usage
+    pattern: '\beval\s*\('
+    languages: [py, js, ts, rb]
+    severity: error
+    message: "eval() executes arbitrary code — critical injection risk."
+    fix: "Use ast.literal_eval (Python), JSON.parse (JS), or a safe parser."
+    citation: "[BPM:security.code-injection]"
+
+  - id: BPM-L016
+    name: String concatenation in SQL
+    pattern: '(f"[^"]*(?:SELECT|INSERT|UPDATE|DELETE|WHERE)[^"]*{|"[^"]*(?:SELECT|INSERT|UPDATE|DELETE|WHERE)[^"]*"\s*\+|String\.format\([^)]*(?:SELECT|INSERT|UPDATE|DELETE))'
+    languages: [py, java, kt, js, ts]
+    severity: error
+    message: "String interpolation in SQL query — SQL injection risk."
+    fix: "Use parameterized queries or prepared statements."
+    citation: "[BPM:security.sql-injection]"
+
+  - id: BPM-L017
+    name: JWT secret hardcoded
+    pattern: '(jwt|JWT).*secret.*=\s*["\x27][^"\x27]{8,}'
+    languages: [py, js, ts, java, go, rb]
+    severity: error
+    message: "JWT secret appears hardcoded — compromise exposes all tokens."
+    fix: "Load JWT secret from environment variable or secrets manager."
+    citation: "[BPM:security.hardcoded-secrets]"
+
+  - id: BPM-L018
+    name: Missing error handling on channel/promise
+    pattern: '(go\s+func|Promise\.all|\.then\()'
+    negative_pattern: '(recover|\.catch|catch\s*\(|errgroup|ErrGroup)'
+    languages: [go, js, ts]
+    severity: warning
+    message: "Goroutine/Promise without error handling — failures are silently lost."
+    fix: "Go: use errgroup or recover. JS: add .catch() or try/catch with await."
+    citation: "[BPM:reliability.fire-and-forget]"
+    match_mode: block_without

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "backendpro"
-version = "0.5.0"
+version = "0.6.0"
 description = "Backend Pro Max — BM25-searchable backend & distributed-systems engineering intelligence as an AI skill / CLI."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -62,6 +62,9 @@ Issues = "https://github.com/shashankswe2020-ux/backend-pro-max-skill/issues"
 backendpro = "backendpro.scripts.search:main"
 backendpro-validate = "backendpro.scripts.validate:main"
 backendpro-mcp = "backendpro.scripts.mcp_server:main"
+backendpro-lint = "backendpro.scripts.lint:main"
+backendpro-learn = "backendpro.scripts.learn:main"
+backendpro-export = "backendpro.scripts.export:main"
 
 # ------------------------------------------------------------------
 # The on-disk source layout uses a hyphenated directory name
@@ -96,6 +99,7 @@ addopts = "-q"
 [tool.ruff]
 line-length = 110
 target-version = "py38"
+exclude = ["tests/fixtures"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
