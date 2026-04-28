@@ -1,27 +1,27 @@
-Operation,Category,Latency,Order of Magnitude,Hardware Era,Notes,Source URL,Last Updated
-L1 cache reference,CPU,1 ns,nanosecond,Modern (2020+),Per-core; fastest memory access possible,https://www.7-cpu.com/cpu/Zen4.html,2025-01
-L2 cache reference,CPU,4 ns,nanosecond,Modern (2020+),Per-core or shared; 4x L1,https://www.7-cpu.com/cpu/Zen4.html,2025-01
-L3 cache reference,CPU,12 ns,nanosecond,Modern (2020+),Shared across cores; variable by CPU,https://www.7-cpu.com/cpu/Zen4.html,2025-01
-Branch mispredict,CPU,3 ns,nanosecond,Modern (2020+),Pipeline flush penalty; modern CPUs predict 95%+,https://en.wikipedia.org/wiki/Branch_predictor,2025-01
-Mutex lock/unlock,OS,17 ns,nanosecond,Linux 5.x+,Uncontended; contended locks can be microseconds,https://preshing.com/20111124/always-use-a-lightweight-mutex/,2025-01
-Main memory reference (DRAM),Memory,100 ns,nanosecond,DDR5 (2023+),~100ns for DDR5; NUMA remote access ~200ns,https://en.wikipedia.org/wiki/CAS_latency,2025-01
-Context switch (Linux),OS,3-5 μs,microsecond,Linux 5.x+,Thread context switch; process switch is 5-10μs,https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-bandwidths/,2025-01
-Compress 1KB with Snappy,Compression,2 μs,microsecond,Modern (2020+),~500 MB/s throughput; trade ratio for speed,https://github.com/google/snappy,2025-01
-RDMA round trip,Network,2 μs,microsecond,InfiniBand/RoCE,Data center only; requires special NICs,https://en.wikipedia.org/wiki/Remote_direct_memory_access,2025-01
-NVMe SSD random 4KB read,Storage,10 μs,microsecond,Gen4 NVMe (2023+),100K+ IOPS; 10x faster than SATA SSD,https://www.samsung.com/semiconductor/minisite/ssd/product/data-center/pm9a3/,2025-01
-Send 2KB over 1Gbps NIC,Network,16 μs,microsecond,1Gbps Ethernet,Includes kernel overhead; 10Gbps cuts to ~2μs,https://blog.cloudflare.com/how-to-receive-a-million-packets/,2025-01
-NVMe SSD sequential read 1MB,Storage,50 μs,microsecond,Gen4 NVMe (2023+),~7 GB/s sequential throughput,https://www.samsung.com/semiconductor/minisite/ssd/product/data-center/pm9a3/,2025-01
-Redis GET (localhost),Application,100 μs,microsecond,Modern server,Single key; pipelining reduces per-op to <10μs,https://redis.io/docs/management/optimization/benchmarks/,2025-01
-SATA SSD random 4KB read,Storage,100 μs,microsecond,SATA SSD (2020+),10K-75K IOPS; 10x slower than NVMe,https://www.samsung.com/semiconductor/minisite/ssd/product/data-center/,2025-01
-Same-AZ network round trip,Network,0.5 ms,millisecond,AWS/GCP/Azure 2024,Within same availability zone; <1ms typical,https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html,2025-01
-PostgreSQL simple query,Application,0.5 ms,millisecond,Modern server,Simple indexed SELECT; complex queries can be 10-100ms,https://www.postgresql.org/docs/current/monitoring-stats.html,2025-01
-Cross-AZ network round trip,Network,1 ms,millisecond,AWS/GCP/Azure 2024,Between AZs in same region; ~2x same-AZ,https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html,2025-01
-Kafka produce ack (acks=1),Application,2 ms,millisecond,Kafka 3.x,acks=all adds 5-10ms; acks=0 is <1ms,https://kafka.apache.org/documentation/#producerconfigs,2025-01
-HDD seek,Storage,4 ms,millisecond,7200 RPM HDD,100-200 IOPS; still used for cold storage,https://en.wikipedia.org/wiki/Hard_disk_drive_performance_characteristics,2025-01
-TLS handshake,Security,5 ms,millisecond,TLS 1.3 (2024),TLS 1.3 is 1-RTT; TLS 1.2 is 2-RTT; add network latency,https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake/,2025-01
-DynamoDB GetItem,Application,5 ms,millisecond,AWS 2024,Single item by primary key; eventually consistent read,https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html,2025-01
-S3 GET (same region),Application,10-50 ms,millisecond,AWS 2024,First byte latency; varies by object size and storage class,https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance.html,2025-01
-DNS resolution (cold),Network,20-120 ms,millisecond,Internet 2024,Cached DNS is <1ms; cold requires recursive resolution,https://www.cloudflare.com/learning/dns/what-is-dns/,2025-01
-TCP handshake (same AZ),Network,0.5 ms,millisecond,AWS/GCP/Azure 2024,3-way handshake; ~1 RTT; TLS adds another RTT,https://en.wikipedia.org/wiki/Transmission_Control_Protocol#Connection_establishment,2025-01
-Cross-region round trip (US-EU),Network,70 ms,millisecond,Submarine cable 2024,Speed of light in fiber; ~200km/ms; US-EU ~6000km,https://www.submarinecablemap.com/,2025-01
-Cross-region round trip (US-Asia),Network,150 ms,millisecond,Submarine cable 2024,Trans-Pacific; higher variance than US-EU,https://www.submarinecablemap.com/,2025-01
+Operation,Category,Latency,Order of Magnitude,Hardware Era,Notes,Source URL,Last Updated,Source Type
+L1 cache reference,CPU,1 ns,nanosecond,Modern (2020+),Per-core; fastest memory access possible,https://www.7-cpu.com/cpu/Zen4.html,2025-01,
+L2 cache reference,CPU,4 ns,nanosecond,Modern (2020+),Per-core or shared; 4x L1,https://www.7-cpu.com/cpu/Zen4.html,2025-01,
+L3 cache reference,CPU,12 ns,nanosecond,Modern (2020+),Shared across cores; variable by CPU,https://www.7-cpu.com/cpu/Zen4.html,2025-01,
+Branch mispredict,CPU,3 ns,nanosecond,Modern (2020+),Pipeline flush penalty; modern CPUs predict 95%+,https://en.wikipedia.org/wiki/Branch_predictor,2025-01,
+Mutex lock/unlock,OS,17 ns,nanosecond,Linux 5.x+,Uncontended; contended locks can be microseconds,https://preshing.com/20111124/always-use-a-lightweight-mutex/,2025-01,
+Main memory reference (DRAM),Memory,100 ns,nanosecond,DDR5 (2023+),~100ns for DDR5; NUMA remote access ~200ns,https://en.wikipedia.org/wiki/CAS_latency,2025-01,
+Context switch (Linux),OS,3-5 μs,microsecond,Linux 5.x+,Thread context switch; process switch is 5-10μs,https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-bandwidths/,2025-01,
+Compress 1KB with Snappy,Compression,2 μs,microsecond,Modern (2020+),~500 MB/s throughput; trade ratio for speed,https://github.com/google/snappy,2025-01,
+RDMA round trip,Network,2 μs,microsecond,InfiniBand/RoCE,Data center only; requires special NICs,https://en.wikipedia.org/wiki/Remote_direct_memory_access,2025-01,
+NVMe SSD random 4KB read,Storage,10 μs,microsecond,Gen4 NVMe (2023+),100K+ IOPS; 10x faster than SATA SSD,https://www.samsung.com/semiconductor/minisite/ssd/product/data-center/pm9a3/,2025-01,
+Send 2KB over 1Gbps NIC,Network,16 μs,microsecond,1Gbps Ethernet,Includes kernel overhead; 10Gbps cuts to ~2μs,https://blog.cloudflare.com/how-to-receive-a-million-packets/,2025-01,
+NVMe SSD sequential read 1MB,Storage,50 μs,microsecond,Gen4 NVMe (2023+),~7 GB/s sequential throughput,https://www.samsung.com/semiconductor/minisite/ssd/product/data-center/pm9a3/,2025-01,
+Redis GET (localhost),Application,100 μs,microsecond,Modern server,Single key; pipelining reduces per-op to <10μs,https://redis.io/docs/management/optimization/benchmarks/,2025-01,
+SATA SSD random 4KB read,Storage,100 μs,microsecond,SATA SSD (2020+),10K-75K IOPS; 10x slower than NVMe,https://www.samsung.com/semiconductor/minisite/ssd/product/data-center/,2025-01,
+Same-AZ network round trip,Network,0.5 ms,millisecond,AWS/GCP/Azure 2024,Within same availability zone; <1ms typical,https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html,2025-01,
+PostgreSQL simple query,Application,0.5 ms,millisecond,Modern server,Simple indexed SELECT; complex queries can be 10-100ms,https://www.postgresql.org/docs/current/monitoring-stats.html,2025-01,
+Cross-AZ network round trip,Network,1 ms,millisecond,AWS/GCP/Azure 2024,Between AZs in same region; ~2x same-AZ,https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html,2025-01,
+Kafka produce ack (acks=1),Application,2 ms,millisecond,Kafka 3.x,acks=all adds 5-10ms; acks=0 is <1ms,https://kafka.apache.org/documentation/#producerconfigs,2025-01,
+HDD seek,Storage,4 ms,millisecond,7200 RPM HDD,100-200 IOPS; still used for cold storage,https://en.wikipedia.org/wiki/Hard_disk_drive_performance_characteristics,2025-01,
+TLS handshake,Security,5 ms,millisecond,TLS 1.3 (2024),TLS 1.3 is 1-RTT; TLS 1.2 is 2-RTT; add network latency,https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake/,2025-01,
+DynamoDB GetItem,Application,5 ms,millisecond,AWS 2024,Single item by primary key; eventually consistent read,https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html,2025-01,
+S3 GET (same region),Application,10-50 ms,millisecond,AWS 2024,First byte latency; varies by object size and storage class,https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance.html,2025-01,
+DNS resolution (cold),Network,20-120 ms,millisecond,Internet 2024,Cached DNS is <1ms; cold requires recursive resolution,https://www.cloudflare.com/learning/dns/what-is-dns/,2025-01,
+TCP handshake (same AZ),Network,0.5 ms,millisecond,AWS/GCP/Azure 2024,3-way handshake; ~1 RTT; TLS adds another RTT,https://en.wikipedia.org/wiki/Transmission_Control_Protocol#Connection_establishment,2025-01,
+Cross-region round trip (US-EU),Network,70 ms,millisecond,Submarine cable 2024,Speed of light in fiber; ~200km/ms; US-EU ~6000km,https://www.submarinecablemap.com/,2025-01,
+Cross-region round trip (US-Asia),Network,150 ms,millisecond,Submarine cable 2024,Trans-Pacific; higher variance than US-EU,https://www.submarinecablemap.com/,2025-01,

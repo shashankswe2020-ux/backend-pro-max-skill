@@ -43,6 +43,7 @@ CSV_CONFIG = {
             "Name", "Paradigms", "Typing", "Concurrency Model", "Performance Tier",
             "Strengths", "Weaknesses", "Use Case", "Notable Frameworks", "Ecosystem",
             "Build Tooling", "Package Manager", "Testing Tooling", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "pattern": {
@@ -50,8 +51,8 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Problem", "Keywords", "When to Use"],
         "output_cols": [
             "Name", "Category", "Problem", "Solution", "When to Use",
-            "When NOT to Use", "Trade-offs", "Related Patterns", "Reference",
-            "Last Updated",
+            "When NOT to Use", "Trade-offs", "Related Patterns", "Source URL",
+            "Source Type", "Last Updated",
         ],
     },
     "database": {
@@ -62,7 +63,7 @@ CSV_CONFIG = {
             "Sharding", "Use Case", "Strengths", "Weaknesses", "Typical Latency",
             "Operational Cost", "Cloud Managed Options", "Notes",
             "Throughput Tier", "Latency Tier", "Consistency Tier", "Cost Tier",
-            "Cloud Native",
+            "Cloud Native", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "messaging": {
@@ -73,7 +74,7 @@ CSV_CONFIG = {
             "Persistence", "Replay", "Use Case", "Strengths", "Weaknesses",
             "Cloud Managed Options", "Notes",
             "Throughput Tier", "Latency Tier", "Consistency Tier", "Cost Tier",
-            "Cloud Native",
+            "Cloud Native", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "cache": {
@@ -83,7 +84,7 @@ CSV_CONFIG = {
             "Name", "Strategy", "Topology", "Eviction", "Consistency",
             "Use Case", "Strengths", "Weaknesses", "Pitfalls", "Notes",
             "Throughput Tier", "Latency Tier", "Consistency Tier", "Cost Tier",
-            "Cloud Native",
+            "Cloud Native", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "cloud": {
@@ -92,7 +93,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Service", "Provider", "Category", "Equivalent AWS", "Equivalent GCP",
             "Equivalent Azure", "Use Case", "Strengths", "Weaknesses", "Pricing Model",
-            "Notes",
+            "Notes", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "iac": {
@@ -101,6 +102,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Category", "Language", "Provider Coverage", "State Management",
             "Strengths", "Weaknesses", "Use Case", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "container": {
@@ -109,6 +111,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Category", "Layer", "Use Case", "Strengths", "Weaknesses",
             "Alternatives", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "observability": {
@@ -117,6 +120,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Tool", "Signal", "Type", "Open Source", "Use Case", "Strengths",
             "Weaknesses", "Integrations", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "api": {
@@ -126,6 +130,7 @@ CSV_CONFIG = {
             "Style", "Transport", "Schema", "Streaming", "Browser Friendly",
             "Backwards Compatibility", "Use Case", "Strengths", "Weaknesses",
             "Tooling", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "auth": {
@@ -134,6 +139,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Category", "Token Type", "Use Case", "Strengths", "Weaknesses",
             "Common Pitfalls", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "security": {
@@ -141,7 +147,7 @@ CSV_CONFIG = {
         "search_cols": ["Topic", "Category", "Threat", "Keywords"],
         "output_cols": [
             "Topic", "Category", "Threat", "Mitigation", "Do", "Don't",
-            "Tooling", "Severity", "Reference",
+            "Tooling", "Severity", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "cicd": {
@@ -150,6 +156,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Tool", "Category", "Hosting", "Use Case", "Strengths", "Weaknesses",
             "Notable Features", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "testing": {
@@ -158,6 +165,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Level", "Use Case", "Strengths", "Weaknesses", "Tooling",
             "Pitfalls", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "architecture": {
@@ -166,6 +174,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Category", "When to Use", "When NOT to Use", "Strengths",
             "Weaknesses", "Team Size", "Operational Cost", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "scaling": {
@@ -174,6 +183,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Technique", "Category", "Layer", "Use Case", "Strengths", "Weaknesses",
             "Pitfalls", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "consistency": {
@@ -182,6 +192,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Model", "Category", "Guarantees", "Use Case", "Strengths", "Weaknesses",
             "Algorithms", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "performance": {
@@ -190,6 +201,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Topic", "Category", "Symptom", "Root Cause", "Fix", "Tooling",
             "Severity", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "reliability": {
@@ -198,6 +210,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Topic", "Category", "Failure Mode", "Mitigation", "Do", "Don't",
             "Metric", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "data": {
@@ -206,6 +219,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Category", "Workload", "Use Case", "Strengths", "Weaknesses",
             "Tooling", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "antipattern": {
@@ -213,7 +227,7 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Symptom", "Root Cause", "Keywords"],
         "output_cols": [
             "Name", "Category", "Symptom", "Root Cause", "Why It's Tempting",
-            "Fix", "Related Patterns", "Severity", "Last Updated",
+            "Fix", "Related Patterns", "Severity", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "cost": {
@@ -221,7 +235,7 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Cloud", "Service", "Cost Driver", "Mitigation"],
         "output_cols": [
             "Name", "Category", "Cloud", "Service", "Cost Driver", "Mitigation",
-            "Order of Magnitude", "Gotcha", "Source URL", "Last Updated",
+            "Order of Magnitude", "Gotcha", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "migration": {
@@ -229,7 +243,7 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Strategy", "From", "To", "Risk"],
         "output_cols": [
             "Name", "Category", "Strategy", "From", "To", "Risk", "Rollback Plan",
-            "Duration Estimate", "Gotcha", "Related Patterns", "Source URL", "Last Updated",
+            "Duration Estimate", "Gotcha", "Related Patterns", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "incident": {
@@ -237,7 +251,7 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Severity", "Symptom", "Root Cause", "Mitigation"],
         "output_cols": [
             "Name", "Category", "Severity", "Symptom", "Root Cause", "Mitigation",
-            "Communication Template", "Postmortem Checklist", "Source URL", "Last Updated",
+            "Communication Template", "Postmortem Checklist", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "capacity": {
@@ -245,7 +259,7 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Formula", "Inputs", "Rule of Thumb"],
         "output_cols": [
             "Name", "Category", "Formula", "Inputs", "Example Calculation",
-            "Rule of Thumb", "Gotcha", "Source URL", "Last Updated",
+            "Rule of Thumb", "Gotcha", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "compliance": {
@@ -253,7 +267,7 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Standard", "Category", "Engineering Requirement", "Verification Method"],
         "output_cols": [
             "Name", "Standard", "Category", "Engineering Requirement", "Verification Method",
-            "Gotcha", "Penalty", "Source URL", "Last Updated",
+            "Gotcha", "Penalty", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "multi-tenant": {
@@ -261,7 +275,7 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Strategy", "Isolation Level", "Strengths", "Weaknesses"],
         "output_cols": [
             "Name", "Category", "Strategy", "Isolation Level", "Strengths", "Weaknesses",
-            "When to Use", "Gotcha", "Source URL", "Last Updated",
+            "When to Use", "Gotcha", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "release": {
@@ -269,7 +283,7 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Strategy", "Risk", "Tooling"],
         "output_cols": [
             "Name", "Category", "Strategy", "Risk", "Rollback Time", "Blast Radius",
-            "Tooling", "Gotcha", "Source URL", "Last Updated",
+            "Tooling", "Gotcha", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "ml-platform": {
@@ -277,7 +291,7 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Use Case", "Strengths", "Alternatives"],
         "output_cols": [
             "Name", "Category", "Use Case", "Strengths", "Weaknesses",
-            "Alternatives", "Gotcha", "Source URL", "Last Updated",
+            "Alternatives", "Gotcha", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "edge": {
@@ -285,7 +299,7 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Runtime", "Use Case", "Strengths"],
         "output_cols": [
             "Name", "Category", "Runtime", "Use Case", "Strengths", "Weaknesses",
-            "Consistency Model", "Gotcha", "Source URL", "Last Updated",
+            "Consistency Model", "Gotcha", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "mobile-backend": {
@@ -293,7 +307,7 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Pattern", "Use Case", "Strengths"],
         "output_cols": [
             "Name", "Category", "Pattern", "Use Case", "Strengths", "Weaknesses",
-            "Gotcha", "Source URL", "Last Updated",
+            "Gotcha", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "api-contract": {
@@ -301,7 +315,7 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Strategy", "Tooling", "Strengths"],
         "output_cols": [
             "Name", "Category", "Strategy", "Tooling", "Strengths", "Weaknesses",
-            "When to Use", "Gotcha", "Source URL", "Last Updated",
+            "When to Use", "Gotcha", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "interview": {
@@ -309,7 +323,7 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Level", "Key Signals", "Common Mistakes"],
         "output_cols": [
             "Name", "Category", "Level", "Key Signals", "Common Mistakes",
-            "Evaluation Criteria", "Source URL", "Last Updated",
+            "Evaluation Criteria", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "latency": {
@@ -317,7 +331,7 @@ CSV_CONFIG = {
         "search_cols": ["Operation", "Category", "Latency", "Notes", "Hardware Era"],
         "output_cols": [
             "Operation", "Category", "Latency", "Order of Magnitude",
-            "Hardware Era", "Notes", "Source URL", "Last Updated",
+            "Hardware Era", "Notes", "Source URL", "Source Type", "Last Updated",
         ],
     },
 }
@@ -341,7 +355,8 @@ STACK_CONFIG = {
 _STACK_COLS = {
     "search_cols": ["Category", "Guideline", "Description", "Do", "Don't"],
     "output_cols": ["Category", "Guideline", "Description", "Do", "Don't",
-                    "Code Good", "Code Bad", "Severity", "Docs URL"],
+                    "Code Good", "Code Bad", "Severity", "Docs URL",
+                    "Source URL", "Last Updated"],
 }
 
 AVAILABLE_STACKS = list(STACK_CONFIG.keys())

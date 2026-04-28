@@ -22,6 +22,7 @@ import sys
 
 try:
     from .calc import CALCULATORS, format_calc_result
+    from .conflicts import format_tensions, format_tensions_json, scan_conflicts
     from .core import (
         AVAILABLE_STACKS,
         CSV_CONFIG,
@@ -47,6 +48,7 @@ try:
     from .templates import format_by_intent
 except ImportError:
     from calc import CALCULATORS, format_calc_result  # type: ignore[no-redef]
+    from conflicts import format_tensions, format_tensions_json, scan_conflicts  # type: ignore[no-redef]
     from core import (  # type: ignore[no-redef]
         AVAILABLE_STACKS,
         CSV_CONFIG,
@@ -423,6 +425,10 @@ def _build_parser():
                         help="Search engine: bm25 (default), hybrid (BM25+embeddings), semantic")
     parser.add_argument("--rerank", action="store_true",
                         help="Re-rank BM25 results with a cross-encoder (requires backendpro[rerank])")
+    parser.add_argument("--show-provenance", action="store_true",
+                        help="Include provenance fields (Added By, Version) in output")
+    parser.add_argument("--conflicts", action="store_true",
+                        help="Run conflict/tension detector across domains")
     return parser
 
 
@@ -474,6 +480,9 @@ def main():
     if raw_args and raw_args[0] == "calc":
         _handle_calc(raw_args[1:])
         return
+    if raw_args and raw_args[0] == "conflicts":
+        # Rewrite as --conflicts so argparse handles it
+        sys.argv = [sys.argv[0], "--conflicts"] + raw_args[1:]
 
     parser = _build_parser()
     args = parser.parse_args()
@@ -491,6 +500,14 @@ def main():
             parser.error("--stale requires --domain and --max-age-months")
         result = find_stale(args.domain, args.max_age_months)
         print(json.dumps(result, indent=2, ensure_ascii=False) if args.json else format_stale(result))
+        return
+
+    if args.conflicts:
+        tensions = scan_conflicts(domain=args.domain)
+        if args.json:
+            print(format_tensions_json(tensions))
+        else:
+            print(format_tensions(tensions))
         return
 
     if args.decide:
