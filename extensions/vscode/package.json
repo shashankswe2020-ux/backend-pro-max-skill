@@ -1,0 +1,108 @@
+{
+  "name": "backendpro",
+  "displayName": "Backend Pro Max",
+  "description": "Search backend & distributed-systems knowledge bases — anti-patterns, databases, messaging, caching, architecture, and 30+ domains. Powered by BPM25 search.",
+  "version": "0.1.0",
+  "publisher": "backendpro",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shashankswe2020-ux/backend-pro-max-skill"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Education",
+    "Linters"
+  ],
+  "keywords": [
+    "backend",
+    "distributed-systems",
+    "architecture",
+    "knowledge-base",
+    "best-practices"
+  ],
+  "icon": "images/icon.png",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "backendpro.search",
+        "title": "Backend Pro Max: Search"
+      },
+      {
+        "command": "backendpro.explainSelection",
+        "title": "Backend Pro Max: Explain Selection"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "backendpro.explainSelection",
+          "when": "editorHasSelection",
+          "group": "backendpro"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Backend Pro Max",
+      "properties": {
+        "backendpro.path": {
+          "type": "string",
+          "default": "backendpro",
+          "description": "Path to the backendpro CLI executable."
+        },
+        "backendpro.defaultDomain": {
+          "type": "string",
+          "default": "",
+          "description": "Default domain filter for searches (empty = auto-detect)."
+        },
+        "backendpro.useMcp": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use MCP server (backendpro-mcp) instead of CLI for searches."
+        },
+        "backendpro.mcpCommand": {
+          "type": "string",
+          "default": "backendpro-mcp",
+          "description": "Command to start the MCP server (stdio transport)."
+        },
+        "backendpro.codeLens.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show CodeLens with stack guidelines for supported file types."
+        },
+        "backendpro.codeLens.maxResults": {
+          "type": "number",
+          "default": 3,
+          "description": "Maximum number of CodeLens results per file."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "npx @vscode/vsce package"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.3.8",
+    "@vscode/vsce": "^2.22.0",
+    "eslint": "^8.56.0",
+    "glob": "^13.0.6",
+    "mocha": "^10.2.0",
+    "typescript": "^5.3.3"
+  }
+}
