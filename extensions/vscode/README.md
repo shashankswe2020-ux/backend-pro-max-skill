@@ -21,7 +21,7 @@ Search 30+ backend & distributed-systems knowledge domains directly from your ed
 | `backendpro.path` | `backendpro` | Path to the CLI executable |
 | `backendpro.defaultDomain` | (empty) | Default domain filter |
 | `backendpro.useMcp` | `false` | Use MCP server instead of CLI |
-| `backendpro.mcpCommand` | `backendpro-mcp` | MCP server command |
+| `backendpro.mcpCommand` | `backendpro-mcp` | MCP server command (use full path if not on system PATH, e.g. `/opt/anaconda3/bin/backendpro-mcp`) |
 | `backendpro.codeLens.enabled` | `true` | Show CodeLens guidelines |
 | `backendpro.codeLens.maxResults` | `3` | Max CodeLens entries |
 
