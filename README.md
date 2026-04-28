@@ -15,7 +15,7 @@ Cursor, Windsurf, GitHub Copilot, Gemini, Continue, or any AI assistant.
 
 [![PyPI](https://img.shields.io/pypi/v/backendpro?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/backendpro/)
 [![CI](https://img.shields.io/github/actions/workflow/status/shashankswe2020-ux/backend-pro-max-skill/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/shashankswe2020-ux/backend-pro-max-skill/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-332_passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
+[![Tests](https://img.shields.io/badge/tests-390_passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
 [![34 Domains](https://img.shields.io/badge/domains-34-blue?style=for-the-badge)](#-domains)
 [![12 Stacks](https://img.shields.io/badge/stacks-12-purple?style=for-the-badge)](#-stacks)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-yellow?style=for-the-badge&logo=python&logoColor=white)](#-prerequisites)
@@ -79,11 +79,16 @@ model is *instructed* to consult — so its advice cites a row, not a vibe.
 | 🔌 **MCP server** | `pip install backendpro[mcp]` → 8 tools on stdio, works with Claude Desktop, Cline, Cursor, Zed |
 | 📎 **Citation tokens** | Every result carries `[BPM:domain.slug]` — greppable provenance for PR review |
 | 📡 **JSONL streaming** | `--jsonl` for agent loops that consume results incrementally |
-| ✅ **CI-enforced** | `backendpro-validate` schema-checks every CSV; 332 pytest cases run on Py 3.9 / 3.11 / 3.12 |
+| ✅ **CI-enforced** | `backendpro-validate` schema-checks every CSV; 390 pytest cases run on Py 3.9 / 3.11 / 3.12 |
 | 🔗 **100% source citations** | Every row carries `Source URL`, `Source Type`, `Last Updated` — official docs, RFCs, papers, OWASP. `--strict` mode fails on gaps |
 | ⚠️ **Conflict detector** | `backendpro conflicts` surfaces 12 architectural tensions (retry vs latency, cache vs consistency, etc.) with citation tokens |
 | 🕐 **Auto-freshness audit** | Weekly GitHub Action flags stale rows (>18mo) and broken URLs. `--check-urls` for local runs |
 | 📜 **Provenance tracking** | Git-blame-based `Added By` + `Version` columns. `--show-provenance` flag in search output |
+| 🔍 **`backendpro lint`** | Scans source files for 18 backend anti-patterns (missing timeouts, sync-in-async, secrets in .env, SQL injection, etc.). Human, JSON, and SARIF output. Pre-commit hook + GitHub Action included |
+| 📤 **`backendpro export`** | Export the entire KB to Obsidian (wikilinks + MOC), Notion CSV, or Org-mode. `--domain` filter |
+| 🧠 **`backendpro learn`** | Spaced-repetition flashcards (SM-2 algorithm) from the KB. `--domain`, `--daily N`, `--stats`, `--reset` |
+| 💻 **VS Code extension** | Search, Explain Selection (right-click), CodeLens stack guidelines. CLI or MCP mode. `extensions/vscode/` |
+| 🌐 **Web playground** | [backendpro.cc](https://backendpro.cc) — search-as-you-type, domain filter, permalinks, compare view. Zero backend |
 
 ---
 
@@ -511,20 +516,36 @@ See [`CLAUDE.md`](CLAUDE.md) for the full layout. TL;DR:
 
 ```
 src/backend-pro-max/
-├── data/                       # 21 domain CSVs + stacks/ (12 stack CSVs)
+├── data/                       # 34 domain CSVs + stacks/ (12 stack CSVs)
 │   ├── languages.csv  patterns.csv  databases.csv  messaging.csv …
 │   └── stacks/
 │       └── go.csv  java-spring.csv  python-fastapi.csv  …
 ├── scripts/
 │   ├── core.py                 # BM25 engine + domain auto-detection
-│   └── search.py               # CLI entry point
+│   ├── search.py               # CLI entry point
+│   ├── lint.py                 # Anti-pattern linter (18 rules)
+│   ├── export.py               # Obsidian / Notion / Org-mode export
+│   ├── learn.py                # SM-2 spaced-repetition flashcards
+│   ├── calc.py                 # Back-of-envelope calculators
+│   ├── conflicts.py            # Architectural tension detector
+│   ├── freshness.py            # Stale-row & URL-health checker
+│   └── provenance.py           # Git-blame provenance populator
 └── templates/base/
     ├── skill-content.md        # Drop-in rules for any AI assistant
     └── quick-reference.md      # Cheatsheet
 
-.claude/skills/backend-pro-max/  # Claude Code skill (SKILL.md)
-.claude-plugin/plugin.json       # Claude marketplace manifest
-docs/                            # ARCHITECTURE.md & USAGE.md
+extensions/
+├── vscode/                     # VS Code extension (TypeScript)
+│   ├── src/extension.ts        # Commands, CodeLens, MCP client
+│   └── package.json            # Marketplace metadata + settings
+└── jetbrains/                  # JetBrains plugin stub (Java)
+    └── src/main/resources/META-INF/plugin.xml
+
+lint-rules.yml                  # 18 lint rules with BPM citations
+.pre-commit-hooks.yaml          # Pre-commit framework integration
+.github/actions/lint/action.yml # GitHub Action for SARIF upload
+.claude/skills/backend-pro-max/ # Claude Code skill (SKILL.md)
+docs/                           # ARCHITECTURE.md & USAGE.md
 ```
 
 ### Visual architecture
@@ -632,6 +653,14 @@ backendpro adr "Redis vs Memcached for session cache on AWS"
 backendpro design "Postgres vs DynamoDB for 50M DAU e-commerce"
 backendpro-validate                       # ✅ All CSVs valid (21 domains + 12 stacks).
 
+# v0.6 DX tools
+backendpro lint src/                                        # scan for anti-patterns
+backendpro lint src/ --format sarif                         # SARIF for GitHub Code Scanning
+backendpro export --format obsidian --out /tmp/bpm-vault    # export to Obsidian vault
+backendpro export --format notion --out /tmp/notion         # export to Notion CSV
+backendpro learn --domain consistency --daily 5             # spaced-repetition flashcards
+backendpro learn --stats                                    # learning progress
+
 # Or, without installing
 python3 src/backend-pro-max/scripts/search.py --list
 python3 src/backend-pro-max/scripts/search.py "circuit breaker"
@@ -641,7 +670,7 @@ python3 src/backend-pro-max/scripts/search.py "circuit breaker"
 
 ```bash
 pip install -e ".[dev]"
-pytest                                    # 148 tests
+pytest                                    # 390 tests
 ruff check src tests                      # lint
 backendpro-validate                       # schema validation
 ```
@@ -731,7 +760,75 @@ npx @modelcontextprotocol/inspector backendpro-mcp
 
 ---
 
-## �🧱 Extending
+## 🛡️ DX & Distribution (v0.6)
+
+Five features that turn the knowledge base into an **active developer tool**:
+
+### Linter (`backendpro lint`)
+
+Scan source files for backend anti-patterns — 18 rules across Go, Python, Java, TypeScript, and .env files. Each finding links to a BPM citation.
+
+```bash
+backendpro lint src/                             # human-readable output
+backendpro lint src/ --format json               # machine-readable
+backendpro lint src/ --format sarif              # GitHub Code Scanning
+backendpro lint src/ --severity error            # errors only
+```
+
+**Pre-commit:** Add to `.pre-commit-config.yaml`:
+```yaml
+repos:
+  - repo: https://github.com/shashankswe2020-ux/backend-pro-max-skill
+    rev: v0.6.0
+    hooks:
+      - id: backendpro-lint
+```
+
+**GitHub Action:** Use `.github/actions/lint/action.yml` to upload SARIF inline annotations.
+
+### Export (`backendpro export`)
+
+Export the KB to your preferred knowledge management tool:
+
+```bash
+backendpro export --format obsidian --out ./vault     # Obsidian vault with wikilinks + _Index.md
+backendpro export --format notion --out ./notion       # Notion-importable CSVs
+backendpro export --format org --out ./org             # Org-mode files
+backendpro export --format obsidian --domain cache --out ./vault  # single domain
+```
+
+### Learn Mode (`backendpro learn`)
+
+Spaced-repetition flashcards (SM-2 algorithm) generated from the KB:
+
+```bash
+backendpro learn --domain consistency --daily 5   # 5 flashcards from consistency domain
+backendpro learn --stats                          # learning progress
+backendpro learn --reset                          # start over
+```
+
+### VS Code Extension
+
+Install from `extensions/vscode/`:
+
+```bash
+cd extensions/vscode && npm install && npm run compile
+npx @vscode/vsce package    # produces .vsix
+code --install-extension backendpro-*.vsix
+```
+
+- **Cmd+Shift+P → "Backend Pro Max: Search"** — query the KB from VS Code
+- **Right-click → "Explain with Backend Pro Max"** — explain selected text
+- **CodeLens** — stack guidelines shown at top of Go, Python, Java, TS, Rust files
+- **MCP mode** — set `backendpro.useMcp: true` to use `backendpro-mcp` instead of CLI
+
+### Web Playground
+
+Live at [**backendpro.cc**](https://backendpro.cc) — search-as-you-type, domain filter, shareable permalinks, compare view. Zero backend.
+
+---
+
+## 🧱 Extending
 
 Adding a new row, a new domain, or a new stack takes ~2 minutes.
 

@@ -99,6 +99,7 @@ addopts = "-q"
 [tool.ruff]
 line-length = 110
 target-version = "py38"
+exclude = ["tests/fixtures"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
