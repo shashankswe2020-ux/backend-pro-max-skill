@@ -7,15 +7,16 @@
 ### *A staff-engineer-in-a-box for your AI coding assistant*
 
 **Curated, BM25-searchable backend & distributed-systems intelligence**
-across **21 domains** and **12 language stacks** — drop it into Claude Code,
+across **34 domains** and **12 language stacks** — every row sourced,
+auditable, and freshness-tracked. Drop it into Claude Code,
 Cursor, Windsurf, GitHub Copilot, Gemini, Continue, or any AI assistant.
 
 <br />
 
 [![PyPI](https://img.shields.io/pypi/v/backendpro?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/backendpro/)
 [![CI](https://img.shields.io/github/actions/workflow/status/shashankswe2020-ux/backend-pro-max-skill/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/shashankswe2020-ux/backend-pro-max-skill/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-196_passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
-[![21 Domains](https://img.shields.io/badge/domains-21-blue?style=for-the-badge)](#-domains)
+[![Tests](https://img.shields.io/badge/tests-332_passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
+[![34 Domains](https://img.shields.io/badge/domains-34-blue?style=for-the-badge)](#-domains)
 [![12 Stacks](https://img.shields.io/badge/stacks-12-purple?style=for-the-badge)](#-stacks)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-yellow?style=for-the-badge&logo=python&logoColor=white)](#-prerequisites)
 [![Zero Dependencies](https://img.shields.io/badge/deps-stdlib_only-orange?style=for-the-badge)](#-prerequisites)
@@ -59,7 +60,7 @@ model is *instructed* to consult — so its advice cites a row, not a vibe.
 
 | | |
 |---|---|
-| 📚 **21 domain knowledge bases** | Languages · Patterns · Databases · Messaging · Cache · Cloud · IaC · Containers · Observability · API · Auth · Security · CI/CD · Testing · Architecture · Scaling · Consistency · Performance · Reliability · Data · Anti-patterns |
+| 📚 **34 domain knowledge bases** | Languages · Patterns · Databases · Messaging · Cache · Cloud · IaC · Containers · Observability · API · Auth · Security · CI/CD · Testing · Architecture · Scaling · Consistency · Performance · Reliability · Data · Anti-patterns · Cost · Migration · Incident · Capacity · Compliance · Multi-tenant · Release · ML Platform · Edge · Mobile Backend · API Contract · Interview · Latency Numbers |
 | 🛠️ **12 stack guidelines** | Go · Java/Spring · Python/FastAPI · Node/Express · Rust/Axum · C#/ASP.NET · Kotlin/Spring · Scala/Akka · Elixir/Phoenix · Ruby/Rails · PHP/Laravel · C++ |
 | 🔎 **Pure-Python BM25 + synonyms** | No installs, no models, no network — `partial failure` → finds `Saga` / `Circuit Breaker` automatically |
 | ⚖️ **`compare` mode** | `backendpro compare "Kafka" "RabbitMQ" --domain messaging` → side-by-side markdown table for ADRs |
@@ -78,7 +79,11 @@ model is *instructed* to consult — so its advice cites a row, not a vibe.
 | 🔌 **MCP server** | `pip install backendpro[mcp]` → 8 tools on stdio, works with Claude Desktop, Cline, Cursor, Zed |
 | 📎 **Citation tokens** | Every result carries `[BPM:domain.slug]` — greppable provenance for PR review |
 | 📡 **JSONL streaming** | `--jsonl` for agent loops that consume results incrementally |
-| ✅ **CI-enforced** | `backendpro-validate` schema-checks every CSV; 196 pytest cases run on Py 3.9 / 3.11 / 3.12 |
+| ✅ **CI-enforced** | `backendpro-validate` schema-checks every CSV; 332 pytest cases run on Py 3.9 / 3.11 / 3.12 |
+| 🔗 **100% source citations** | Every row carries `Source URL`, `Source Type`, `Last Updated` — official docs, RFCs, papers, OWASP. `--strict` mode fails on gaps |
+| ⚠️ **Conflict detector** | `backendpro conflicts` surfaces 12 architectural tensions (retry vs latency, cache vs consistency, etc.) with citation tokens |
+| 🕐 **Auto-freshness audit** | Weekly GitHub Action flags stale rows (>18mo) and broken URLs. `--check-urls` for local runs |
+| 📜 **Provenance tracking** | Git-blame-based `Added By` + `Version` columns. `--show-provenance` flag in search output |
 
 ---
 

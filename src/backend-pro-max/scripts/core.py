@@ -43,6 +43,7 @@ CSV_CONFIG = {
             "Name", "Paradigms", "Typing", "Concurrency Model", "Performance Tier",
             "Strengths", "Weaknesses", "Use Case", "Notable Frameworks", "Ecosystem",
             "Build Tooling", "Package Manager", "Testing Tooling", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "pattern": {
@@ -50,8 +51,8 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Problem", "Keywords", "When to Use"],
         "output_cols": [
             "Name", "Category", "Problem", "Solution", "When to Use",
-            "When NOT to Use", "Trade-offs", "Related Patterns", "Reference",
-            "Last Updated",
+            "When NOT to Use", "Trade-offs", "Related Patterns", "Source URL",
+            "Source Type", "Last Updated",
         ],
     },
     "database": {
@@ -62,7 +63,7 @@ CSV_CONFIG = {
             "Sharding", "Use Case", "Strengths", "Weaknesses", "Typical Latency",
             "Operational Cost", "Cloud Managed Options", "Notes",
             "Throughput Tier", "Latency Tier", "Consistency Tier", "Cost Tier",
-            "Cloud Native",
+            "Cloud Native", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "messaging": {
@@ -73,7 +74,7 @@ CSV_CONFIG = {
             "Persistence", "Replay", "Use Case", "Strengths", "Weaknesses",
             "Cloud Managed Options", "Notes",
             "Throughput Tier", "Latency Tier", "Consistency Tier", "Cost Tier",
-            "Cloud Native",
+            "Cloud Native", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "cache": {
@@ -83,7 +84,7 @@ CSV_CONFIG = {
             "Name", "Strategy", "Topology", "Eviction", "Consistency",
             "Use Case", "Strengths", "Weaknesses", "Pitfalls", "Notes",
             "Throughput Tier", "Latency Tier", "Consistency Tier", "Cost Tier",
-            "Cloud Native",
+            "Cloud Native", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "cloud": {
@@ -92,7 +93,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Service", "Provider", "Category", "Equivalent AWS", "Equivalent GCP",
             "Equivalent Azure", "Use Case", "Strengths", "Weaknesses", "Pricing Model",
-            "Notes",
+            "Notes", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "iac": {
@@ -101,6 +102,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Category", "Language", "Provider Coverage", "State Management",
             "Strengths", "Weaknesses", "Use Case", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "container": {
@@ -109,6 +111,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Category", "Layer", "Use Case", "Strengths", "Weaknesses",
             "Alternatives", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "observability": {
@@ -117,6 +120,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Tool", "Signal", "Type", "Open Source", "Use Case", "Strengths",
             "Weaknesses", "Integrations", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "api": {
@@ -126,6 +130,7 @@ CSV_CONFIG = {
             "Style", "Transport", "Schema", "Streaming", "Browser Friendly",
             "Backwards Compatibility", "Use Case", "Strengths", "Weaknesses",
             "Tooling", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "auth": {
@@ -134,6 +139,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Category", "Token Type", "Use Case", "Strengths", "Weaknesses",
             "Common Pitfalls", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "security": {
@@ -141,7 +147,7 @@ CSV_CONFIG = {
         "search_cols": ["Topic", "Category", "Threat", "Keywords"],
         "output_cols": [
             "Topic", "Category", "Threat", "Mitigation", "Do", "Don't",
-            "Tooling", "Severity", "Reference",
+            "Tooling", "Severity", "Source URL", "Source Type", "Last Updated",
         ],
     },
     "cicd": {
@@ -150,6 +156,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Tool", "Category", "Hosting", "Use Case", "Strengths", "Weaknesses",
             "Notable Features", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "testing": {
@@ -158,6 +165,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Level", "Use Case", "Strengths", "Weaknesses", "Tooling",
             "Pitfalls", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "architecture": {
@@ -166,6 +174,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Category", "When to Use", "When NOT to Use", "Strengths",
             "Weaknesses", "Team Size", "Operational Cost", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "scaling": {
@@ -174,6 +183,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Technique", "Category", "Layer", "Use Case", "Strengths", "Weaknesses",
             "Pitfalls", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "consistency": {
@@ -182,6 +192,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Model", "Category", "Guarantees", "Use Case", "Strengths", "Weaknesses",
             "Algorithms", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "performance": {
@@ -190,6 +201,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Topic", "Category", "Symptom", "Root Cause", "Fix", "Tooling",
             "Severity", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "reliability": {
@@ -198,6 +210,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Topic", "Category", "Failure Mode", "Mitigation", "Do", "Don't",
             "Metric", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "data": {
@@ -206,6 +219,7 @@ CSV_CONFIG = {
         "output_cols": [
             "Name", "Category", "Workload", "Use Case", "Strengths", "Weaknesses",
             "Tooling", "Notes",
+            "Source URL", "Source Type", "Last Updated",
         ],
     },
     "antipattern": {
@@ -213,7 +227,111 @@ CSV_CONFIG = {
         "search_cols": ["Name", "Category", "Symptom", "Root Cause", "Keywords"],
         "output_cols": [
             "Name", "Category", "Symptom", "Root Cause", "Why It's Tempting",
-            "Fix", "Related Patterns", "Severity", "Last Updated",
+            "Fix", "Related Patterns", "Severity", "Source URL", "Source Type", "Last Updated",
+        ],
+    },
+    "cost": {
+        "file": "cost.csv",
+        "search_cols": ["Name", "Category", "Cloud", "Service", "Cost Driver", "Mitigation"],
+        "output_cols": [
+            "Name", "Category", "Cloud", "Service", "Cost Driver", "Mitigation",
+            "Order of Magnitude", "Gotcha", "Source URL", "Source Type", "Last Updated",
+        ],
+    },
+    "migration": {
+        "file": "migration.csv",
+        "search_cols": ["Name", "Category", "Strategy", "From", "To", "Risk"],
+        "output_cols": [
+            "Name", "Category", "Strategy", "From", "To", "Risk", "Rollback Plan",
+            "Duration Estimate", "Gotcha", "Related Patterns", "Source URL", "Source Type", "Last Updated",
+        ],
+    },
+    "incident": {
+        "file": "incident.csv",
+        "search_cols": ["Name", "Category", "Severity", "Symptom", "Root Cause", "Mitigation"],
+        "output_cols": [
+            "Name", "Category", "Severity", "Symptom", "Root Cause", "Mitigation",
+            "Communication Template", "Postmortem Checklist", "Source URL", "Source Type", "Last Updated",
+        ],
+    },
+    "capacity": {
+        "file": "capacity.csv",
+        "search_cols": ["Name", "Category", "Formula", "Inputs", "Rule of Thumb"],
+        "output_cols": [
+            "Name", "Category", "Formula", "Inputs", "Example Calculation",
+            "Rule of Thumb", "Gotcha", "Source URL", "Source Type", "Last Updated",
+        ],
+    },
+    "compliance": {
+        "file": "compliance.csv",
+        "search_cols": ["Name", "Standard", "Category", "Engineering Requirement", "Verification Method"],
+        "output_cols": [
+            "Name", "Standard", "Category", "Engineering Requirement", "Verification Method",
+            "Gotcha", "Penalty", "Source URL", "Source Type", "Last Updated",
+        ],
+    },
+    "multi-tenant": {
+        "file": "multi-tenant.csv",
+        "search_cols": ["Name", "Category", "Strategy", "Isolation Level", "Strengths", "Weaknesses"],
+        "output_cols": [
+            "Name", "Category", "Strategy", "Isolation Level", "Strengths", "Weaknesses",
+            "When to Use", "Gotcha", "Source URL", "Source Type", "Last Updated",
+        ],
+    },
+    "release": {
+        "file": "release.csv",
+        "search_cols": ["Name", "Category", "Strategy", "Risk", "Tooling"],
+        "output_cols": [
+            "Name", "Category", "Strategy", "Risk", "Rollback Time", "Blast Radius",
+            "Tooling", "Gotcha", "Source URL", "Source Type", "Last Updated",
+        ],
+    },
+    "ml-platform": {
+        "file": "ml-platform.csv",
+        "search_cols": ["Name", "Category", "Use Case", "Strengths", "Alternatives"],
+        "output_cols": [
+            "Name", "Category", "Use Case", "Strengths", "Weaknesses",
+            "Alternatives", "Gotcha", "Source URL", "Source Type", "Last Updated",
+        ],
+    },
+    "edge": {
+        "file": "edge.csv",
+        "search_cols": ["Name", "Category", "Runtime", "Use Case", "Strengths"],
+        "output_cols": [
+            "Name", "Category", "Runtime", "Use Case", "Strengths", "Weaknesses",
+            "Consistency Model", "Gotcha", "Source URL", "Source Type", "Last Updated",
+        ],
+    },
+    "mobile-backend": {
+        "file": "mobile-backend.csv",
+        "search_cols": ["Name", "Category", "Pattern", "Use Case", "Strengths"],
+        "output_cols": [
+            "Name", "Category", "Pattern", "Use Case", "Strengths", "Weaknesses",
+            "Gotcha", "Source URL", "Source Type", "Last Updated",
+        ],
+    },
+    "api-contract": {
+        "file": "api-contract.csv",
+        "search_cols": ["Name", "Category", "Strategy", "Tooling", "Strengths"],
+        "output_cols": [
+            "Name", "Category", "Strategy", "Tooling", "Strengths", "Weaknesses",
+            "When to Use", "Gotcha", "Source URL", "Source Type", "Last Updated",
+        ],
+    },
+    "interview": {
+        "file": "interview.csv",
+        "search_cols": ["Name", "Category", "Level", "Key Signals", "Common Mistakes"],
+        "output_cols": [
+            "Name", "Category", "Level", "Key Signals", "Common Mistakes",
+            "Evaluation Criteria", "Source URL", "Source Type", "Last Updated",
+        ],
+    },
+    "latency": {
+        "file": "latency-numbers.csv",
+        "search_cols": ["Operation", "Category", "Latency", "Notes", "Hardware Era"],
+        "output_cols": [
+            "Operation", "Category", "Latency", "Order of Magnitude",
+            "Hardware Era", "Notes", "Source URL", "Source Type", "Last Updated",
         ],
     },
 }
@@ -237,7 +355,8 @@ STACK_CONFIG = {
 _STACK_COLS = {
     "search_cols": ["Category", "Guideline", "Description", "Do", "Don't"],
     "output_cols": ["Category", "Guideline", "Description", "Do", "Don't",
-                    "Code Good", "Code Bad", "Severity", "Docs URL"],
+                    "Code Good", "Code Bad", "Severity", "Docs URL",
+                    "Source URL", "Last Updated"],
 }
 
 AVAILABLE_STACKS = list(STACK_CONFIG.keys())
@@ -641,6 +760,57 @@ _DOMAIN_KEYWORDS = {
                       "sync-over-async", "sync over async", "premature microservice",
                       "missing idempotency", "secrets in env", "polling instead",
                       "time-based cache", "bad practice", "code smell", "pitfall"],
+    "cost":          ["cost", "pricing", "egress", "data transfer", "finops", "billing",
+                      "expensive", "cheap", "price", "spend", "budget", "invoice",
+                      "cross-az", "nat gateway", "reserved instance", "spot instance",
+                      "on-demand", "savings plan"],
+    "migration":     ["migrate", "migration", "strangler", "strangler fig", "dual write",
+                      "cutover", "zero-downtime", "expand-contract", "blue-green migration",
+                      "trickle", "parallel run", "cloud migration", "database migration",
+                      "replatform", "lift and shift"],
+    "incident":      ["incident", "outage", "postmortem", "severity", "sev1", "sev2",
+                      "imoc", "incident commander", "status page", "runbook",
+                      "blameless", "cascading failure", "root cause analysis", "rca",
+                      "communication template", "war room"],
+    "capacity":      ["capacity", "little's law", "littles law", "amdahl", "usl",
+                      "qps calculation", "storage estimation", "bandwidth estimation",
+                      "back of envelope", "back-of-envelope", "connection pool size",
+                      "partition sizing", "queue theory"],
+    "compliance":    ["compliance", "soc2", "soc 2", "hipaa", "pci", "pci-dss", "gdpr",
+                      "ccpa", "audit", "data residency", "encryption at rest",
+                      "data breach notification", "right to deletion", "consent",
+                      "regulatory", "data protection"],
+    "multi-tenant":  ["multi-tenant", "multitenant", "tenant", "tenancy", "noisy neighbor",
+                      "noisy neighbour", "tenant isolation", "pool model", "silo model",
+                      "row-level security", "rls", "shared nothing", "shared everything",
+                      "per-tenant"],
+    "release":       ["release", "deployment strategy", "canary", "blue-green", "blue green",
+                      "rolling update", "feature flag", "feature toggle", "dark launch",
+                      "progressive delivery", "gitops", "deployment freeze", "rollback",
+                      "release train", "immutable infrastructure", "ring deployment"],
+    "ml-platform":   ["ml platform", "mlops", "feature store", "model registry",
+                      "experiment tracking", "training serving skew", "ml pipeline",
+                      "model monitoring", "gpu management", "rag", "retrieval augmented",
+                      "vector database", "fine-tuning", "fine tuning", "lora", "qlora"],
+    "edge":          ["edge compute", "edge computing", "cloudflare workers", "fastly compute",
+                      "lambda@edge", "cloudfront functions", "vercel edge", "durable objects",
+                      "wasi", "webassembly", "wasm", "edge kv", "edge database"],
+    "mobile-backend": ["mobile backend", "mobile api", "bff", "backend for frontend",
+                       "offline-first", "offline first", "push notification", "apns", "fcm",
+                       "token refresh", "app startup", "image optimization",
+                       "optimistic ui", "mobile sync"],
+    "api-contract":  ["api contract", "openapi", "swagger", "graphql federation",
+                      "schema evolution", "schema registry", "protobuf", "asyncapi",
+                      "contract testing", "pact", "api versioning", "hateoas",
+                      "grpc-web", "api gateway pattern", "code generation", "codegen"],
+    "interview":     ["interview", "system design interview", "rubric", "evaluation criteria",
+                      "key signals", "leveling", "staff engineer interview",
+                      "trade-off analysis", "back of envelope", "hiring",
+                      "system design rubric", "behavioral interview"],
+    "latency":       ["latency numbers", "latency reference", "l1 cache", "l2 cache",
+                      "memory latency", "disk latency", "nvme latency", "network latency",
+                      "cross-region latency", "ssd latency", "hdd seek",
+                      "latency comparison", "speed of light"],
 }
 
 

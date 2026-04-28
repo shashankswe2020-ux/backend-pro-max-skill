@@ -4,6 +4,30 @@ All notable changes to **backendpro** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] — 2026-04-28
+
+### Added
+- **Tier 5 — Trust, Verifiability & Freshness** — every claim in the knowledge base is now sourced, auditable, and freshness-tracked.
+- **Source citations on all CSVs** — `Source URL`, `Source Type`, `Last Updated` columns on all 34 domain CSVs and 12 stack CSVs. 100% fill rate (685/685 rows). Source types: `official-docs`, `paper`, `postmortem`, `engineering-blog`, `book`, `benchmark`, `rfc`.
+- **Source Type enum validation** — `backendpro-validate` rejects invalid Source Type values. Enforced in CI.
+- **Strict validation mode** — `backendpro-validate --strict` fails on rows missing Source URL or Last Updated. Soft mode (default) warns but passes.
+- **Auto-freshness CI job** — `.github/workflows/freshness.yml` runs weekly (Monday 09:00 UTC). Flags rows older than 18 months, checks Source URLs for HTTP 200, opens GitHub issues per domain. Deduplication prevents issue spam.
+- **`backendpro-validate --check-urls`** — local URL checking for Source URLs (HEAD request, 5s timeout, 3 retries).
+- **Provenance auto-populator** — `scripts/provenance.py` uses git blame to populate `Added By` and `Version` columns. `--show-provenance` flag in search output (hidden by default).
+- **Conflict/tension detector** — `backendpro conflicts [--domain] [--json]` scans 12 curated architectural tension rules (retry vs latency, cache vs consistency, outbox vs CDC, sharding vs joins, etc.) and surfaces trade-offs with citation tokens.
+- **13 new Tier 4 domains** — cost, migration, incident, capacity, compliance, multi-tenant, release, ml-platform, edge, mobile-backend, api-contract, interview, latency-numbers. **34 domains total** (up from 21).
+- **51 new Tier 5 tests** (332 total) covering validation (Source Type enum, soft/strict modes, trust column presence), freshness (stale detection, URL checking, issue formatting), provenance (git blame, version validation), and conflicts (rule structure, domain filtering, tension detection).
+
+### Changed
+- `patterns.csv` column `Reference` renamed to `Source URL` for consistency across all CSVs.
+- `security.csv` column `Reference` renamed to `Source URL`.
+- `CSV_CONFIG` in `core.py` — all domain output_cols now include `Source URL`, `Source Type`, `Last Updated`.
+- `_STACK_COLS` — stack output_cols now include `Source URL`, `Last Updated`.
+- `validate.py` rewritten — returns `(errors, warnings)` tuple, supports `--strict`, `--check-urls`, `--domain` flags, Source Type enum checking.
+- README updated: 34 domains, 332 tests, Trust & Verifiability section.
+- `index.html` updated: 34 domains, 332 tests, Tier 5 feature cards.
+- `pyproject.toml` version bumped to 0.5.0.
+
 ## [0.4.0] — 2026-04-22
 
 ### Added

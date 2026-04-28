@@ -4,8 +4,8 @@
 > (≈12–22 rows per domain, ≈12–17 rows per stack). Expand strategically — both
 > new domains and new columns on existing data.
 
-**Status:** 🔲 Not started
-**Branch:** `feat/tier-4-knowledge-depth` (to be created from `main`)
+**Status:** ✅ Complete (Tasks 4.1, 4.3, 4.4 done; Task 4.2 Benchmarks column deferred to follow-up)
+**Branch:** `feat/tier-4-knowledge-depth`
 **Depends on:** Tier 1 (constraint columns established), Tier 3 (citation tokens give stable row IDs)
 
 ---
