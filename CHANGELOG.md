@@ -4,6 +4,21 @@ All notable changes to **backendpro** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] — 2026-04-28
+
+### Added
+- **BM25 similarity graph in Obsidian export** — each note includes a `🔍 BM25 Related` section with top-5 cross-domain entries ranked by BM25 score, creating a richly interconnected knowledge graph.
+- **Domain subfolders** — Obsidian export organizes notes into `domain/entry.md` with per-domain `_Index.md` files. Root `_Index.md` links to domain indexes with entry counts.
+- **Domain tags in frontmatter** — each note includes `tags: [domain/<name>]` for native Obsidian tag-based filtering and graph grouping.
+- **Color-coded graph groups** — `.obsidian/workspace.json` ships with 34 distinct color groups mapped to `tag:#domain/<name>` queries.
+
+### Fixed
+- **Wikilink slug mismatch** — wikilinks now use `[[slug|Display Name]]` format matching actual filenames, fixing disconnected nodes in Obsidian graph view.
+
+### Changed
+- `export.py` imports `BM25` from `core.py`; `_obsidian_body()` accepts optional `bm25_links`; `export_obsidian()` builds BM25 similarity index before generating notes.
+- `pyproject.toml` version bumped to 0.6.1.
+
 ## [0.6.0] — 2026-04-28
 
 ### Added
