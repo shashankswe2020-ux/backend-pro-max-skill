@@ -1,0 +1,7 @@
+- id: backendpro-lint
+  name: Backend Pro Max Lint
+  description: Scan for backend anti-patterns (blocking sleep, missing timeouts, secrets in env, etc.)
+  entry: backendpro lint
+  language: python
+  types_or: [python, go, java, javascript, ts, kotlin]
+  additional_dependencies: []

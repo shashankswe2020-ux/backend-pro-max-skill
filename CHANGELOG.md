@@ -4,6 +4,24 @@ All notable changes to **backendpro** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] — 2026-04-28
+
+### Added
+- **Tier 6 — DX & Distribution** — three new developer-facing features that turn the knowledge base into an active tool.
+- **`backendpro lint`** — regex-based linter scans source files for 18 backend anti-patterns (blocking sleep, missing timeouts, sync-in-async, secrets in .env, SQL injection, eval, unbounded queries, etc.). Outputs human-readable, JSON, and SARIF (GitHub Code Scanning) formats. Each finding includes BPM citation, severity, and fix suggestion. `lint-rules.yml` for extensibility.
+- **`.pre-commit-hooks.yaml`** — pre-commit framework integration for `backendpro lint`.
+- **`.github/actions/lint/action.yml`** — composite GitHub Action that runs `backendpro lint --format sarif` and uploads to Code Scanning.
+- **`backendpro export`** — export the entire KB to Obsidian (one `.md` per row with YAML frontmatter + wikilinks + `_Index.md` MOC), Notion (CSV per domain), or Org-mode (`.org` per domain with headlines + properties). Filter by `--domain`.
+- **`backendpro learn`** — spaced-repetition flashcards using SM-2 algorithm. State persists in `~/.backendpro/learn.json`. Supports `--domain` filter, `--daily N`, `--stats`, `--reset`. Atomic file writes for state safety.
+- **3 new CLI entry points**: `backendpro-lint`, `backendpro-learn`, `backendpro-export`.
+- **3 new subcommands** in `backendpro`: `lint`, `learn`, `export` (dispatched before argparse).
+- **58 new tests** (390 total) covering lint rules (29 tests — per-language fixtures, formatters, SARIF), export (12 tests — all 3 formats, frontmatter, wikilinks, domain filtering), and learn (17 tests — SM-2 math, state persistence, due-card selection, stats).
+- **Test fixtures**: `tests/fixtures/lint/` with sample Go, Python, TypeScript, Java, and .env files.
+
+### Changed
+- `pyproject.toml` version bumped to 0.6.0, 3 new entry points added.
+- `search.py` — `lint`, `learn`, `export` subcommands dispatched before argparse.
+
 ## [0.5.0] — 2026-04-28
 
 ### Added

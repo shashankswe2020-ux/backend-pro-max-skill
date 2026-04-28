@@ -475,14 +475,43 @@ def _handle_calc(argv):
 
 
 def main():
-    # Intercept 'calc' before argparse (it has its own --key value args).
+    # Intercept subcommands before argparse.
     raw_args = sys.argv[1:]
     if raw_args and raw_args[0] == "calc":
         _handle_calc(raw_args[1:])
         return
     if raw_args and raw_args[0] == "conflicts":
-        # Rewrite as --conflicts so argparse handles it
         sys.argv = [sys.argv[0], "--conflicts"] + raw_args[1:]
+    if raw_args and raw_args[0] == "lint":
+        try:
+            try:
+                from .lint import main as lint_main
+            except ImportError:
+                from lint import main as lint_main  # type: ignore[no-redef]
+            lint_main(raw_args[1:])
+        except SystemExit as e:
+            sys.exit(e.code)
+        return
+    if raw_args and raw_args[0] == "learn":
+        try:
+            try:
+                from .learn import main as learn_main
+            except ImportError:
+                from learn import main as learn_main  # type: ignore[no-redef]
+            learn_main(raw_args[1:])
+        except SystemExit as e:
+            sys.exit(e.code)
+        return
+    if raw_args and raw_args[0] == "export":
+        try:
+            try:
+                from .export import main as export_main
+            except ImportError:
+                from export import main as export_main  # type: ignore[no-redef]
+            export_main(raw_args[1:])
+        except SystemExit as e:
+            sys.exit(e.code)
+        return
 
     parser = _build_parser()
     args = parser.parse_args()

@@ -3,7 +3,7 @@
 > Grow from CLI tool to platform. Meet engineers where they already are:
 > IDE, browser, CI pipeline, learning workflow, knowledge export.
 
-**Status:** 🔲 Not started
+**Status:** ✅ Phase A+B+C complete (6.3 Linter, 6.4 Learn, 6.5 Export shipped; 6.1 IDE ext and 6.2 Web SPA deferred)
 **Branch:** per-task (each feature is independently shippable)
 **Depends on:** Tier 3 (MCP server, citations, tools.json), Tier 4 (KB depth for lint rules + learn mode), Tier 5 (source URLs for web playground links)
 

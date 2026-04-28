@@ -1,0 +1,41 @@
+name: "Backend Pro Max Lint"
+description: "Scan source code for backend anti-patterns and upload SARIF to GitHub Code Scanning."
+inputs:
+  path:
+    description: "Path(s) to scan"
+    required: false
+    default: "."
+  severity:
+    description: "Minimum severity: error, warning, or info"
+    required: false
+    default: "warning"
+  python-version:
+    description: "Python version to use"
+    required: false
+    default: "3.11"
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install backendpro
+      shell: bash
+      run: pip install -e .
+
+    - name: Run backendpro lint (SARIF)
+      shell: bash
+      run: |
+        backendpro lint ${{ inputs.path }} \
+          --format sarif \
+          --severity ${{ inputs.severity }} \
+          > backendpro-lint.sarif || true
+
+    - name: Upload SARIF
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: backendpro-lint.sarif
+        category: backendpro-lint
