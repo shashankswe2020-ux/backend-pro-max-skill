@@ -2,7 +2,7 @@
   "name": "backendpro",
   "displayName": "Backend Pro Max",
   "description": "Search backend & distributed-systems knowledge bases — anti-patterns, databases, messaging, caching, architecture, and 30+ domains. Powered by BPM25 search.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "backendpro",
   "license": "MIT",
   "repository": {
