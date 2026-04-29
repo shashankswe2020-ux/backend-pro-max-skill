@@ -4,6 +4,21 @@ All notable changes to **backendpro** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] — 2026-04-29
+
+### Added
+- **Tier 7 — Quality Engineering on the KB** — three new features that guard retrieval quality, detect duplicates, and illuminate coverage gaps.
+- **Golden query test suite** — `tests/golden-queries.yml` with 239 retrieval assertions covering all 30 domains, 12 stacks, cross-domain search, compare mode, and edge cases. `tests/test_golden_queries.py` runs each as a parametrized pytest case with actionable failure output (expected vs actual top-5 with scores). Includes a built-in minimal YAML parser (no PyYAML required).
+- **`backendpro dedup`** — BM25 pairwise self-similarity dedup. Scans all domains by default, supports `--domain`, `--threshold` (default 0.85), `--cross-domain` for cross-domain near-duplicates, and `--json` output. `dedup-allowlist.yml` suppresses known intentional overlaps (e.g. Redis in cache + database).
+- **`backendpro coverage`** — per-domain coverage report with gap detection (categories in `coverage-targets.yml` with 0 rows), thin detection (<3 rows), and summary stats (total rows, domains, avg rows/domain, % with Source URL). Supports `--domain`, `--json`, and `--badge` (shields.io URL).
+- **`coverage-targets.yml`** — expected categories for 14 domains.
+- **`dedup-allowlist.yml`** — 8 intentional overlap pairs.
+- **35 new tests** (652 total) covering golden queries (239), dedup (11), and coverage (12).
+
+### Changed
+- `search.py` — `dedup` and `coverage` subcommands dispatched before argparse.
+- `conftest.py` — registers `dedup` and `coverage` modules.
+
 ## [0.6.1] — 2026-04-28
 
 ### Added

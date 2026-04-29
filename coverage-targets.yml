@@ -1,0 +1,95 @@
+# Coverage Targets — expected categories per domain.
+# Categories listed here but missing from the CSV are flagged as gaps.
+# This is a living document — update when new categories are added.
+
+pattern:
+  - "Resilience"
+  - "Data Management"
+  - "Communication"
+  - "Decomposition"
+  - "Observability"
+
+database:
+  - "RDBMS"
+  - "Document"
+  - "Wide Column"
+  - "Key-Value"
+  - "Graph"
+  - "Time Series"
+  - "Search"
+  - "Vector"
+
+messaging:
+  - "Distributed Log"
+  - "Queue"
+  - "Pub/Sub"
+  - "Stream Processing"
+
+cache:
+  - "In-Process"
+  - "Distributed"
+  - "CDN"
+  - "Strategy"
+
+architecture:
+  - "Monolith"
+  - "Microservices"
+  - "Serverless"
+  - "Event-Driven"
+
+security:
+  - "Injection"
+  - "Authentication"
+  - "Authorization"
+  - "Network"
+  - "Supply Chain"
+
+observability:
+  - "Metrics"
+  - "Logging"
+  - "Tracing"
+  - "Profiling"
+
+scaling:
+  - "Vertical"
+  - "Horizontal"
+  - "Auto-scaling"
+  - "Data Partitioning"
+
+consistency:
+  - "Strong"
+  - "Eventual"
+  - "Causal"
+  - "Theorem"
+
+reliability:
+  - "Resilience"
+  - "Observability"
+  - "Graceful Degradation"
+  - "Recovery"
+
+testing:
+  - "Unit"
+  - "Integration"
+  - "Contract"
+  - "End-to-End"
+  - "Performance"
+
+cloud:
+  - "Compute"
+  - "Storage"
+  - "Database"
+  - "Networking"
+  - "Serverless"
+
+container:
+  - "Runtime"
+  - "Orchestration"
+  - "Service Mesh"
+  - "Package Management"
+
+auth:
+  - "Token-Based"
+  - "Certificate"
+  - "Session"
+  - "Federated"

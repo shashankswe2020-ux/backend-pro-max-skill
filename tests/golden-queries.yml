@@ -1,0 +1,1126 @@
+# Golden Query Test Suite — guards BM25 retrieval quality.
+# Each entry asserts that the given query returns at least one of the
+# `expected_top` values in the top-N results (matched against the first
+# column of the result, case-insensitive substring).
+#
+# Format:
+#   - query: "<search text>"
+#     domain: <domain>          # or stack: <stack> or mode: all|compare
+#     expected_top: ["<Name>"]  # any of these in top-N is a pass
+#     min_score: <float>        # optional — top hit must score >= this
+#     top_n: <int>              # optional, default 5
+#     notes: "<why this matters>"
+
+# ====================================================================
+# DOMAIN: pattern (7 queries)
+# ====================================================================
+- query: "circuit breaker"
+  domain: pattern
+  expected_top: ["Circuit Breaker"]
+  min_score: 2.0
+  notes: "Core resilience pattern — must always be #1"
+
+- query: "saga compensating transaction"
+  domain: pattern
+  expected_top: ["Saga"]
+  notes: "Canonical distributed transaction pattern"
+
+- query: "event sourcing"
+  domain: pattern
+  expected_top: ["Event Sourcing"]
+
+- query: "CQRS command query"
+  domain: pattern
+  expected_top: ["CQRS"]
+
+- query: "outbox pattern"
+  domain: pattern
+  expected_top: ["Transactional Outbox"]
+
+- query: "change data capture"
+  domain: pattern
+  expected_top: ["Change Data Capture"]
+
+- query: "retry backoff jitter"
+  domain: pattern
+  expected_top: ["Retry with Exponential Backoff"]
+
+# ====================================================================
+# DOMAIN: database (7 queries)
+# ====================================================================
+- query: "PostgreSQL relational"
+  domain: database
+  expected_top: ["PostgreSQL"]
+
+- query: "MongoDB document store"
+  domain: database
+  expected_top: ["MongoDB"]
+
+- query: "Cassandra wide column"
+  domain: database
+  expected_top: ["Cassandra"]
+
+- query: "Redis in-memory"
+  domain: database
+  expected_top: ["Redis"]
+
+- query: "DynamoDB serverless"
+  domain: database
+  expected_top: ["DynamoDB"]
+
+- query: "CockroachDB distributed SQL"
+  domain: database
+  expected_top: ["CockroachDB"]
+
+- query: "Spanner global consistency"
+  domain: database
+  expected_top: ["Spanner"]
+
+# ====================================================================
+# DOMAIN: messaging (6 queries)
+# ====================================================================
+- query: "Kafka distributed log"
+  domain: messaging
+  expected_top: ["Apache Kafka"]
+
+- query: "RabbitMQ AMQP"
+  domain: messaging
+  expected_top: ["RabbitMQ"]
+
+- query: "NATS lightweight messaging"
+  domain: messaging
+  expected_top: ["NATS"]
+
+- query: "SQS managed queue"
+  domain: messaging
+  expected_top: ["AWS SQS"]
+
+- query: "Pulsar multi-tenant"
+  domain: messaging
+  expected_top: ["Apache Pulsar"]
+
+- query: "Redpanda Kafka compatible"
+  domain: messaging
+  expected_top: ["Redpanda"]
+
+# ====================================================================
+# DOMAIN: cache (5 queries)
+# ====================================================================
+- query: "Redis cache"
+  domain: cache
+  expected_top: ["Redis"]
+
+- query: "CDN edge caching"
+  domain: cache
+  expected_top: ["CDN"]
+
+- query: "write-through cache"
+  domain: cache
+  expected_top: ["Write-through"]
+
+- query: "write-back write-behind"
+  domain: cache
+  expected_top: ["Write-back", "write-behind"]
+
+- query: "LRU in-process cache"
+  domain: cache
+  expected_top: ["LRU", "Caffeine", "Guava", "Ristretto"]
+
+# ====================================================================
+# DOMAIN: cloud (5 queries)
+# ====================================================================
+- query: "Lambda serverless"
+  domain: cloud
+  expected_top: ["Lambda"]
+
+- query: "S3 object storage"
+  domain: cloud
+  expected_top: ["S3"]
+
+- query: "EC2 compute"
+  domain: cloud
+  expected_top: ["EC2"]
+
+- query: "DynamoDB"
+  domain: cloud
+  expected_top: ["DynamoDB"]
+
+- query: "EKS Kubernetes managed"
+  domain: cloud
+  expected_top: ["EKS"]
+
+# ====================================================================
+# DOMAIN: architecture (5 queries)
+# ====================================================================
+- query: "microservices"
+  domain: architecture
+  expected_top: ["Microservices"]
+
+- query: "monolith"
+  domain: architecture
+  expected_top: ["Monolith"]
+
+- query: "serverless FaaS"
+  domain: architecture
+  expected_top: ["Serverless"]
+
+- query: "event driven"
+  domain: architecture
+  expected_top: ["Event-Driven"]
+
+- query: "domain driven design bounded context"
+  domain: architecture
+  expected_top: ["Domain-Driven Design"]
+
+# ====================================================================
+# DOMAIN: security (5 queries)
+# ====================================================================
+- query: "SQL injection"
+  domain: security
+  expected_top: ["SQL Injection"]
+
+- query: "XSS cross-site scripting"
+  domain: security
+  expected_top: ["Cross-Site Scripting"]
+
+- query: "CSRF"
+  domain: security
+  expected_top: ["CSRF"]
+
+- query: "SSRF server-side request forgery"
+  domain: security
+  expected_top: ["SSRF"]
+
+- query: "secret in source code"
+  domain: security
+  expected_top: ["Secret"]
+
+# ====================================================================
+# DOMAIN: auth (5 queries)
+# ====================================================================
+- query: "OAuth 2.0"
+  domain: auth
+  expected_top: ["OAuth"]
+
+- query: "JWT token"
+  domain: auth
+  expected_top: ["JWT"]
+
+- query: "mTLS mutual TLS"
+  domain: auth
+  expected_top: ["mTLS"]
+
+- query: "API key authentication"
+  domain: auth
+  expected_top: ["API Key"]
+
+- query: "OpenID Connect OIDC"
+  domain: auth
+  expected_top: ["OpenID Connect"]
+
+# ====================================================================
+# DOMAIN: observability (5 queries)
+# ====================================================================
+- query: "Prometheus metrics"
+  domain: observability
+  expected_top: ["Prometheus"]
+
+- query: "Grafana dashboards"
+  domain: observability
+  expected_top: ["Grafana"]
+
+- query: "OpenTelemetry tracing"
+  domain: observability
+  expected_top: ["OpenTelemetry"]
+
+- query: "ELK Elasticsearch logging"
+  domain: observability
+  expected_top: ["ELK"]
+
+- query: "Jaeger distributed tracing"
+  domain: observability
+  expected_top: ["Tempo", "Jaeger"]
+
+# ====================================================================
+# DOMAIN: container (5 queries)
+# ====================================================================
+- query: "Docker containers OCI"
+  domain: container
+  expected_top: ["Docker"]
+
+- query: "Kubernetes orchestration"
+  domain: container
+  expected_top: ["Kubernetes"]
+
+- query: "Helm charts"
+  domain: container
+  expected_top: ["Helm"]
+
+- query: "ArgoCD GitOps"
+  domain: container
+  expected_top: ["ArgoCD"]
+
+- query: "Istio service mesh"
+  domain: container
+  expected_top: ["Istio"]
+
+# ====================================================================
+# DOMAIN: iac (5 queries)
+# ====================================================================
+- query: "Terraform infrastructure as code"
+  domain: iac
+  expected_top: ["Terraform"]
+
+- query: "Pulumi CDK programming"
+  domain: iac
+  expected_top: ["Pulumi"]
+
+- query: "CloudFormation AWS"
+  domain: iac
+  expected_top: ["CloudFormation"]
+
+- query: "Ansible configuration management"
+  domain: iac
+  expected_top: ["Ansible"]
+
+- query: "Crossplane Kubernetes-native"
+  domain: iac
+  expected_top: ["Crossplane"]
+
+# ====================================================================
+# DOMAIN: cicd (5 queries)
+# ====================================================================
+- query: "GitHub Actions CI"
+  domain: cicd
+  expected_top: ["GitHub Actions"]
+
+- query: "GitLab CI pipeline"
+  domain: cicd
+  expected_top: ["GitLab CI"]
+
+- query: "Jenkins build automation"
+  domain: cicd
+  expected_top: ["Jenkins"]
+
+- query: "Argo Workflows"
+  domain: cicd
+  expected_top: ["Argo"]
+
+- query: "Tekton cloud-native CI"
+  domain: cicd
+  expected_top: ["Tekton"]
+
+# ====================================================================
+# DOMAIN: testing (5 queries)
+# ====================================================================
+- query: "unit tests"
+  domain: testing
+  expected_top: ["Unit"]
+
+- query: "integration tests"
+  domain: testing
+  expected_top: ["Integration"]
+
+- query: "contract tests"
+  domain: testing
+  expected_top: ["Contract"]
+
+- query: "end to end E2E"
+  domain: testing
+  expected_top: ["End-to-End", "E2E"]
+
+- query: "fuzz testing"
+  domain: testing
+  expected_top: ["Fuzz"]
+
+# ====================================================================
+# DOMAIN: scaling (5 queries)
+# ====================================================================
+- query: "horizontal scaling"
+  domain: scaling
+  expected_top: ["Horizontal"]
+
+- query: "sharding hash range"
+  domain: scaling
+  expected_top: ["Sharding"]
+
+- query: "auto-scaling HPA KEDA"
+  domain: scaling
+  expected_top: ["Auto-scaling"]
+
+- query: "read replicas"
+  domain: scaling
+  expected_top: ["Read replicas"]
+
+- query: "backpressure"
+  domain: scaling
+  expected_top: ["Backpressure"]
+
+# ====================================================================
+# DOMAIN: consistency (5 queries)
+# ====================================================================
+- query: "linearizability strong consistency"
+  domain: consistency
+  expected_top: ["Linearizability"]
+
+- query: "eventual consistency"
+  domain: consistency
+  expected_top: ["Eventual"]
+
+- query: "CAP theorem"
+  domain: consistency
+  expected_top: ["CAP"]
+
+- query: "causal consistency"
+  domain: consistency
+  expected_top: ["Causal"]
+
+- query: "CRDTs conflict-free"
+  domain: consistency
+  expected_top: ["CRDT", "Strong eventual"]
+
+# ====================================================================
+# DOMAIN: performance (5 queries)
+# ====================================================================
+- query: "N+1 query problem"
+  domain: performance
+  expected_top: ["N+1"]
+
+- query: "connection pool exhaustion"
+  domain: performance
+  expected_top: ["Connection pool"]
+
+- query: "GC pauses garbage collection"
+  domain: performance
+  expected_top: ["GC"]
+
+- query: "hot key cache partition"
+  domain: performance
+  expected_top: ["Hot key"]
+
+- query: "tail latency p99"
+  domain: performance
+  expected_top: ["Tail latency"]
+
+# ====================================================================
+# DOMAIN: reliability (5 queries)
+# ====================================================================
+- query: "SLO SLI error budget"
+  domain: reliability
+  expected_top: ["SLO"]
+
+- query: "timeout configuration"
+  domain: reliability
+  expected_top: ["Timeout"]
+
+- query: "idempotency"
+  domain: reliability
+  expected_top: ["Idempotency"]
+
+- query: "graceful shutdown"
+  domain: reliability
+  expected_top: ["Graceful shutdown"]
+
+- query: "health check liveness readiness"
+  domain: reliability
+  expected_top: ["Health check"]
+
+# ====================================================================
+# DOMAIN: data (5 queries)
+# ====================================================================
+- query: "Apache Spark batch processing"
+  domain: data
+  expected_top: ["Apache Spark"]
+
+- query: "Apache Flink stream processing"
+  domain: data
+  expected_top: ["Apache Flink"]
+
+- query: "dbt data transformation"
+  domain: data
+  expected_top: ["dbt"]
+
+- query: "Apache Airflow orchestration"
+  domain: data
+  expected_top: ["Apache Airflow"]
+
+- query: "Kafka Streams"
+  domain: data
+  expected_top: ["Kafka Streams"]
+
+# ====================================================================
+# DOMAIN: api (5 queries)
+# ====================================================================
+- query: "REST JSON API"
+  domain: api
+  expected_top: ["REST"]
+
+- query: "GraphQL schema query"
+  domain: api
+  expected_top: ["GraphQL"]
+
+- query: "gRPC protobuf"
+  domain: api
+  expected_top: ["gRPC"]
+
+- query: "WebSocket real-time"
+  domain: api
+  expected_top: ["WebSocket"]
+
+- query: "server-sent events SSE"
+  domain: api
+  expected_top: ["Server-Sent Events"]
+
+# ====================================================================
+# DOMAIN: language (5 queries)
+# ====================================================================
+- query: "Go concurrency goroutines"
+  domain: language
+  expected_top: ["Go"]
+
+- query: "Java JVM Spring"
+  domain: language
+  expected_top: ["Java"]
+
+- query: "Rust memory safety"
+  domain: language
+  expected_top: ["Rust"]
+
+- query: "Python FastAPI"
+  domain: language
+  expected_top: ["Python"]
+
+- query: "Node.js TypeScript"
+  domain: language
+  expected_top: ["Node.js"]
+
+# ====================================================================
+# DOMAIN: antipattern (5 queries)
+# ====================================================================
+- query: "distributed monolith"
+  domain: antipattern
+  expected_top: ["Distributed Monolith"]
+
+- query: "god service"
+  domain: antipattern
+  expected_top: ["God Service"]
+
+- query: "dual writes"
+  domain: antipattern
+  expected_top: ["Dual Writes"]
+
+- query: "chatty microservices"
+  domain: antipattern
+  expected_top: ["Chatty"]
+
+- query: "missing idempotency key"
+  domain: antipattern
+  expected_top: ["Missing Idempotency"]
+
+# ====================================================================
+# DOMAIN: cost (5 queries)
+# ====================================================================
+- query: "cross AZ data transfer"
+  domain: cost
+  expected_top: ["Cross-AZ"]
+
+- query: "NAT gateway cost"
+  domain: cost
+  expected_top: ["NAT Gateway"]
+
+- query: "DynamoDB pricing"
+  domain: cost
+  expected_top: ["DynamoDB"]
+
+- query: "GPU instance cost"
+  domain: cost
+  expected_top: ["GPU"]
+
+- query: "S3 storage classes"
+  domain: cost
+  expected_top: ["S3"]
+
+# ====================================================================
+# DOMAIN: migration (5 queries)
+# ====================================================================
+- query: "strangler fig"
+  domain: migration
+  expected_top: ["Strangler Fig"]
+
+- query: "change data capture migration"
+  domain: migration
+  expected_top: ["Change Data Capture"]
+
+- query: "blue green database"
+  domain: migration
+  expected_top: ["Blue-Green"]
+
+- query: "feature flag migration"
+  domain: migration
+  expected_top: ["Feature Flag"]
+
+- query: "expand contract schema"
+  domain: migration
+  expected_top: ["Expand-Contract"]
+
+# ====================================================================
+# DOMAIN: incident (5 queries)
+# ====================================================================
+- query: "severity matrix"
+  domain: incident
+  expected_top: ["Severity Matrix"]
+
+- query: "database failover incident"
+  domain: incident
+  expected_top: ["Database Failover"]
+
+- query: "cascading failure"
+  domain: incident
+  expected_top: ["Cascading Failure"]
+
+- query: "memory leak production"
+  domain: incident
+  expected_top: ["Memory Leak"]
+
+- query: "certificate expiration"
+  domain: incident
+  expected_top: ["Certificate"]
+
+# ====================================================================
+# DOMAIN: capacity (5 queries)
+# ====================================================================
+- query: "Little's Law"
+  domain: capacity
+  expected_top: ["Little"]
+
+- query: "QPS daily active users"
+  domain: capacity
+  expected_top: ["QPS"]
+
+- query: "connection pool sizing"
+  domain: capacity
+  expected_top: ["Connection Pool"]
+
+- query: "Kafka partition sizing"
+  domain: capacity
+  expected_top: ["Kafka Partition"]
+
+- query: "Amdahl's Law"
+  domain: capacity
+  expected_top: ["Amdahl"]
+
+# ====================================================================
+# DOMAIN: compliance (5 queries)
+# ====================================================================
+- query: "audit logging"
+  domain: compliance
+  expected_top: ["Audit Logging"]
+
+- query: "encryption at rest"
+  domain: compliance
+  expected_top: ["Encryption at Rest"]
+
+- query: "RBAC ABAC access control"
+  domain: compliance
+  expected_top: ["Access Control"]
+
+- query: "data retention deletion"
+  domain: compliance
+  expected_top: ["Data Retention"]
+
+- query: "PCI DSS network segmentation"
+  domain: compliance
+  expected_top: ["PCI DSS"]
+
+# ====================================================================
+# DOMAIN: multi-tenant (5 queries)
+# ====================================================================
+- query: "pool model shared everything"
+  domain: multi-tenant
+  expected_top: ["Pool Model"]
+
+- query: "silo model shared nothing"
+  domain: multi-tenant
+  expected_top: ["Silo Model"]
+
+- query: "row level security RLS"
+  domain: multi-tenant
+  expected_top: ["Row-Level Security"]
+
+- query: "noisy neighbor"
+  domain: multi-tenant
+  expected_top: ["Noisy Neighbor"]
+
+- query: "tenant rate limiting"
+  domain: multi-tenant
+  expected_top: ["Per-Tenant Rate"]
+
+# ====================================================================
+# DOMAIN: release (5 queries)
+# ====================================================================
+- query: "blue green deployment"
+  domain: release
+  expected_top: ["Blue-Green"]
+
+- query: "canary deployment"
+  domain: release
+  expected_top: ["Canary"]
+
+- query: "feature flags toggle"
+  domain: release
+  expected_top: ["Feature Flag"]
+
+- query: "rolling update"
+  domain: release
+  expected_top: ["Rolling"]
+
+- query: "GitOps deployment"
+  domain: release
+  expected_top: ["GitOps"]
+
+# ====================================================================
+# DOMAIN: ml-platform (5 queries)
+# ====================================================================
+- query: "feature store"
+  domain: ml-platform
+  expected_top: ["Feature Store"]
+
+- query: "model registry"
+  domain: ml-platform
+  expected_top: ["Model Registry"]
+
+- query: "experiment tracking"
+  domain: ml-platform
+  expected_top: ["Experiment Tracking"]
+
+- query: "training serving skew"
+  domain: ml-platform
+  expected_top: ["Training-Serving Skew"]
+
+- query: "model monitoring"
+  domain: ml-platform
+  expected_top: ["Model Monitoring"]
+
+# ====================================================================
+# DOMAIN: edge (5 queries)
+# ====================================================================
+- query: "Cloudflare Workers edge"
+  domain: edge
+  expected_top: ["Cloudflare Workers"]
+
+- query: "Lambda@Edge CloudFront"
+  domain: edge
+  expected_top: ["Lambda@Edge"]
+
+- query: "Durable Objects"
+  domain: edge
+  expected_top: ["Durable Objects"]
+
+- query: "WebAssembly WASI"
+  domain: edge
+  expected_top: ["WASI"]
+
+- query: "Vercel edge functions"
+  domain: edge
+  expected_top: ["Vercel"]
+
+# ====================================================================
+# DOMAIN: mobile-backend (5 queries)
+# ====================================================================
+- query: "BFF backend for frontend"
+  domain: mobile-backend
+  expected_top: ["Backend for Frontend"]
+
+- query: "offline first sync"
+  domain: mobile-backend
+  expected_top: ["Offline"]
+
+- query: "push notification"
+  domain: mobile-backend
+  expected_top: ["Push Notification"]
+
+- query: "token refresh flow"
+  domain: mobile-backend
+  expected_top: ["Token Refresh"]
+
+- query: "optimistic UI updates"
+  domain: mobile-backend
+  expected_top: ["Optimistic"]
+
+# ====================================================================
+# DOMAIN: api-contract (5 queries)
+# ====================================================================
+- query: "OpenAPI code generation"
+  domain: api-contract
+  expected_top: ["OpenAPI"]
+
+- query: "GraphQL federation"
+  domain: api-contract
+  expected_top: ["GraphQL Federation"]
+
+- query: "contract testing"
+  domain: api-contract
+  expected_top: ["Contract Testing"]
+
+- query: "protobuf schema registry"
+  domain: api-contract
+  expected_top: ["Protobuf Schema"]
+
+- query: "API versioning"
+  domain: api-contract
+  expected_top: ["API Versioning"]
+
+# ====================================================================
+# DOMAIN: interview (5 queries)
+# ====================================================================
+- query: "back of envelope estimation"
+  domain: interview
+  expected_top: ["Back-of-Envelope"]
+
+- query: "high level architecture"
+  domain: interview
+  expected_top: ["High-Level Architecture"]
+
+- query: "trade-off analysis"
+  domain: interview
+  expected_top: ["Trade-off"]
+
+- query: "database schema design"
+  domain: interview
+  expected_top: ["Database Schema"]
+
+- query: "failure mode analysis"
+  domain: interview
+  expected_top: ["Failure Mode"]
+
+# ====================================================================
+# DOMAIN: latency (5 queries)
+# ====================================================================
+- query: "L1 cache reference"
+  domain: latency
+  expected_top: ["L1 cache"]
+
+- query: "main memory DRAM"
+  domain: latency
+  expected_top: ["Main memory"]
+
+- query: "SSD random read"
+  domain: latency
+  expected_top: ["SSD"]
+
+- query: "network round trip"
+  domain: latency
+  expected_top: ["network", "round trip", "datacenter"]
+
+- query: "mutex lock"
+  domain: latency
+  expected_top: ["Mutex"]
+
+# ====================================================================
+# STACK QUERIES (2+ per stack = 24 queries)
+# ====================================================================
+- query: "goroutine concurrency"
+  stack: go
+  expected_top: ["Concurrency"]
+
+- query: "Go error handling"
+  stack: go
+  expected_top: ["Errors"]
+
+- query: "Spring dependency injection"
+  stack: java-spring
+  expected_top: ["DI"]
+
+- query: "virtual threads Loom"
+  stack: java-spring
+  expected_top: ["Concurrency"]
+
+- query: "FastAPI dependency injection"
+  stack: python-fastapi
+  expected_top: ["DI"]
+
+- query: "async await Python"
+  stack: python-fastapi
+  expected_top: ["Concurrency", "Async"]
+
+- query: "Express middleware"
+  stack: nodejs-express
+  expected_top: ["HTTP", "Framework"]
+
+- query: "Node.js async event loop"
+  stack: nodejs-express
+  expected_top: ["Async", "Concurrency"]
+
+- query: "Axum tower middleware"
+  stack: rust-axum
+  expected_top: ["HTTP", "Async"]
+
+- query: "Rust async tokio"
+  stack: rust-axum
+  expected_top: ["Async", "Concurrency"]
+
+- query: "ASP.NET dependency injection"
+  stack: csharp-aspnet
+  expected_top: ["DI"]
+
+- query: "Entity Framework Core"
+  stack: csharp-aspnet
+  expected_top: ["EF Core"]
+
+- query: "Kotlin coroutines"
+  stack: kotlin-spring
+  expected_top: ["Coroutines", "Concurrency"]
+
+- query: "Kotlin Spring DI"
+  stack: kotlin-spring
+  expected_top: ["DI"]
+
+- query: "Akka actors"
+  stack: scala-akka
+  expected_top: ["Actors"]
+
+- query: "Scala build sbt"
+  stack: scala-akka
+  expected_top: ["Build"]
+
+- query: "Elixir OTP supervisor"
+  stack: elixir-phoenix
+  expected_top: ["OTP"]
+
+- query: "Phoenix channels"
+  stack: elixir-phoenix
+  expected_top: ["Concurrency", "Cluster", "Phoenix"]
+
+- query: "Rails background jobs"
+  stack: ruby-rails
+  expected_top: ["Background jobs"]
+
+- query: "Rails caching"
+  stack: ruby-rails
+  expected_top: ["Caching"]
+
+- query: "Laravel ORM Eloquent"
+  stack: php-laravel
+  expected_top: ["ORM"]
+
+- query: "PHP error handling"
+  stack: php-laravel
+  expected_top: ["Errors", "Performance", "Queue"]
+
+- query: "C++ coroutines"
+  stack: cpp
+  expected_top: ["Coroutines"]
+
+- query: "C++ concurrency threads"
+  stack: cpp
+  expected_top: ["Concurrency"]
+
+# ====================================================================
+# CROSS-DOMAIN (--all) QUERIES (10 queries)
+# ====================================================================
+- query: "idempotency"
+  mode: all
+  expected_top: ["Idempotency", "Missing Idempotency"]
+  notes: "Should find across pattern, reliability, antipattern"
+
+- query: "circuit breaker fault tolerance"
+  mode: all
+  expected_top: ["Circuit Breaker", "Circuit breaker"]
+
+- query: "Kafka"
+  mode: all
+  expected_top: ["Apache Kafka", "Kafka"]
+
+- query: "Redis"
+  mode: all
+  expected_top: ["Redis"]
+
+- query: "rate limiting"
+  mode: all
+  expected_top: ["Rate", "Throttle", "Per-Tenant Rate"]
+
+- query: "PostgreSQL"
+  mode: all
+  expected_top: ["PostgreSQL", "Postgres"]
+
+- query: "Kubernetes"
+  mode: all
+  expected_top: ["Kubernetes", "EKS"]
+
+- query: "encryption TLS"
+  mode: all
+  expected_top: ["Encryption", "mTLS", "TLS"]
+
+- query: "retry backoff"
+  mode: all
+  expected_top: ["Retry", "Unbounded Retry"]
+
+- query: "sharding partitioning"
+  mode: all
+  expected_top: ["Sharding", "Shard"]
+
+# ====================================================================
+# COMPARE MODE (10 queries)
+# ====================================================================
+- query: "compare"
+  mode: compare
+  compare_args: ["Kafka", "RabbitMQ"]
+  domain: messaging
+  expected_top: ["Apache Kafka", "RabbitMQ"]
+  notes: "Classic messaging comparison"
+
+- query: "compare"
+  mode: compare
+  compare_args: ["PostgreSQL", "MongoDB"]
+  domain: database
+  expected_top: ["PostgreSQL", "MongoDB"]
+
+- query: "compare"
+  mode: compare
+  compare_args: ["Redis", "DynamoDB"]
+  domain: database
+  expected_top: ["Redis", "DynamoDB"]
+
+- query: "compare"
+  mode: compare
+  compare_args: ["Terraform", "Pulumi"]
+  domain: iac
+  expected_top: ["Terraform", "Pulumi"]
+
+- query: "compare"
+  mode: compare
+  compare_args: ["GitHub Actions", "GitLab CI"]
+  domain: cicd
+  expected_top: ["GitHub Actions", "GitLab CI"]
+
+- query: "compare"
+  mode: compare
+  compare_args: ["REST", "GraphQL"]
+  domain: api
+  expected_top: ["REST", "GraphQL"]
+
+- query: "compare"
+  mode: compare
+  compare_args: ["Docker", "Podman"]
+  domain: container
+  expected_top: ["Docker", "Podman"]
+
+- query: "compare"
+  mode: compare
+  compare_args: ["Monolith", "Microservices"]
+  domain: architecture
+  expected_top: ["Monolith", "Microservices"]
+
+- query: "compare"
+  mode: compare
+  compare_args: ["Apache Spark", "Apache Flink"]
+  domain: data
+  expected_top: ["Apache Spark", "Apache Flink"]
+
+- query: "compare"
+  mode: compare
+  compare_args: ["Prometheus", "Grafana"]
+  domain: observability
+  expected_top: ["Prometheus", "Grafana"]
+
+# ====================================================================
+# EDGE CASES (20 queries)
+# ====================================================================
+# Typos / near-misses — BM25 is keyword-based, so severe typos may not match.
+# These test synonym expansion and partial matching, with generous top_n.
+- query: "circuit breaker pattern"
+  domain: pattern
+  expected_top: ["Circuit Breaker"]
+  top_n: 5
+  notes: "Exact match phrasing"
+
+- query: "postgres database"
+  domain: database
+  expected_top: ["PostgreSQL"]
+  top_n: 5
+  notes: "Synonym expansion handles postgres -> postgresql"
+
+# Product names without spaces
+- query: "dynamodb"
+  domain: database
+  expected_top: ["DynamoDB"]
+  notes: "Synonym expansion should handle"
+
+- query: "cosmosdb"
+  domain: database
+  expected_top: ["Cosmos", "DynamoDB", "MongoDB", "SQLite"]
+  top_n: 5
+  notes: "Synonym expansion — cosmosdb expands to cosmos + db"
+
+- query: "rabbitmq"
+  domain: messaging
+  expected_top: ["RabbitMQ"]
+
+- query: "elasticsearch"
+  domain: observability
+  expected_top: ["ELK", "OpenSearch"]
+  top_n: 5
+
+# Multi-word queries
+- query: "how to handle partial failures in distributed systems"
+  domain: pattern
+  expected_top: ["Saga", "Circuit Breaker", "Retry"]
+  top_n: 5
+  notes: "Natural language query"
+
+- query: "best database for time series data"
+  domain: database
+  expected_top: ["InfluxDB", "TimescaleDB", "Timescale"]
+  top_n: 5
+
+- query: "choosing between Kafka and RabbitMQ"
+  domain: messaging
+  expected_top: ["Apache Kafka", "RabbitMQ"]
+  top_n: 5
+
+- query: "what is the best way to do caching"
+  domain: cache
+  expected_top: ["Redis", "CDN", "LRU", "caching", "Write-through", "Write-back", "Negative"]
+  top_n: 5
+
+# Short / single-token queries
+- query: "saga"
+  domain: pattern
+  expected_top: ["Saga"]
+
+- query: "redis"
+  domain: database
+  expected_top: ["Redis"]
+
+- query: "kafka"
+  domain: messaging
+  expected_top: ["Apache Kafka"]
+
+# Acronyms
+- query: "CQRS"
+  domain: pattern
+  expected_top: ["CQRS"]
+
+- query: "CDC"
+  domain: pattern
+  expected_top: ["Change Data Capture"]
+
+- query: "JWT"
+  domain: auth
+  expected_top: ["JWT"]
+
+- query: "mTLS"
+  domain: auth
+  expected_top: ["mTLS"]
+
+- query: "HPA KEDA autoscaling"
+  domain: scaling
+  expected_top: ["Auto-scaling"]
+
+- query: "OIDC"
+  domain: auth
+  expected_top: ["OpenID Connect"]
+
+- query: "OCI container runtime"
+  domain: container
+  expected_top: ["Docker", "containerd"]

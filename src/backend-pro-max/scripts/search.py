@@ -512,6 +512,26 @@ def main():
         except SystemExit as e:
             sys.exit(e.code)
         return
+    if raw_args and raw_args[0] == "dedup":
+        try:
+            try:
+                from .dedup import main as dedup_main
+            except ImportError:
+                from dedup import main as dedup_main  # type: ignore[no-redef]
+            dedup_main(raw_args[1:])
+        except SystemExit as e:
+            sys.exit(e.code)
+        return
+    if raw_args and raw_args[0] == "coverage":
+        try:
+            try:
+                from .coverage import main as coverage_main
+            except ImportError:
+                from coverage import main as coverage_main  # type: ignore[no-redef]
+            coverage_main(raw_args[1:])
+        except SystemExit as e:
+            sys.exit(e.code)
+        return
 
     parser = _build_parser()
     args = parser.parse_args()

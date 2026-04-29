@@ -3,8 +3,8 @@
 > Guard retrieval quality as the knowledge base grows. Prevent regressions,
 > detect duplicates, and illuminate coverage gaps — all in CI.
 
-**Status:** 🔲 Not started
-**Branch:** `feat/tier-7-kb-quality` (to be created from `main`)
+**Status:** ✅ Complete
+**Branch:** `feat/tier-6-dx-distribution`
 **Depends on:** Tier 3 (citation tokens for stable row IDs in golden queries), Tier 4 (expanded KB makes dedup + coverage meaningful), Tier 5 (Source URLs for coverage quality)
 
 ---

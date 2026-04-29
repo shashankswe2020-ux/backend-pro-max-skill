@@ -28,7 +28,7 @@ if "backendpro.scripts" not in sys.modules:
 
 # Pre-import the submodules under their dotted name so test code can do
 # `from backendpro.scripts import core` if it wants to.
-for name in ("core", "search", "validate", "decide", "templates", "semantic", "rerank", "gen_tools_schema"):
+for name in ("core", "search", "validate", "decide", "templates", "semantic", "rerank", "gen_tools_schema", "dedup", "coverage"):
     if f"backendpro.scripts.{name}" not in sys.modules:
         mod = importlib.import_module(name)
         sys.modules[f"backendpro.scripts.{name}"] = mod
