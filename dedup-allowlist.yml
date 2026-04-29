@@ -1,0 +1,14 @@
+# Dedup Allowlist — intentional overlaps that should NOT be flagged as duplicates.
+# Each entry is a pair of row names (case-insensitive) that intentionally
+# exist in different domains.
+#
+# Format: - ["Row Name A", "Row Name B"]
+
+- ["Redis", "Redis cache (single + replica)"]
+- ["Circuit Breaker", "Circuit breaker"]
+- ["Retry with Exponential Backoff + Jitter", "Retries with backoff + budget"]
+- ["Change Data Capture (CDC)", "Change Data Capture (CDC)"]
+- ["Bulkhead", "Bulkhead"]
+- ["DynamoDB", "DynamoDB On-Demand Pricing"]
+- ["Feature Flags", "Feature Flag Migration"]
+- ["Blue-Green Deployment", "Blue-Green Database"]
