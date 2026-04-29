@@ -15,7 +15,7 @@ Cursor, Windsurf, GitHub Copilot, Gemini, Continue, or any AI assistant.
 
 [![PyPI](https://img.shields.io/pypi/v/backendpro?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/backendpro/)
 [![CI](https://img.shields.io/github/actions/workflow/status/shashankswe2020-ux/backend-pro-max-skill/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/shashankswe2020-ux/backend-pro-max-skill/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-390_passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
+[![Tests](https://img.shields.io/badge/tests-652_passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
 [![34 Domains](https://img.shields.io/badge/domains-34-blue?style=for-the-badge)](#-domains)
 [![12 Stacks](https://img.shields.io/badge/stacks-12-purple?style=for-the-badge)](#-stacks)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-yellow?style=for-the-badge&logo=python&logoColor=white)](#-prerequisites)
@@ -79,7 +79,7 @@ model is *instructed* to consult — so its advice cites a row, not a vibe.
 | 🔌 **MCP server** | `pip install backendpro[mcp]` → 8 tools on stdio, works with Claude Desktop, Cline, Cursor, Zed |
 | 📎 **Citation tokens** | Every result carries `[BPM:domain.slug]` — greppable provenance for PR review |
 | 📡 **JSONL streaming** | `--jsonl` for agent loops that consume results incrementally |
-| ✅ **CI-enforced** | `backendpro-validate` schema-checks every CSV; 390 pytest cases run on Py 3.9 / 3.11 / 3.12 |
+| ✅ **CI-enforced** | `backendpro-validate` schema-checks every CSV; 652 pytest cases run on Py 3.9 / 3.11 / 3.12 |
 | 🔗 **100% source citations** | Every row carries `Source URL`, `Source Type`, `Last Updated` — official docs, RFCs, papers, OWASP. `--strict` mode fails on gaps |
 | ⚠️ **Conflict detector** | `backendpro conflicts` surfaces 12 architectural tensions (retry vs latency, cache vs consistency, etc.) with citation tokens |
 | 🕐 **Auto-freshness audit** | Weekly GitHub Action flags stale rows (>18mo) and broken URLs. `--check-urls` for local runs |
@@ -89,6 +89,9 @@ model is *instructed* to consult — so its advice cites a row, not a vibe.
 | 🧠 **`backendpro learn`** | Spaced-repetition flashcards (SM-2 algorithm) from the KB. `--domain`, `--daily N`, `--stats`, `--reset` |
 | 💻 **VS Code extension** | Search, Explain Selection (right-click), CodeLens stack guidelines. CLI or MCP mode. `extensions/vscode/` |
 | 🌐 **Web playground** | [backendpro.cc](https://backendpro.cc) — search-as-you-type, domain filter, permalinks, compare view. Zero backend |
+| 🧪 **Golden query suite** | 239 retrieval assertions across all domains, stacks, cross-domain, and compare — guards ranking quality on every PR |
+| 🔎 **`backendpro dedup`** | BM25 pairwise near-duplicate detection within and across domains. `--threshold`, `--cross-domain`, `--json`. Allowlist for intentional overlaps |
+| 📊 **`backendpro coverage`** | Per-domain coverage report with gap/thin detection against `coverage-targets.yml`. `--json`, `--badge` for shields.io |
 
 ---
 
@@ -526,6 +529,8 @@ src/backend-pro-max/
 │   ├── lint.py                 # Anti-pattern linter (18 rules)
 │   ├── export.py               # Obsidian / Notion / Org-mode export
 │   ├── learn.py                # SM-2 spaced-repetition flashcards
+│   ├── dedup.py                # Near-duplicate detection (BM25 self-similarity)
+│   ├── coverage.py             # KB coverage gap/thin analysis
 │   ├── calc.py                 # Back-of-envelope calculators
 │   ├── conflicts.py            # Architectural tension detector
 │   ├── freshness.py            # Stale-row & URL-health checker
@@ -542,6 +547,8 @@ extensions/
     └── src/main/resources/META-INF/plugin.xml
 
 lint-rules.yml                  # 18 lint rules with BPM citations
+coverage-targets.yml            # Expected categories per domain (gap detection)
+dedup-allowlist.yml             # Intentional overlaps (suppressed in dedup)
 .pre-commit-hooks.yaml          # Pre-commit framework integration
 .github/actions/lint/action.yml # GitHub Action for SARIF upload
 .claude/skills/backend-pro-max/ # Claude Code skill (SKILL.md)
@@ -661,6 +668,14 @@ backendpro export --format notion --out /tmp/notion         # export to Notion C
 backendpro learn --domain consistency --daily 5             # spaced-repetition flashcards
 backendpro learn --stats                                    # learning progress
 
+# v0.7 quality engineering
+backendpro dedup                                            # find near-duplicate rows
+backendpro dedup --domain messaging --threshold 0.7         # per-domain with custom threshold
+backendpro dedup --cross-domain --json                      # cross-domain, JSON output
+backendpro coverage                                         # KB coverage report
+backendpro coverage --domain database --json                # per-domain, JSON output
+backendpro coverage --badge                                 # shields.io badge URL
+
 # Or, without installing
 python3 src/backend-pro-max/scripts/search.py --list
 python3 src/backend-pro-max/scripts/search.py "circuit breaker"
@@ -670,7 +685,7 @@ python3 src/backend-pro-max/scripts/search.py "circuit breaker"
 
 ```bash
 pip install -e ".[dev]"
-pytest                                    # 390 tests
+pytest                                    # 652 tests
 ruff check src tests                      # lint
 backendpro-validate                       # schema validation
 ```

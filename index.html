@@ -541,7 +541,7 @@ footer{
     <span class="badge amber">BM25 + Synonyms</span>
     <span class="badge green">Compare Mode</span>
     <span class="badge blue">Interactive REPL</span>
-    <span class="badge amber">332 Tests · CI</span>
+    <span class="badge amber">652 Tests · CI</span>
     <span class="badge">100% Source Citations</span>
     <span class="badge">Python 3.8+</span>
     <span class="badge">Zero Dependencies</span>
@@ -610,11 +610,11 @@ footer{
 
 <!-- STATS -->
 <div class="stats-row" style="margin:0 40px 80px;max-width:none">
-  <div class="stat"><div class="stat-num"><span>21</span></div><div class="stat-label">Domains</div></div>
+  <div class="stat"><div class="stat-num"><span>34</span></div><div class="stat-label">Domains</div></div>
   <div class="stat"><div class="stat-num"><span>12</span></div><div class="stat-label">Stacks</div></div>
   <div class="stat"><div class="stat-num">BM<span>25</span></div><div class="stat-label">+ Synonyms</div></div>
   <div class="stat"><div class="stat-num"><span>0</span></div><div class="stat-label">Dependencies</div></div>
-  <div class="stat"><div class="stat-num"><span>148</span></div><div class="stat-label">Tests · CI Green</div></div>
+  <div class="stat"><div class="stat-num"><span>652</span></div><div class="stat-label">Tests · CI Green</div></div>
   <div class="stat"><div class="stat-num"><span>6</span></div><div class="stat-label">AI Tools Supported</div></div>
 </div>
 
@@ -623,7 +623,7 @@ footer{
 <!-- DOMAINS -->
 <section id="domains">
   <div class="section-tag">// Knowledge Base</div>
-  <h2>21 Backend Domains</h2>
+  <h2>34 Backend Domains</h2>
   <p class="section-desc">Every domain contains opinionated, source-citable, staff-engineer-grade rows with Do / Don't examples and severity ratings.</p>
 
   <div class="domains-grid">
@@ -894,7 +894,7 @@ footer{
     <div class="domain-card" style="--card-color:var(--green)">
       <span class="domain-icon">🧪</span>
       <div class="domain-name">tested + linted</div>
-      <div class="domain-desc">332 pytest cases covering ranking quality, edge cases, decision intelligence, intent classification, trust/verifiability, freshness, provenance, and conflict detection. Ruff lint + CSV validation on Python 3.9 / 3.11 / 3.12.</div>
+      <div class="domain-desc">652 pytest cases covering ranking quality, golden queries (239 assertions), edge cases, decision intelligence, intent classification, trust/verifiability, freshness, provenance, conflict detection, dedup, and coverage analysis. Ruff lint + CSV validation on Python 3.9 / 3.11 / 3.12.</div>
       <div class="domain-count">Green on every push</div>
     </div>
     <div class="domain-card" style="--card-color:var(--blue)">
@@ -951,6 +951,24 @@ footer{
       <div class="domain-desc">Weekly GitHub Action flags stale rows (&gt;18 months) and broken Source URLs. Opens issues per domain — no manual auditing needed.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro-validate<br>--check-urls</code></div>
       <div class="domain-count">Weekly automated audit</div>
     </div>
+    <div class="domain-card" style="--card-color:var(--cyan)">
+      <span class="domain-icon">🧪</span>
+      <div class="domain-name">golden queries</div>
+      <div class="domain-desc">239 retrieval assertions across all 34 domains, 12 stacks, cross-domain, and compare mode. Guards BM25 ranking quality on every PR — actionable failure output shows expected vs actual top-5 with scores.</div>
+      <div class="domain-count">239 assertions · CI gate</div>
+    </div>
+    <div class="domain-card" style="--card-color:var(--purple)">
+      <span class="domain-icon">🔎</span>
+      <div class="domain-name">dedup</div>
+      <div class="domain-desc">BM25 pairwise self-similarity detects near-duplicate rows within and across domains. Configurable threshold, allowlist for intentional overlaps.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro dedup<br>--cross-domain --threshold 0.7</code></div>
+      <div class="domain-count">Catches silent drift</div>
+    </div>
+    <div class="domain-card" style="--card-color:var(--green)">
+      <span class="domain-icon">📊</span>
+      <div class="domain-name">coverage report</div>
+      <div class="domain-desc">Per-domain coverage analysis with gap detection (missing categories), thin detection (&lt;3 rows), and summary stats. Drives contribution by making gaps visible.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro coverage<br>--domain messaging --json</code></div>
+      <div class="domain-count">Gaps made visible</div>
+    </div>
   </div>
 </section>
 
@@ -982,7 +1000,7 @@ footer{
         <div class="step-num">03</div>
         <div class="step-content-inner">
           <div class="step-title">BM25 + Synonym Expansion</div>
-          <div class="step-detail">Pure Python BM25 ranks rows across 21 domain CSVs, with synonym expansion ("partial failure" → "compensation, saga") and an mtime-cached in-memory index. Every result carries a confidence score. No network, no model.</div>
+          <div class="step-detail">Pure Python BM25 ranks rows across 34 domain CSVs, with synonym expansion ("partial failure" → "compensation, saga") and an mtime-cached in-memory index. Every result carries a confidence score. No network, no model.</div>
         </div>
       </div>
       <div class="step-item" onclick="setStep(3)">
@@ -1117,7 +1135,7 @@ footer{
     <div class="install-card">
       <div class="install-tool">🧪 Contributors</div>
       <div class="install-sub">Tests, lint &amp; CSV validator</div>
-      <div class="install-code">pip install -e ".[dev]"<br><br>pytest                    # 332 tests<br>ruff check src tests      # lint<br>backendpro-validate       # CSVs</div>
+      <div class="install-code">pip install -e ".[dev]"<br><br>pytest                    # 652 tests<br>ruff check src tests      # lint<br>backendpro-validate       # CSVs</div>
     </div>
   </div>
 </section>
