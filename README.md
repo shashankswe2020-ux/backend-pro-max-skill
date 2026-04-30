@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://github.com/user-attachments/assets/e12dc2c7-ac27-4d0c-a3c9-abeef4acd2ab" alt="Backend Pro Max — Design Intelligence" />
+<img src="https://github.com/user-attachments/assets/b110c81b-47ff-4ddb-8bf5-f9d65fc9d434" alt="Backend Pro Max — Design Intelligence" />
 
 # 🚀 Backend Pro Max
 
