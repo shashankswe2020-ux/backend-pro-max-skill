@@ -20,19 +20,22 @@ Use Backend Pro Max whenever the user asks anything about:
 
 ## How it works
 
-This skill is backed by a BM25 search engine over **20 domain knowledge bases**
+This skill is backed by a BM25 search engine over **34 domain knowledge bases**
 and **12 language-specific stack guidelines**. Run:
 
 ```bash
-python3 src/backend-pro-max/scripts/search.py "<query>" [--domain <domain>] [--stack <stack>] [-n N]
-python3 src/backend-pro-max/scripts/search.py --list
+backendpro "<query>" [--domain <domain>] [--stack <stack>] [-n N]
+backendpro --list
 ```
 
 ### Domains
 
 `language`, `pattern`, `database`, `messaging`, `cache`, `cloud`, `iac`,
 `container`, `observability`, `api`, `auth`, `security`, `cicd`, `testing`,
-`architecture`, `scaling`, `consistency`, `performance`, `reliability`, `data`
+`architecture`, `scaling`, `consistency`, `performance`, `reliability`, `data`,
+`antipattern`, `cost`, `migration`, `incident`, `capacity`, `compliance`,
+`multi-tenant`, `release`, `ml-platform`, `edge`, `mobile-backend`,
+`api-contract`, `interview`, `latency`
 
 ### Stacks
 
