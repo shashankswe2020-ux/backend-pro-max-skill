@@ -1,7 +1,7 @@
 ---
 name: backend-pro-max
 description: |
-  Backend & distributed-systems engineering intelligence — search 20 domain
+  Backend & distributed-systems engineering intelligence — search 34 domain
   knowledge bases (languages, patterns, databases, messaging, cache, cloud,
   IaC, containers, observability, API design, auth, security, CI/CD, testing,
   architecture, scaling, consistency, performance, reliability, data) and
