@@ -4,6 +4,12 @@ All notable changes to **backendpro** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] — 2026-05-02
+
+### Fixed
+- **Skill templates updated to 34 domains** — `skill-content.md` and `SKILL.md` now list all 34 domains (was 20). Added: `antipattern`, `cost`, `migration`, `incident`, `capacity`, `compliance`, `multi-tenant`, `release`, `ml-platform`, `edge`, `mobile-backend`, `api-contract`, `interview`, `latency`.
+- **CLI paths in skill templates** — changed `python3 src/backend-pro-max/scripts/search.py` to `backendpro` in `skill-content.md` so pip-installed users get working commands.
+
 ## [0.8.0] — 2026-05-02
 
 ### Added

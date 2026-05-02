@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "backendpro"
-version = "0.8.0"
+version = "0.8.1"
 description = "Backend Pro Max — BM25-searchable backend & distributed-systems engineering intelligence as an AI skill / CLI."
 readme = "README.md"
 license = { file = "LICENSE" }
