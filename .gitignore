@@ -43,3 +43,10 @@ htmlcov/
 .github/skills/
 .backendpro_cache/
 vault/
+
+# Internal strategy docs
+docs/plans/go-to-market.md
+docs/system-design/
+
+# Software ideas
+backendpro-software-ideas/

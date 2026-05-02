@@ -585,57 +585,53 @@ flowchart TD
 ## 🔌 Installation as an AI skill
 
 <details open>
-<summary><strong>🟣 Claude Code</strong></summary>
-
-Symlink (or copy) the `src/backend-pro-max` directory into your repo at
-`.claude/skills/backend-pro-max/` — the `SKILL.md` already lives there. The
-agent will discover it automatically.
+<summary><strong>� Step 1 — Install from PyPI</strong></summary>
 
 ```bash
-mkdir -p .claude/skills
-ln -s "$(pwd)/src/backend-pro-max" .claude/skills/backend-pro-max
+pip install backendpro
 ```
+
+</details>
+
+<details open>
+<summary><strong>🟣 Claude Code</strong></summary>
+
+```bash
+backendpro --load claude
+```
+
+Creates `.claude/skills/backend-pro-max/SKILL.md` in the current directory.
+
 </details>
 
 <details>
 <summary><strong>🟦 Cursor / Windsurf / Continue / GitHub Copilot / Gemini</strong></summary>
 
-Copy `src/backend-pro-max/templates/base/skill-content.md` into your editor's
-rules file:
+```bash
+backendpro --load cursor     # → .cursor/rules/backend.mdc
+backendpro --load windsurf   # → .windsurfrules
+backendpro --load continue   # → AGENTS.md
+backendpro --load copilot    # → .github/copilot-instructions.md
+```
 
-| Tool             | Rules file                                  |
-|------------------|---------------------------------------------|
-| Cursor           | `.cursor/rules/backend.mdc`                 |
-| Windsurf         | `.windsurfrules`                            |
-| Continue         | `AGENTS.md`                                 |
-| GitHub Copilot   | `.github/copilot-instructions.md`           |
-| Gemini Code Assist | `GEMINI.md`                              |
+For Gemini Code Assist, copy the skill file manually:
 
-Make sure the assistant can run `python3 src/backend-pro-max/scripts/search.py …`
-in your repo.
+```bash
+cp "$(python3 -c "import backendpro as b; print(b.__path__[0])")/templates/base/skill-content.md" GEMINI.md
+```
+
 </details>
 
 <details>
-<summary><strong>⚙️ Anywhere else (CLI / scripts / MCP)</strong></summary>
+<summary><strong>⚙️ CLI / MCP</strong></summary>
 
-The CLI is pure Python 3 standard library. Either install it:
+Ready to use after `pip install`:
 
 ```bash
-pip install git+https://github.com/shashankswe2020-ux/backend-pro-max-skill
 backendpro --list
 backendpro "redis cluster" --json
+backendpro-mcp                     # start MCP server
 ```
-
-…or just clone and run the script directly:
-
-```bash
-python3 src/backend-pro-max/scripts/search.py --list
-python3 src/backend-pro-max/scripts/search.py "redis cluster" --json
-```
-
-The `--json` output makes it trivial to wire into an MCP tool, a custom
-agent loop, or any CI step.
-</details>
 
 ---
 

@@ -10,21 +10,21 @@
 | # | System | Key Topics |
 |---|--------|------------|
 | 1 | [Netflix](./netflix-system-design.md) | CDN (Open Connect), adaptive streaming, microservices, chaos engineering |
+| 3 | [Instagram / Photo Sharing](./instagram-system-design.md) | News feed, image pipeline, CDN, celebrity problem, sharding |
+| 4 | [Twitter / X](./twitter-system-design.md) | Hybrid fan-out (push/pull), timeline ranking, trending (CMS + Heron), Earlybird real-time search |
+| 2 | [WhatsApp / Messaging System](./whatsapp-messaging-system.md) | End-to-end encryption, message queues, presence, delivery receipts, fan-out |
+| 5 | [Facebook News Feed](./facebook-news-feed.md) | Multi-source aggregation, EdgeRank → DNN ranking, pull-heavy hybrid, TAO social graph, mcrouter edge caching |
+| 6 | [LinkedIn](./linkedin-system-design.md) | Connection graph + degree pre-compute, Galene search, feed ranking, InMail credit ledger, skill endorsements, Economic Graph |
+| 7 | [Discord / Slack](./discord-slack-system-design.md) | Erlang gateway at 250K WS/node, Channel Server single-writer ordering, ScyllaDB messages, presence amplification, WebRTC SFU voice |
 
 ---
 
-## Planned (49 Remaining)
+## Planned (43 Remaining)
 
 ### Social & Communication Platforms
 
 | # | System | Key Topics |
 |---|--------|------------|
-| 2 | WhatsApp / Messaging System | End-to-end encryption, message queues, presence, delivery receipts, fan-out |
-| 3 | Instagram / Photo Sharing | News feed, image pipeline, CDN, celebrity problem, sharding |
-| 4 | Twitter / X | Fan-out on write vs. read, trending, timeline ranking, real-time search |
-| 5 | Facebook News Feed | Aggregation, ranking, push vs. pull, social graph, edge caching |
-| 6 | LinkedIn | Connection graph, feed ranking, InMail queue, search, skill endorsements |
-| 7 | Discord / Slack | WebSocket at scale, message ordering, channels, presence, voice/video |
 | 8 | Zoom / Video Conferencing | SFU vs. MCU, WebRTC, SRTP, adaptive bitrate, breakout rooms |
 
 ### Content & Media

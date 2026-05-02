@@ -1519,38 +1519,38 @@ footer{
   <div class="section-glow glow-green" style="top:0;right:-200px"></div>
   <div class="section-tag">// Get Started</div>
   <h2>Drop into any AI tool</h2>
-  <p class="section-desc">One skill file, six assistants. Symlink, copy, or install — the skill instructs the model to search before answering.</p>
+  <p class="section-desc">Install once with pip, then load the skill into your favourite assistant.</p>
 
   <div class="install-grid">
     <div class="install-card">
-      <div class="install-tool">🟣 Claude Code</div>
-      <div class="install-sub">Symlink into .claude/skills/</div>
-      <div class="install-code">mkdir -p .claude/skills<br>ln -s "$(pwd)/src/backend-pro-max" \<br>  .claude/skills/backend-pro-max</div>
+      <div class="install-tool">� Claude Code</div>
+      <div class="install-sub">Adds SKILL.md to your project</div>
+      <div class="install-code">pip install backendpro<br>mkdir -p .claude/skills<br>backendpro --load claude</div>
     </div>
     <div class="install-card">
       <div class="install-tool">🟦 Cursor</div>
-      <div class="install-sub">Copy skill-content.md to rules file</div>
-      <div class="install-code">cp skill-content.md \<br>  .cursor/rules/backend.mdc</div>
+      <div class="install-sub">Adds .cursor/rules/backend.mdc</div>
+      <div class="install-code">pip install backendpro<br>backendpro --load cursor</div>
     </div>
     <div class="install-card">
       <div class="install-tool">🌊 Windsurf</div>
-      <div class="install-sub">Add to .windsurfrules</div>
-      <div class="install-code">cp skill-content.md .windsurfrules</div>
+      <div class="install-sub">Adds .windsurfrules to your project</div>
+      <div class="install-code">pip install backendpro<br>backendpro --load windsurf</div>
     </div>
     <div class="install-card">
       <div class="install-tool">🐙 GitHub Copilot</div>
-      <div class="install-sub">Add to copilot-instructions.md</div>
-      <div class="install-code">cp skill-content.md \<br>  .github/copilot-instructions.md</div>
+      <div class="install-sub">Adds .github/copilot-instructions.md</div>
+      <div class="install-code">pip install backendpro<br>backendpro --load copilot</div>
     </div>
     <div class="install-card">
       <div class="install-tool">🔷 Continue</div>
-      <div class="install-sub">Add to AGENTS.md</div>
-      <div class="install-code">cp skill-content.md AGENTS.md</div>
+      <div class="install-sub">Adds AGENTS.md to your project</div>
+      <div class="install-code">pip install backendpro<br>backendpro --load continue</div>
     </div>
     <div class="install-card">
       <div class="install-tool">⚙️ CLI / MCP</div>
-      <div class="install-sub">Install globally via pip</div>
-      <div class="install-code">pip install git+https://github.com/\<br>  shashankswe2020-ux/\<br>  backend-pro-max-skill<br><br>backendpro "redis cluster" --json</div>
+      <div class="install-sub">Search &amp; serve from the terminal</div>
+      <div class="install-code">pip install backendpro<br>backendpro "redis cluster" --json<br>backendpro --list<br>backendpro-mcp</div>
     </div>
     <div class="install-card">
       <div class="install-tool">🧪 Contributors</div>

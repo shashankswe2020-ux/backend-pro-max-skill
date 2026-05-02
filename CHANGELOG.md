@@ -4,6 +4,16 @@ All notable changes to **backendpro** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] — 2026-05-02
+
+### Added
+- **`backendpro --load <tool>`** — one-command skill loader that copies the correct skill file into the current workspace. Supports `claude`, `cursor`, `windsurf`, `copilot`, and `continue`. After `pip install backendpro`, users run `backendpro --load cursor` and the skill file lands in `.cursor/rules/backend.mdc` (or the equivalent path for each tool).
+- **`templates/base/SKILL.md`** — pip-installable Claude Code skill file that uses `backendpro` CLI commands instead of raw `python3 src/...` paths. Automatically included in package data via the existing `templates/base/*.md` glob.
+
+### Changed
+- **`sites/index.html`** installation section rewritten — all six install cards now show the `pip install backendpro` + `backendpro --load <tool>` two-command flow instead of manual `cp` commands with hard-coded paths.
+- `search.py` — imports `shutil` and `pathlib.Path`; `--load` subcommand intercepted in `main()` before argparse.
+
 ## [0.7.0] — 2026-04-29
 
 ### Added

@@ -18,7 +18,9 @@ import io
 import json
 import os
 import shlex
+import shutil
 import sys
+from pathlib import Path
 
 try:
     from .calc import CALCULATORS, format_calc_result
@@ -432,6 +434,41 @@ def _build_parser():
     return parser
 
 
+# ── Load skill into workspace ───────────────────────────────────────
+
+_LOAD_TARGETS = {
+    "claude":   (".claude/skills/backend-pro-max/SKILL.md", "SKILL.md"),
+    "cursor":   (".cursor/rules/backend.mdc",               "skill-content.md"),
+    "windsurf": (".windsurfrules",                           "skill-content.md"),
+    "copilot":  (".github/copilot-instructions.md",          "skill-content.md"),
+    "continue": ("AGENTS.md",                                "skill-content.md"),
+}
+
+
+def _handle_load(target: str) -> None:
+    """Copy the skill file into the current workspace for a given AI tool."""
+    target = target.lower()
+    if target in ("--help", "-h") or not target:
+        print("Usage: backendpro --load <tool>")
+        print("Tools: " + ", ".join(sorted(_LOAD_TARGETS)))
+        sys.exit(0)
+    if target not in _LOAD_TARGETS:
+        print(f"Unknown tool '{target}'. Choose from: {', '.join(sorted(_LOAD_TARGETS))}", file=sys.stderr)
+        sys.exit(1)
+
+    dest_rel, src_name = _LOAD_TARGETS[target]
+    templates_dir = Path(__file__).resolve().parent.parent / "templates" / "base"
+    src = templates_dir / src_name
+    if not src.exists():
+        print(f"Skill template not found: {src}", file=sys.stderr)
+        sys.exit(1)
+
+    dest = Path.cwd() / dest_rel
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dest)
+    print(f"✅  Loaded skill into {dest_rel}")
+
+
 def _handle_calc(argv):
     """Handle `backendpro calc <type> [--key value ...]` before argparse."""
     # argv is everything after 'calc', e.g. ['qps', '--daily', '100000000']
@@ -477,6 +514,9 @@ def _handle_calc(argv):
 def main():
     # Intercept subcommands before argparse.
     raw_args = sys.argv[1:]
+    if raw_args and raw_args[0] == "--load":
+        _handle_load(raw_args[1] if len(raw_args) > 1 else "")
+        return
     if raw_args and raw_args[0] == "calc":
         _handle_calc(raw_args[1:])
         return
