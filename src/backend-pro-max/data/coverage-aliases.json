@@ -1,0 +1,70 @@
+{
+  "pattern": {
+    "Data Management": {"category": ["Data"]},
+    "Communication": {"category": ["Messaging"]}
+  },
+  "database": {
+    "Key-Value": {"category": ["Key-value / Document", "In-memory KV", "Coordination KV"]}
+  },
+  "messaging": {
+    "Queue": {"category": ["Managed queue", "Message broker (AMQP)"]},
+    "Pub/Sub": {"category": ["IoT pub/sub", "Pub/sub & event bus", "Pub/sub (managed)"]}
+  },
+  "cache": {
+    "In-Process": {"category": ["In-memory per-instance"]},
+    "Distributed": {"category": ["Sharded cache", "Cache-aside / write-through"]},
+    "CDN": {"category": ["Edge cache"]},
+    "Strategy": {"category": ["Cache loads on miss", "Write to cache & DB synchronously", "Buffer writes; async flush", "Cache 'not found'"]}
+  },
+  "cloud": {
+    "Compute": {"category": ["Compute (VM)", "Container", "Kubernetes"]},
+    "Storage": {"category": ["Object storage"]},
+    "Database": {"category": ["Managed RDBMS", "Managed NoSQL", "Distributed SQL"]},
+    "Serverless": {"category": ["Serverless function", "Serverless containers", "Serverless DWH"]}
+  },
+  "container": {
+    "Runtime": {"category": ["Container runtime + image format", "Daemonless container runtime", "Container runtime"]},
+    "Orchestration": {"category": ["Container orchestration", "Managed K8s", "Orchestrator"]},
+    "Package Management": {"category": ["K8s package manager"]}
+  },
+  "observability": {
+    "Logging": {"category": ["Logs", "Logs + search", "Log shipping"]},
+    "Tracing": {"category": ["Traces"]},
+    "Profiling": {"category": ["Continuous profiling"]}
+  },
+  "auth": {
+    "Token-Based": {"category": ["Self-contained token"]},
+    "Certificate": {"name": ["mTLS (Mutual TLS)"]},
+    "Session": {"category": ["Server-managed session"]},
+    "Federated": {"category": ["Federated SSO"]}
+  },
+  "security": {
+    "Injection": {"category": ["OWASP A03 Injection", "OWASP A03"]},
+    "Network": {"name": ["Zero Trust networking", "TLS / Cipher hardening"]}
+  },
+  "testing": {
+    "Contract": {"name": ["Contract tests"]},
+    "End-to-End": {"category": ["E2E"]},
+    "Performance": {"name": ["Load tests", "Stress / soak tests"]}
+  },
+  "architecture": {
+    "Monolith": {"name": ["Monolith", "Modular Monolith"]},
+    "Microservices": {"name": ["Microservices"]},
+    "Serverless": {"name": ["Serverless (FaaS)"]},
+    "Event-Driven": {"name": ["Event-Driven Architecture"]}
+  },
+  "scaling": {
+    "Vertical": {"name": ["Vertical scaling (scale-up)"]},
+    "Horizontal": {"name": ["Horizontal scaling (scale-out)"]},
+    "Auto-scaling": {"name": ["Auto-scaling (HPA / KEDA / cluster-autoscaler / Karpenter)"]},
+    "Data Partitioning": {"name": ["Sharding (range / hash / geo)", "Partitioning (table / topic / time)"]}
+  },
+  "consistency": {
+    "Eventual": {"name": ["Eventual consistency"]},
+    "Causal": {"name": ["Causal consistency"]},
+    "Theorem": {"name": ["CAP theorem"]}
+  },
+  "reliability": {
+    "Observability": {"name": ["SLO / SLI / Error budget"]}
+  }
+}

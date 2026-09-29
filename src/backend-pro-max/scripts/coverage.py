@@ -32,7 +32,9 @@ def _load_targets() -> dict[str, list[str]]:
     """Load coverage-targets.yml → {domain: [expected categories]}."""
     path = _TARGETS_PATH
     if not path.exists():
-        return {}
+        path = DATA_DIR / "coverage-targets.yml"
+    if not path.exists():
+        raise FileNotFoundError("Coverage targets are missing from the installation")
 
     text = path.read_text(encoding="utf-8")
     targets: dict[str, list[str]] = {}
@@ -94,6 +96,28 @@ def _has_source_url(row: dict) -> bool:
     return bool(url) and url.lower() not in ("", "n/a", "none", "-")
 
 
+def _normalize_category(value: str) -> str:
+    return re.sub(r"[\s_-]+", " ", value).strip().casefold()
+
+
+def _target_matches(domain: str, rows: list[dict], targets: list[str]) -> dict[str, list[str]]:
+    aliases = json.loads((DATA_DIR / "coverage-aliases.json").read_text(encoding="utf-8"))
+    domain_aliases = aliases.get(domain, {})
+    category_col = _category_col(domain)
+    name_col = next(iter(rows[0]), "Name") if rows else "Name"
+    matches = {}
+    for target in targets:
+        rule = domain_aliases.get(target, {})
+        categories = {_normalize_category(value) for value in [target, *rule.get("category", [])]}
+        names = {_normalize_category(value) for value in rule.get("name", [])}
+        matches[target] = [
+            row.get(name_col, "") for row in rows
+            if _normalize_category(row.get(category_col, "")) in categories
+            or _normalize_category(row.get(name_col, "")) in names
+        ]
+    return matches
+
+
 # ---------------------------------------------------------------------------
 # Coverage analysis
 # ---------------------------------------------------------------------------
@@ -113,9 +137,8 @@ def analyse_domain(domain: str, targets: dict[str, list[str]]) -> dict:
     with_source = sum(1 for r in rows if _has_source_url(r))
 
     expected_cats = targets.get(domain, [])
-    actual_cats = set(cat_counts.keys())
-
-    gaps = [c for c in expected_cats if c not in actual_cats]
+    target_matches = _target_matches(domain, rows, expected_cats)
+    gaps = [category for category, matches in target_matches.items() if not matches]
     thin = {c: n for c, n in cat_counts.items() if n < THIN_THRESHOLD}
     healthy = {c: n for c, n in cat_counts.items() if n >= THIN_THRESHOLD}
 
@@ -127,6 +150,7 @@ def analyse_domain(domain: str, targets: dict[str, list[str]]) -> dict:
         "categories": cat_counts,
         "category_count": len(cat_counts),
         "gaps": gaps,
+        "target_matches": target_matches,
         "thin": thin,
         "healthy": healthy,
     }

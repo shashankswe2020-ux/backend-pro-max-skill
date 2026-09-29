@@ -20,7 +20,7 @@ _sentence_transformers = None
 _np = None
 _model = None
 
-_CACHE_DIR = Path(os.environ.get("BACKENDPRO_CACHE_DIR", "")) or (Path.home() / ".backendpro_cache")
+_CACHE_DIR = Path(os.environ.get("BACKENDPRO_CACHE_DIR") or (Path.home() / ".backendpro_cache"))
 _MODEL_NAME = "all-MiniLM-L6-v2"
 
 # Embedding index cache: {cache_key: {"embeddings": ndarray, "texts": list}}

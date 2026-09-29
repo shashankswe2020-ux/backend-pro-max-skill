@@ -1,0 +1,14 @@
+{
+  "name": "backend-readiness-diagnostic-v1",
+  "limitations": "Small author-labeled diagnostic set, not an independently held-out benchmark. Labels are binary and incomplete. Latency is hardware-dependent. Do not use these results to claim SOTA performance.",
+  "queries": [
+    {"domain": "pattern", "query": "undo completed local steps when a later service rejects an order", "relevant": ["Saga"]},
+    {"domain": "pattern", "query": "save a database change and reliably publish its event without dual writes", "relevant": ["Transactional Outbox"]},
+    {"domain": "pattern", "query": "stop repeatedly calling a downstream dependency while it is failing", "relevant": ["Circuit Breaker"]},
+    {"domain": "messaging", "query": "JVM library for event time windowed joins over Kafka topics", "relevant": ["Kafka Streams"]},
+    {"domain": "database", "query": "embedded SQL database for a local first app with a single writer", "relevant": ["SQLite"]},
+    {"domain": "security", "query": "prevent one signed in tenant from reading another tenant's objects", "relevant": ["Object-level authorization"]},
+    {"domain": "reliability", "query": "keep checkout available when optional recommendations fail", "relevant": ["Graceful degradation"]},
+    {"domain": "cloud", "query": "AWS isolated network with private subnets and route tables", "relevant": ["Amazon VPC"]}
+  ]
+}

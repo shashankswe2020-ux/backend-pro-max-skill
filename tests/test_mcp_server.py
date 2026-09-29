@@ -21,6 +21,32 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not mcp_available, reason="mcp package not installed")
 
+def test_stdio_transport(tmp_path):
+    import anyio
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+
+    async def exercise_server():
+        parameters = StdioServerParameters(
+            command=sys.executable,
+            args=[str(_scripts / "mcp_server.py")],
+            cwd=str(tmp_path),
+        )
+        with anyio.fail_after(30):
+            async with stdio_client(parameters) as (reader, writer):
+                async with ClientSession(reader, writer) as session:
+                    initialized = await session.initialize()
+                    assert initialized.serverInfo.name == "Backend Pro Max"
+                    tools = await session.list_tools()
+                    assert len(tools.tools) == 8
+                    result = await session.call_tool(
+                        "backendpro_search", {"query": "Kafka", "domain": "messaging"}
+                    )
+                    assert not result.isError
+                    assert "Kafka" in result.content[0].text
+
+    anyio.run(exercise_server)
+
 # ── We test the underlying tool functions directly ──────────────
 
 # Since mcp_server.py calls _check_mcp() at import time, we need to import

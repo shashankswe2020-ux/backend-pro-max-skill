@@ -1,0 +1,389 @@
+{
+  "top_k": 5,
+  "candidates": 20,
+  "repeats": 3,
+  "modes": {
+    "bm25": {
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "p50_ms": 0.13433356070891023,
+      "p95_ms": 0.18025003373622894,
+      "queries": [
+        {
+          "query": "undo completed local steps when a later service rejects an order",
+          "domain": "pattern",
+          "ranked": [
+            "Saga",
+            "Distributed Tracing",
+            "Sidecar",
+            "Process Manager / Orchestrator",
+            "Idempotency Key"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "save a database change and reliably publish its event without dual writes",
+          "domain": "pattern",
+          "ranked": [
+            "Transactional Outbox",
+            "Change Data Capture (CDC)",
+            "Event Sourcing",
+            "Outbox + Inbox",
+            "Strangler Fig"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "stop repeatedly calling a downstream dependency while it is failing",
+          "domain": "pattern",
+          "ranked": [
+            "Circuit Breaker",
+            "Bulkhead",
+            "Materialized View",
+            "CQRS",
+            "Change Data Capture (CDC)"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "JVM library for event time windowed joins over Kafka topics",
+          "domain": "messaging",
+          "ranked": [
+            "Kafka Streams",
+            "Apache Kafka",
+            "Redpanda",
+            "ZeroMQ",
+            "Azure Service Bus / Event Grid / Event Hubs"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "embedded SQL database for a local first app with a single writer",
+          "domain": "database",
+          "ranked": [
+            "SQLite",
+            "DuckDB",
+            "DynamoDB",
+            "Spanner / TiDB",
+            "CockroachDB"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "prevent one signed in tenant from reading another tenant's objects",
+          "domain": "security",
+          "ranked": [
+            "Object-level authorization",
+            "Dependency vulnerability (CVE)",
+            "Secret in source code",
+            "Supply-chain (SLSA / build provenance)",
+            "SBOM & licence compliance"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "keep checkout available when optional recommendations fail",
+          "domain": "reliability",
+          "ranked": [
+            "Graceful degradation"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "AWS isolated network with private subnets and route tables",
+          "domain": "cloud",
+          "ranked": [
+            "Amazon VPC",
+            "EKS",
+            "SQS",
+            "EC2",
+            "ECS / Fargate"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        }
+      ]
+    },
+    "hybrid": {
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "p50_ms": 7.645333535037935,
+      "p95_ms": 9.013792034238577,
+      "queries": [
+        {
+          "query": "undo completed local steps when a later service rejects an order",
+          "domain": "pattern",
+          "ranked": [
+            "Saga",
+            "Process Manager / Orchestrator",
+            "Distributed Tracing",
+            "Idempotency Key",
+            "Transactional Outbox"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "save a database change and reliably publish its event without dual writes",
+          "domain": "pattern",
+          "ranked": [
+            "Transactional Outbox",
+            "Change Data Capture (CDC)",
+            "Event Sourcing",
+            "Outbox + Inbox",
+            "Saga"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "stop repeatedly calling a downstream dependency while it is failing",
+          "domain": "pattern",
+          "ranked": [
+            "Circuit Breaker",
+            "Bulkhead",
+            "Distributed Tracing",
+            "Saga",
+            "Idempotency Key"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "JVM library for event time windowed joins over Kafka topics",
+          "domain": "messaging",
+          "ranked": [
+            "Kafka Streams",
+            "Apache Kafka",
+            "Redpanda",
+            "AWS SNS / EventBridge",
+            "ZeroMQ"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "embedded SQL database for a local first app with a single writer",
+          "domain": "database",
+          "ranked": [
+            "SQLite",
+            "DuckDB",
+            "CockroachDB",
+            "Spanner / TiDB",
+            "DynamoDB"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "prevent one signed in tenant from reading another tenant's objects",
+          "domain": "security",
+          "ranked": [
+            "Object-level authorization",
+            "Secret in source code",
+            "Authentication hardening",
+            "CSRF",
+            "SBOM & licence compliance"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "keep checkout available when optional recommendations fail",
+          "domain": "reliability",
+          "ranked": [
+            "Graceful degradation",
+            "Timeouts",
+            "Graceful shutdown",
+            "SLO / SLI / Error budget",
+            "Retries with backoff + budget"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "AWS isolated network with private subnets and route tables",
+          "domain": "cloud",
+          "ranked": [
+            "Amazon VPC",
+            "EKS",
+            "ECS / Fargate",
+            "DynamoDB",
+            "EC2"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        }
+      ]
+    },
+    "hybrid-rerank": {
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "p50_ms": 34.14710407378152,
+      "p95_ms": 58.55733307544142,
+      "queries": [
+        {
+          "query": "undo completed local steps when a later service rejects an order",
+          "domain": "pattern",
+          "ranked": [
+            "Saga",
+            "Process Manager / Orchestrator",
+            "Idempotency Key",
+            "Circuit Breaker",
+            "Distributed Tracing"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "save a database change and reliably publish its event without dual writes",
+          "domain": "pattern",
+          "ranked": [
+            "Transactional Outbox",
+            "Change Data Capture (CDC)",
+            "Event Sourcing",
+            "CQRS",
+            "Read Replica"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "stop repeatedly calling a downstream dependency while it is failing",
+          "domain": "pattern",
+          "ranked": [
+            "Circuit Breaker",
+            "Bulkhead",
+            "Retry with Exponential Backoff + Jitter",
+            "Rate Limiting / Throttling",
+            "Leader Election"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "JVM library for event time windowed joins over Kafka topics",
+          "domain": "messaging",
+          "ranked": [
+            "Kafka Streams",
+            "Apache Kafka",
+            "Redpanda",
+            "AWS SNS / EventBridge",
+            "Azure Service Bus / Event Grid / Event Hubs"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "embedded SQL database for a local first app with a single writer",
+          "domain": "database",
+          "ranked": [
+            "SQLite",
+            "DuckDB",
+            "CockroachDB",
+            "Cassandra / ScyllaDB",
+            "MySQL / MariaDB"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "prevent one signed in tenant from reading another tenant's objects",
+          "domain": "security",
+          "ranked": [
+            "Object-level authorization",
+            "Encryption at rest",
+            "Insecure Deserialization",
+            "Supply-chain (SLSA / build provenance)",
+            "TLS / Cipher hardening"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "keep checkout available when optional recommendations fail",
+          "domain": "reliability",
+          "ranked": [
+            "Graceful degradation",
+            "Health checks (liveness vs readiness)",
+            "Graceful shutdown",
+            "Timeouts",
+            "Disaster recovery (RPO/RTO)\""
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        },
+        {
+          "query": "AWS isolated network with private subnets and route tables",
+          "domain": "cloud",
+          "ranked": [
+            "Amazon VPC",
+            "ECS / Fargate",
+            "SQS",
+            "EKS",
+            "DynamoDB"
+          ],
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0
+        }
+      ]
+    }
+  },
+  "dataset": "backend-readiness-diagnostic-v1",
+  "dataset_sha256": "d741de6b9c027c3fa3e4e73ebfbef0493b1575c85e4d11d1c46125b0bed2aa0f",
+  "corpus_sha256": {
+    "cloud": "c97df5fa94286f0bb886654074662df741af1d31a04dffccbb653ad1e17b1309",
+    "database": "8b09fcd71f859b0ecc85655d57dfd47039ec5ebf3554ecff30b455b8a3e5e81b",
+    "messaging": "23a9acd6ca794faa8bb2ab1bbd10ed582329dad7dd40054a8d42014bb4652c90",
+    "pattern": "be4920afec3e431f184a559f29070ae9dd66fae691f4efa327f713c97e5509a0",
+    "reliability": "efcb3b97211d6341e2549a68072e9ee20d60ef47444e84bcbc24ca449e2d8776",
+    "security": "154869e98cca6e2a818b04795edbdc74e9344608837624f4974963a9e5a3fe90"
+  },
+  "python": "3.14.6",
+  "platform": "macOS-26.5-arm64-arm-64bit-Mach-O",
+  "packages": {
+    "sentence-transformers": "6.1.0",
+    "torch": "2.14.0",
+    "numpy": "2.5.3"
+  },
+  "models": {
+    "embedding": "all-MiniLM-L6-v2",
+    "reranker": "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  },
+  "latency_scope": "warm queries; model loading, downloads and index building excluded",
+  "limitations": "Small author-labeled diagnostic set, not an independently held-out benchmark. Labels are binary and incomplete. Latency is hardware-dependent. Do not use these results to claim SOTA performance."
+}

@@ -13,15 +13,15 @@ from __future__ import annotations
 
 import argparse
 import csv
-import re
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 
 try:
-    from .core import CSV_CONFIG, BM25
+    from .core import BM25, CSV_CONFIG
 except ImportError:
-    from core import CSV_CONFIG, BM25  # type: ignore[no-redef]
+    from core import BM25, CSV_CONFIG  # type: ignore[no-redef]
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -75,7 +75,7 @@ def _obsidian_frontmatter(domain: str, row: dict[str, str], name_col: str) -> st
     """Generate YAML frontmatter for an Obsidian note."""
     lines = ["---"]
     lines.append(f"domain: {domain}")
-    lines.append(f"tags:")
+    lines.append("tags:")
     lines.append(f"  - domain/{domain}")
     for k, v in row.items():
         if k == name_col or not v.strip():
@@ -148,12 +148,14 @@ def _build_bm25_links(
     """Compute BM25 similarity between all entries → {dom/slug: [(related, score)]}."""
     slugs: list[str] = []
     documents: list[str] = []
+    indexed_rows: list[tuple[str, dict[str, str]]] = []
     for dom, name_col, row in rows:
         name = row.get(name_col, "Unknown").strip()
         if not name:
             continue
         slugs.append(f"{dom}/{_slugify(name)}")
         documents.append(" ".join(v.strip() for v in row.values() if v.strip()))
+        indexed_rows.append((name, row))
 
     if not documents:
         return {}
@@ -162,11 +164,8 @@ def _build_bm25_links(
     engine.fit(documents)
 
     links: dict[str, list[tuple[str, float]]] = {}
-    for i, (dom, name_col, row) in enumerate(rows):
-        name = row.get(name_col, "Unknown").strip()
-        if not name:
-            continue
-        slug = slugs[i]
+    for row_index, (name, row) in enumerate(indexed_rows):
+        slug = slugs[row_index]
         query = name
         for extra in ("Keywords", "Use Case", "Description"):
             if row.get(extra, "").strip():
@@ -176,7 +175,7 @@ def _build_bm25_links(
         scored = engine.score(query)
         related: list[tuple[str, float]] = []
         for idx, score in scored:
-            if idx == i or score < min_score:
+            if idx == row_index or score < min_score:
                 continue
             # Prefer cross-domain links
             related.append((slugs[idx], score))
