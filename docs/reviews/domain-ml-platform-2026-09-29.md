@@ -1,0 +1,57 @@
+# ML Platform Domain Review
+
+Review date: 2026-09-29.
+
+## Scope and Outcome
+
+- Reviewed and corrected all 12 existing rows in [ml-platform.csv](../../src/backend-pro-max/data/ml-platform.csv); retained their exact Name and Category values and original order.
+- Added 3 topics: LLM and RAG Evaluation; LLM Guardrails and Tool Approval; Training Reproducibility and Determinism. Final total: 15 rows.
+- Preserved the 10-column schema. Each row has an official source and `official-docs` provenance. `Last Updated=2026-09-29` means the guidance was reviewed against retrieved documentation on this date, not that the upstream page was published then.
+- Read the backend-pro-max skill. Its CLI searches were not run because this assignment prohibits terminal tools. No code, shared metadata, tests, or other domains were changed; no commits were made.
+
+## Findings Addressed
+
+Removed unsupported rankings and generalizations: skew as the number-one bug; feature stores eliminating skew; data quality universally dominating architecture; typical GPU utilization of 20-30% and guaranteed doubling; a universal RAG chunk-size range and ranking against model choice; universal sub-millisecond vector search and billion-vector scale; guaranteed fine-tuning superiority and 10000x LoRA parameter reduction with minimal quality loss.
+
+Registry metadata is now distinguished from rollout enforcement and traffic routing. Drift is an investigation signal rather than proof of accuracy loss or an automatic promotion decision. Tool examples are options, not a feature-parity or market-leadership claim.
+
+## Per-Row Evidence and Limits
+
+Every source below was retrieved using `fetch_webpage`. Practical safeguards derived from documented behavior are recommendations, not claims of automatic enforcement by the framework.
+
+| Row | Official sources | Verified guidance and limits |
+| --- | --- | --- |
+| Feature Store | [Feast point-in-time joins](https://docs.feast.dev/getting-started/concepts/point-in-time-joins) | Joins look backward from entity event timestamps within TTL. Event-time correctness alone can include later corrections or backfills. The documented created-timestamp filter excludes null timestamps and is not supported by every offline store. Availability timestamp semantics and materialization freshness must be verified locally; no claim of eliminating all skew. |
+| Model Registry | [MLflow registry](https://mlflow.org/docs/latest/ml/model-registry/) | Versions link to producing runs; aliases are mutable; tags can record validation status. Governance differs between OSS and managed integrations. Recording resolved deployment versions is a recommendation; alias assignment alone does not prove approval enforcement or implement A/B traffic routing. |
+| Experiment Tracking | [MLflow tracking](https://mlflow.org/docs/latest/ml/tracking/) | Runs record parameters and metrics plus artifacts; dataset references can be logged and linked to model metrics. Retaining immutable inputs and environments is still an operator responsibility. Autologging coverage varies; no claim that logging guarantees reproducibility or retains full datasets. |
+| Online vs Offline Serving | [Google Cloud prediction overview](https://docs.cloud.google.com/vertex-ai/docs/predictions/overview) | Synchronous online requests use deployed endpoints; asynchronous batch jobs target model resources without endpoint deployment. This is the documented Google Cloud contract, not a universal rule for every server. End-to-end latency budgeting is a recommendation; no latency or cost benchmark was run. |
+| Training-Serving Skew | [Google Rules of ML](https://developers.google.com/machine-learning/guides/rules-of-ml#training-serving_skew) | Rules 29-37 discuss logging serving features, changed joined data, shared transformation code, later-data evaluation, feedback loops, and parity measurement. Shared infrastructure reduces some mismatches but does not eliminate all causes. Sampling must respect privacy constraints. |
+| ML Pipeline Orchestration | [Kubeflow caching](https://www.kubeflow.org/docs/components/pipelines/user-guides/core-functions/caching/) | KFP can reuse available outputs for matching inputs and parameters; task and run-level caching controls exist. Immutable inputs and disabling cache for external mutable reads or side effects are derived safeguards. The page does not certify all orchestrators' retry, cache-key, or lineage behavior. |
+| Data Validation | [TensorFlow Data Validation guide](https://www.tensorflow.org/tfx/data_validation/get_started) | Schema inference requires review; environments distinguish training-only labels; configured comparators detect skew and drift; statistics can be sliced. Validation does not establish model quality or prove absence of leakage. This guide displays a 2023 update date; it was rechecked, not represented as a new API release. |
+| Model Monitoring | [Evidently drift explainer](https://docs.evidentlyai.com/metrics/explainer_drift); [Google monitoring guidance](https://developers.google.com/machine-learning/guides/rules-of-ml) | Evidently compares reference/current distributions and allows threshold customization. Nulls can be filtered out, requiring separate missingness checks. Distribution tests do not directly measure labeled prediction accuracy; delay and baseline suitability remain workload concerns. Investigation and candidate evaluation are recommended before retraining or promotion. |
+| GPU Resource Management | [NVIDIA GPU sharing](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/gpu-sharing.html) | MIG provides hardware memory/fault isolation on supported hardware; time-sliced replicas do not. Extra replicas do not guarantee proportional compute. Current docs also note container attribution limitations for DCGM metrics under time-slicing. No utilization improvement, tenant-security certification, or workload throughput is claimed. |
+| RAG (Retrieval-Augmented Generation) | [LangChain retrieval](https://docs.langchain.com/oss/python/langchain/retrieval); [LangSmith RAG evaluation](https://docs.langchain.com/langsmith/evaluate-rag-tutorial) | Retrieval supplies runtime context; two-step and agent-directed flows have different control/latency behavior. Correctness, groundedness, answer relevance, and retrieval relevance are separate evaluation targets. Chunking should be measured for the corpus and task; neither retrieval nor a citation guarantees truth. No claim that a vector database is mandatory. |
+| Vector Database | [pgvector maintainer documentation](https://github.com/pgvector/pgvector) | Exact search is the default; HNSW/IVFFlat trade recall for speed. Filtered approximate scans can underfill results; iterative scans have limits. Tuning identifiers in the row are explicitly pgvector-specific. Exact vector neighbors are not necessarily semantically relevant; no universal latency, scale, or cross-vendor API claim. |
+| LLM Fine-Tuning | [Hugging Face PEFT LoRA](https://huggingface.co/docs/peft/main/en/conceptual_guides/lora) | Low-rank updates leave base weights frozen; rank and targeted matrices determine trainable size. Adapter merging is documented, but quality and deployment compatibility need local evaluation. The fetched page is the development `main` documentation and links to stable v0.21.0; no newly introduced API, universal compression factor, or quality guarantee is asserted. |
+| LLM and RAG Evaluation (new) | [LangSmith evaluation concepts](https://docs.langchain.com/langsmith/evaluation-concepts); [RAG evaluation tutorial](https://docs.langchain.com/langsmith/evaluate-rag-tutorial) | Offline datasets support regression comparison; production traces support online checks; human, code, and LLM judges are complementary. Judge scores need review and prompt tuning. Dataset versioning is documented; pinning judge configuration is a reproducibility recommendation. Groundedness measures agreement with retrieved material, not independently verified truth. |
+| LLM Guardrails and Tool Approval (new) | [LangChain guardrails](https://docs.langchain.com/oss/python/langchain/guardrails) | Middleware supports PII handling, configurable input/output/tool-result checks, and approval before selected tools. Output and tool-result PII checks are not enabled by the input default. Deterministic checks can miss nuanced violations; model checks add latency/cost. Authorization remains separate; no guarantee against prompt injection or certification of compliance. |
+| Training Reproducibility and Determinism (new) | [PyTorch reproducibility](https://docs.pytorch.org/docs/2.14/notes/randomness.html); [MLflow tracking](https://mlflow.org/docs/latest/ml/tracking/) | PyTorch documents framework/library RNGs, worker seeding, deterministic algorithms, and performance tradeoffs. Identical seeds do not guarantee results across releases/platforms or CPU/GPU. Capturing code/data/environment/hardware is a recommended complement to tracking, not a promise of bitwise replay. |
+
+## Why These Additions
+
+The original CSV mentioned evaluation only as an orchestration stage and monitoring focused on drift. It lacked evaluation datasets, judge calibration, and separate RAG quality dimensions. It had no guardrail or sensitive-tool approval topic. Existing registry/tracking rows mentioned reproducibility but omitted execution nondeterminism, worker RNGs, and cross-platform limitations; the new determinism row covers that distinct gap.
+
+## Retrieval Issues and Remaining Uncertainties
+
+- The guessed Kubeflow concepts/caching URL returned HTTP 404; the user-guide caching page above was successfully fetched and used instead.
+- Qdrant's search page could not be meaningfully extracted. It is not cited as verified evidence; the vector guidance is grounded in the pgvector maintainer documentation instead.
+- Google Cloud's original URL redirected to its docs host; the fetched content uses Gemini Enterprise Agent Platform branding. Only the online/batch contract was adopted, not a repository-wide product rename.
+- PyTorch's stable URL redirected to 2.14; that concrete documentation page was fetched and cited. No installed version or runtime compatibility was tested.
+- Rolling `latest`, `main`, and vendor documentation can change. Alternative tools were not individually audited for lifecycle status, feature parity, licensing, pricing, or region availability. No SOTA ranking or production benchmark is claimed.
+- Application-specific quality, latency, cost, isolation, safety, and reproducibility remain empirical questions requiring representative workloads and pinned implementations.
+
+## Validation Handoff
+
+Editor diagnostics were checked after the first CSV patch with no errors. Final editor diagnostics are checked after this report and the remaining CSV changes. These diagnostics are not a substitute for parsing and schema validation.
+
+No terminal tools or tests were run. Parent agent should run existing CSV schema/provenance validation and relevant tests, confirming 15 records, unchanged 10-column header, preserved 12 original identities, valid `official-docs` values, and review dates. No shared tests or validation configuration were modified.

@@ -1,0 +1,98 @@
+# Capacity Domain Review
+
+Review date: 2026-09-29. Scope: `src/backend-pro-max/data/capacity.csv` and this report only. Reviewed and revised all 15 existing entries; added 3 entries, for 18 total. Existing names, order, categories, and the 10-column schema are preserved. No calculator, test, shared configuration, or other domain files were changed. No terminal tools, commits, or pushes were used.
+
+## Evidence and Interpretation
+
+The backend-pro-max skill and all original rows were read. References below were retrieved with `fetch_webpage` during this review. The date records verification of the revised claims, not the publication date of the source or a fresh hardware benchmark. `Source Type` uses the existing allowed enum, not a new `primary` value.
+
+All example workloads are explicitly illustrative assumptions. No workload measurements were performed. Measurements such as CPU service demand, checkout duration, WAL rate, object allocations, and per-partition throughput must come from the target deployment. Exact accounting identities and theoretical bounds are distinguished from deployment estimates. Vendor limits/defaults apply only to the documented product and configuration.
+
+Units: B is bytes; 1 B = 8 bits; kB/MB/GB are decimal powers of 1000; KiB/MiB/GiB are binary powers of 1024. Rates use seconds. MT/s counts transfers, not clock cycles. The storage and memory conversions use raw bytes, not vendor display labels: PostgreSQL `pg_size_pretty` uses powers of two despite labels such as MB and GB.
+
+## Per-Entry Source Ledger
+
+| Entry | Retrieved authority and supporting evidence | Correction and remaining uncertainty |
+| --- | --- | --- |
+| Little's Law | [MIT-hosted Urban Operations Research, section 4.4][little], with [definitions in 4.3][queue-defs], derives the long-run relationship and explicitly uses admitted arrivals for finite queues. This is an authoritative author textbook, not verification of Little's original paper. [Google's bimodal-latency example][cascade] independently applies rate times residence time to occupied threads. | Replaced the misleading `arrival <= service rate` stability test with finite long-run averages and consistent boundaries. Typical unbounded stochastic queues need strict spare service capacity; equality is not a general guarantee, although deterministic or finite-buffer models need different treatment. Mean occupancy does not size a maximum pool or predict P99. |
+| QPS from Daily Active Users | [Google SRE, Handling Overload][overload], especially The Pitfalls of Queries per Second; [SLI aggregation][slo] explains burst loss from coarse averaging. Primary operational account. | Added requests per action and made the 3x peak illustrative, not a recommended default. Daily-volume division is our dimensional derivation, not a Google empirical DAU formula. Weight requests per action by actions; include retries, service fanout, and background traffic at the chosen boundary. |
+| Storage Estimation | [PostgreSQL database object size functions][pg-size] specify bytes and distinguish table, index, and total relation sizes; [PostgreSQL standby documentation][replication] establishes primary/standby copies; [NIST units][units] defines GB/GiB. | Clarified that RF is total full copies and stored bytes include measured overhead. Removed universal 30% indexes, automatic two-year doubling, and 2x-10x compression assumptions. The example is replicated data only, not total provisioned disk. WAL, backups, growth, bloat changes, and rebuild reserve remain workload-specific. |
+| Bandwidth Estimation | [NIST units][units] supplies exact bit/byte and decimal/binary conversions; [Google aggregation guidance][slo] supports short-window measurements; [RFC 7323 section 1.3][tcp] documents variable TCP option overhead. | Use weighted mean payload bytes per endpoint and direction. Removed unconditional bidirectional doubling, fixed 20% overhead, and substitution of P95 payload for a P95 bandwidth calculation. Formula is payload accounting, not a wire-rate guarantee; TLS, headers, retransmissions, and correlated bursts require measurement. |
+| USL (Universal Scalability Law) | [Neil Gunther's own USL reference][usl], sections 1.1-1.2 and 2, gives the normalized model, fitted coefficients, and continuous peak. Primary model-author source. | Corrected 8.3x to 8.47x: denominator is 1.18. Specified coefficient fitting and controlled load definition. Peak formula requires beta > 0 and alpha < 1, followed by feasible integer comparisons; extrapolation is uncertain. Beta=0 does not have the coherency-induced peak. |
+| Amdahl's Law | [LLNL parallel-computing tutorial][amdahl], Amdahl and strong-scaling sections; corroborated by [NVIDIA section 4.1.3.1][memory]. First-party technical documentation. | Corrected 10.1x to 9.14x at p=0.95 and N=16. Fraction means serial execution time, not code line count. Restricted the ideal bound to fixed work without added overhead; shards and replicas do not automatically qualify. |
+| Connection Pool Sizing | [HikariCP maintainers' pool-sizing guide][pool], The Formula, Pool-locking, and Caveat Lector; [Little's Law][little] supplies occupancy accounting. | Replaced ambiguous additive headroom with `ceil(mean_busy * (1 + fraction))`. Use summed checkout-to-return connection-seconds, not just query latency. Removed purported PostgreSQL `<200` ceiling. HikariCP's core/spindle heuristic is only a starting point; its source excludes hyperthreads and flags lack of SSD analysis. Global pool totals, nested checkout deadlocks, and database saturation require tests. |
+| Kafka Partition Sizing | [Jun Rao's Confluent article][kafka], More partitions lead to higher throughput, explicitly requires max(target/producer, target/consumer). Primary co-creator guidance, published 2015. | Added consumer throughput and ceiling rounding; retain desired active consumers as an additional bound. Removed universal 1 MB/s and current `<4000` broker limit. The article's ZooKeeper-era limits are historical, not a verified modern ceiling. Conventional group semantics, balanced keys, aggregate broker capacity, replication, and acknowledgments must match the benchmark. |
+| Cache Size Estimation | [Redis MEMORY USAGE][redis-memory] describes key/value allocation accounting and sampling; [Redis eviction documentation][redis-eviction] identifies buffers excluded from maxmemory. | Removed universal payload expansion and hot-set percentages. Estimate allocated bytes per key, then budget process/RSS and replication/persistence reserve separately. Sampling error, data encodings, key lengths, fragmentation, and persistence peaks remain unmeasured; per-key estimates are not total RSS. |
+| Disk IOPS Planning | [AWS EBS I/O characteristics][iops] documents random/sequential behavior, merging/splitting, throughput limits, and instance caps. | Removed false assertion that advertised IOPS are sequential and random IOPS universally 10-100x lower. Removed generic NVMe/SATA/HDD performance ranges and automatic two-drive recommendation. Added byte-throughput check and device-level IO accounting. EBS's 256 KiB SSD accounting is not a universal physical-disk IO size. |
+| Replication Bandwidth | [PostgreSQL streaming, cascading, and synchronous replication][replication], sections 26.2.5, 26.2.7, and 26.2.8. | RF counts primary plus followers; multiply measured WAL/replication bytes, not logical application writes. Scope formula to direct primary fanout. Removed universal geographic latency figures and claim that synchronous replication doubles write latency. Quorum, durability mode, RTT, storage, topology, snapshot transfer, and catch-up determine actual costs. |
+| Fanout Estimation | [AWS SNS-to-SQS fanout documentation][fanout] describes one notification to each subscribed queue. Primary evidence for the copy-per-recipient model, not a social-feed benchmark. | Replaced nonnumeric `fanout_strategy` multiplication with sum of eligible materialized recipients; mean must be post-weighted. Removed unsupported universal 10K-follower hybrid cutoff and simplistic read-time complexity claim. Feed adaptation is an explicit accounting derivation; canonical writes, filtering, retries, and physical replication are additional concerns. |
+| SLO Error Budget | [Google SRE Service Level Objectives][slo], Indicators and Defining Objectives. Primary operational definitions. | Separate event-based from time-based budgets and total from remaining budget. Corrected 99% over exactly 30 days from 7.3 h to 7.2 h. Slow responses consume budget only when defined as bad by the SLI; request budgets do not imply fixed downtime minutes. |
+| Memory Bandwidth | [NVIDIA theoretical/effective bandwidth calculation][memory], sections 9.2.1-9.2.2; [NIST units][units]; [LLNL NUMA discussion][amdahl]. First-party technical references. | Corrected frequency to effective MT/s, divided data bits by 8, and labeled 76.8 GB/s theoretical, not measured. Removed universal server bandwidth/latency and fixed NUMA penalty. The retained 4800 MT/s and two 64-bit paths are illustrative inputs, not certification of any DDR5 machine. Hardware topology must verify channels and subchannels without counting them twice. |
+| TCP Connection Capacity | [Linux IP sysctl documentation][sysctl] specifies inclusive range, reservations, reuse controls, and FIN_WAIT_2 timeout; [Cloudflare's direct production investigation][ports] documents four-tuples and bind-before-connect. | Added source IP and destination IP:port pairs; exact default range gives 28232 ports and 282320 tuples for ten destinations. Scoped result to outbound tuple-space upper bound, not inbound connection capacity. Removed universal 60-second TIME_WAIT assumption; FIN_WAIT_2 is different. NAT, skew, reserved ports, memory, and descriptors can bind earlier. |
+| CPU Capacity from Service Demand (added) | [Google SRE CPU request cost and utilization][overload]; [Kubernetes requests and limits][cpu-limits] documents CPU units and throttling. | Adds missing CPU accounting and quota-aware upper bound. Formula is dimensional derivation using representative CPU-seconds/request, not response time. Target utilization is a chosen fraction, not a universal 50% recommendation. CPU requests are not hard limits; SMT, quotas, serial work, GC, and non-CPU bottlenecks require measurements. |
+| Queue Backlog Drain Time (added) | [Google SRE queue management, overload, and recovery][cascade]. Primary operational evidence for arrival/completion accounting and overload risks. | Adds recovery sizing absent from a steady-state Little's Law row. `backlog/(completion-arrival)` is our constant-rate fluid derivation, not a quoted Google equation or guaranteed deadline. No finite drain for positive backlog at equal/lower completion rate. Include retries and changing costs; use successful completions, not attempts. |
+| TCP Bandwidth Delay Product (added) | [RFC 7323][tcp], sections 1.1 and 2, establishes the bandwidth-delay/window limitation and window scaling. Primary protocol standard. | Adds per-flow window sizing absent from aggregate bandwidth and connection counts. Byte/bit and RTT conversions are explicit. Both receive and congestion windows matter; loss, slow start, ACK behavior, and application throughput may dominate. This is not a router-buffer sizing rule. |
+
+## Why These Additions
+
+CPU service demand closes the largest missing compute-sizing gap and prevents wall-clock latency or host core count from being used as CPU capacity. Backlog drain time distinguishes recovery headroom from steady-state throughput. Bandwidth-delay product explains why adequate NIC bandwidth alone does not guarantee high single-flow throughput. All three have numerical examples and explicit applicability limits; no calculator implementation was added.
+
+## Retrieval Limits
+
+- The original Little paper at `https://pubsonline.informs.org/doi/10.1287/opre.9.3.383` returned HTTP 403. The attempted MIT Graves PDF redirected to a faculty landing page; the guessed Performance Dynamics LittleLaw page was not found. These are not claimed as verified evidence. The accessible MIT textbook derivation and Google operational example support the revised row.
+- Kingston's DDR5 blog could not be extracted and its DDR5 overview returned 403. NVIDIA verifies the transfer-rate arithmetic, not a particular DDR5 configuration. No inaccessible manufacturer benchmark was retained as evidence.
+- AWS's queue-backlog Builders Library URL redirected to a page exposing only a cookie prompt; the static-stability Builders Library and whitepaper pages could not be extracted. None is used as supporting evidence. Google's accessible overload/queue treatment supports the explicitly derived recovery model. The failed SNS common-scenarios page was replaced with the successfully retrieved SNS-to-SQS guide.
+- Live `current`/`latest` documents can change. Only the sections and stable semantics described above were relied on; release-feature claims unrelated to this review were not imported. Historical source publication dates are not replaced by the review date.
+
+## Numeric Tests for Parent
+
+These are suggested expectations, not executed results. Where a calculator already exposes a corresponding operation, test its semantic agreement; the CSV formulas remain explanatory text. Do not assume new rows automatically create calculator operations.
+
+| Topic | Suggested inputs and expected result |
+| --- | --- |
+| Little's Law | 5000 req/s and 50 ms -> 250 mean concurrent requests, not 250000. At 6000 offered and 1000 rejected req/s, use 5000 admitted. Validate stability separately: a positive result alone proves nothing about spare service capacity. |
+| DAU | 10000000 * 10 * 1 / 86400 -> 1157.407407 QPS; assumed peak 3 -> 3472.222222. With 2 requests/action, both double. Zero volume -> zero. |
+| Storage | 1000000000 * 200 * 3 -> 600000000000 B = 600 GB = 558.793545 GiB. RF=1 -> 200000000000 B, not zero; RF=3 is not four copies. |
+| Bandwidth | 5000 * 2000 * 8 -> 80000000 bit/s; using 2048 B -> 81920000 bit/s. Distinct ingress/egress sizes must not silently double one direction. |
+| USL | N=10, alpha=.01, beta=.001 -> 8.474576271; N=1 -> 1. alpha=beta=0 -> N. Continuous peak sqrt(990) -> 31.464265; C(31)=31/2.23 and C(32)=32/2.302, so 31 wins among these integers. Beta=0 must not divide by zero in peak handling. |
+| Amdahl | p=.95, N=16 -> 9.142857143, not 10.1. p=0 -> 1; p=1 -> N; N=1 -> 1. Reject N<=0 and fractions outside [0,1]. |
+| Pool | 5000 * .005 -> 25 mean busy; with .5 headroom -> ceil(37.5)=38. An already integral candidate must stay integral. Two checkouts of 5 ms each contribute .010 connection-seconds/request. |
+| Kafka | target=100, producer=5, consumer=2 MB/s, desired=30 -> 50 partitions. Target=101 -> 51. Desired=60 -> 60. Reject zero/negative per-partition throughput. |
+| Cache | 100000 * 1500 -> 150000000 B = 143.051147 MiB before reserve. Do not multiply allocated bytes by per-key overhead again. |
+| IOPS | 5000 * 4 -> 20000 IOPS; *16384 B -> 327680000 B/s = 312.5 MiB/s. A 250 MiB/s throughput limit with 256 KiB IO caps at 1000 IOPS even if 3000 IOPS are provisioned. |
+| Replication | 50 MB/s and total RF=3 -> 100 MB/s primary egress = 800 Mbit/s; RF=1 -> 0. Contrast storage RF multiplication with follower RF-1 multiplication. Reject RF<1 or noninteger RF for this full-copy model. |
+| Fanout | 1000000 posts * 100 selected recipients -> 100000000 logical insertions. Zero selected recipients -> zero feed insertions, not zero canonical writes. Two authors with 10 posts*1 recipient and 1 post*100 recipients yield 110, not 11*50.5=555.5. |
+| SLO | Exactly 30 days, SLO=.999 -> 2592 s = 43.2 min; .9999 -> 259.2 s = 4.32 min; .99 -> 25920 s = 7.2 h. 1000000 eligible requests at .999 -> 1000 bad requests. Test fraction versus percent input conventions and floating tolerances before integer rounding. |
+| Memory bandwidth | 4800e6 * (64/8) * 2 -> 76800000000 B/s = 76.8 GB/s = 71.525574 GiB/s. Do not multiply by DDR's factor 2 again. Four independent 32-bit paths give the same result. |
+| TCP tuples | 60999-32768+1 -> 28232. One source and ten destinations -> 282320; two sources -> 564640. Reserving 100 ports in-range -> 281320 for one source and ten destinations. Bind-before-connect without sharing invalidates the destination multiplier. |
+| CPU (new) | 2000*.002/.5 -> 8 CPU units. 2*.5/.002 -> 500 QPS; a 500m quota gives .5*.5/.002 -> 125 QPS. Reject nonpositive service demand/capacity and target fractions <=0 or >=1 for this planning model. |
+| Backlog (new) | 1000000/(5000-4000) -> 1000 s. Clearing that backlog in 500 s with 4000 arrivals/s requires 6000 successful completions/s. Positive backlog with completion<=arrival -> no finite drain; zero backlog -> no existing backlog to drain; reject negative rates/backlog and nonpositive target duration. |
+| BDP (new) | 1e9*.08/8 -> 10000000 B = 9.536743 MiB. A limiting 1048576 B window over .08 s -> 13107200 B/s = 104.8576 Mbit/s. Use min(receive,cwnd) and reject nonpositive RTT. |
+
+Parent validation should parse the CSV with a CSV reader, assert 18 uniquely named records and exactly 10 fields, check the original 15 names/order, validate source types and `2026-09-29` dates, and run the repository schema, capacity retrieval, and applicable calculator tests. Reject NaN/infinite numeric inputs where relevant. No shared test or calculator code was inspected or changed as part of this review.
+
+## Validation Status
+
+`get_errors` was run immediately after each CSV patch and reported no errors. This is editor-diagnostic validation only, not executable CSV-schema or arithmetic validation. A final diagnostic check covers this report as well. Executable tests and numeric verification are delegated to the parent as requested.
+
+[little]: https://web.mit.edu/urban_or_book/www/book/chapter4/4.4.html
+[queue-defs]: https://web.mit.edu/urban_or_book/www/book/chapter4/4.3.html
+[overload]: https://sre.google/sre-book/handling-overload/
+[cascade]: https://sre.google/sre-book/addressing-cascading-failures/
+[slo]: https://sre.google/sre-book/service-level-objectives/
+[pg-size]: https://www.postgresql.org/docs/current/functions-admin.html#FUNCTIONS-ADMIN-DBSIZE
+[replication]: https://www.postgresql.org/docs/current/warm-standby.html
+[units]: https://physics.nist.gov/cuu/Units/binary.html
+[usl]: https://www.perfdynamics.com/Manifesto/USLscalability.html
+[amdahl]: https://hpc.llnl.gov/documentation/tutorials/introduction-parallel-computing-tutorial
+[pool]: https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing
+[kafka]: https://www.confluent.io/blog/how-choose-number-topics-partitions-kafka-cluster/
+[redis-memory]: https://redis.io/docs/latest/commands/memory-usage/
+[redis-eviction]: https://redis.io/docs/latest/develop/reference/eviction/
+[iops]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html
+[fanout]: https://docs.aws.amazon.com/sns/latest/dg/sns-sqs-as-subscriber.html
+[memory]: https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#theoretical-bandwidth-calculation
+[sysctl]: https://www.kernel.org/doc/html/latest/networking/ip-sysctl.html
+[ports]: https://blog.cloudflare.com/how-to-stop-running-out-of-ephemeral-ports-and-start-to-love-long-lived-connections/
+[cpu-limits]: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+[tcp]: https://www.rfc-editor.org/rfc/rfc7323.html
