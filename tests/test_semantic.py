@@ -5,7 +5,10 @@ installed. BM25 fallback behaviour is always tested.
 """
 from __future__ import annotations
 
+import os
+import subprocess
 import sys
+from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -75,17 +78,28 @@ class TestHybridRetrieval:
 class TestSemanticModuleAPI:
     """Unit tests for the semantic module itself (mocked deps)."""
 
-    def test_is_available_false_when_not_installed(self):
-        # Force import failure
-        with mock.patch.dict(sys.modules, {"sentence_transformers": None}):
-            # Re-import to pick up the mock
-            import importlib
+    @pytest.mark.parametrize("cache_dir", [None, "", "custom-cache"])
+    def test_cache_directory_configuration(self, cache_dir, tmp_path):
+        import semantic
 
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(Path(semantic.__file__).parent)
+        env.pop("BACKENDPRO_CACHE_DIR", None)
+        if cache_dir is not None:
+            env["BACKENDPRO_CACHE_DIR"] = cache_dir
+        output = subprocess.check_output(
+            [sys.executable, "-c", "import semantic; print(semantic._CACHE_DIR)"],
+            cwd=tmp_path,
+            env=env,
+            text=True,
+        )
+        expected = Path(cache_dir) if cache_dir else Path.home() / ".backendpro_cache"
+        assert Path(output.strip()) == expected
+
+    def test_is_available_false_when_not_installed(self):
+        with mock.patch.dict(sys.modules, {"sentence_transformers": None}):
             import semantic
-            importlib.reload(semantic)
-            # is_available tries to import; with None in sys.modules it will fail
-            # Actually, let's just test the import guard directly
-            assert semantic.is_available() == HAS_ST or not HAS_ST
+            assert not semantic.is_available()
 
     def test_reciprocal_rank_fusion(self):
         from semantic import reciprocal_rank_fusion

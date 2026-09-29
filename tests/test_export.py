@@ -11,6 +11,19 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src", "backend
 import export
 
 
+def test_bm25_links_skip_blank_names_without_shifting_indices():
+    rows = [
+        ("cache", "Name", {"Name": " ", "Description": "cache"}),
+        ("cache", "Name", {"Name": "Redis", "Description": "shared cache"}),
+        ("cache", "Name", {"Name": "", "Description": "cache"}),
+        ("cache", "Name", {"Name": "Memcached", "Description": "shared cache"}),
+    ]
+    links = export._build_bm25_links(rows, min_score=0)
+    assert set(links) == {"cache/redis", "cache/memcached"}
+    assert [slug for slug, _score in links["cache/redis"]] == ["cache/memcached"]
+    assert [slug for slug, _score in links["cache/memcached"]] == ["cache/redis"]
+
+
 def _tmpdir():
     return tempfile.mkdtemp(prefix="bpm_export_")
 
@@ -27,7 +40,7 @@ def test_obsidian_creates_files():
     assert len(subdirs) > 1
     # .md files inside subfolders
     md_files = []
-    for root, _dirs, files in os.walk(out):
+    for _root, _dirs, files in os.walk(out):
         md_files.extend(f for f in files if f.endswith(".md") and f != "_Index.md")
     assert len(md_files) > 1
 

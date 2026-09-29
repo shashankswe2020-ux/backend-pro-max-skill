@@ -84,6 +84,8 @@ backendpro = "src/backend-pro-max"
 [tool.setuptools.package-data]
 backendpro = [
     "data/*.csv",
+    "data/*.yml",
+    "data/*.json",
     "data/stacks/*.csv",
     "templates/base/*.md",
 ]

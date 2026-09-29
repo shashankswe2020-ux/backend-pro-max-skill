@@ -1,6 +1,10 @@
 <div align="center">
 
-<img src="https://github.com/user-attachments/assets/b110c81b-47ff-4ddb-8bf5-f9d65fc9d434" alt="Backend Pro Max — Design Intelligence" />
+<a href="docs/backend-pro.mp4">
+  <img src="docs/backend-pro-preview.gif" alt="Backend Pro Max video preview — click to watch the full demo" width="800" />
+</a>
+
+<p><a href="docs/backend-pro.mp4">Watch the full Backend Pro Max demo (21 seconds)</a></p>
 
 # 🚀 Backend Pro Max
 
@@ -15,7 +19,7 @@ Cursor, Windsurf, GitHub Copilot, Gemini, Continue, or any AI assistant.
 
 [![PyPI](https://img.shields.io/pypi/v/backendpro?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/backendpro/)
 [![CI](https://img.shields.io/github/actions/workflow/status/shashankswe2020-ux/backend-pro-max-skill/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/shashankswe2020-ux/backend-pro-max-skill/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-652_passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
+[![Tests](https://img.shields.io/badge/tests-regression_suite-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
 [![34 Domains](https://img.shields.io/badge/domains-34-blue?style=for-the-badge)](#-domains)
 [![12 Stacks](https://img.shields.io/badge/stacks-12-purple?style=for-the-badge)](#-stacks)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-yellow?style=for-the-badge&logo=python&logoColor=white)](#-prerequisites)
@@ -79,7 +83,7 @@ model is *instructed* to consult — so its advice cites a row, not a vibe.
 | 🔌 **MCP server** | `pip install backendpro[mcp]` → 8 tools on stdio, works with Claude Desktop, Cline, Cursor, Zed |
 | 📎 **Citation tokens** | Every result carries `[BPM:domain.slug]` — greppable provenance for PR review |
 | 📡 **JSONL streaming** | `--jsonl` for agent loops that consume results incrementally |
-| ✅ **CI-enforced** | `backendpro-validate` schema-checks every CSV; 652 pytest cases run on Py 3.9 / 3.11 / 3.12 |
+| ✅ **CI-enforced** | `backendpro-validate` schema-checks every CSV; regression tests run on Py 3.9 / 3.11 / 3.12, with dedicated MCP, retrieval-model, and installed-wheel checks |
 | 🔗 **100% source citations** | Every row carries `Source URL`, `Source Type`, `Last Updated` — official docs, RFCs, papers, OWASP. `--strict` mode fails on gaps |
 | ⚠️ **Conflict detector** | `backendpro conflicts` surfaces 12 architectural tensions (retry vs latency, cache vs consistency, etc.) with citation tokens |
 | 🕐 **Auto-freshness audit** | Weekly GitHub Action flags stale rows (>18mo) and broken URLs. `--check-urls` for local runs |
@@ -91,7 +95,7 @@ model is *instructed* to consult — so its advice cites a row, not a vibe.
 | 🌐 **Web playground** | [backendpro.cc](https://backendpro.cc) — search-as-you-type, domain filter, permalinks, compare view. Zero backend |
 | 🧪 **Golden query suite** | 239 retrieval assertions across all domains, stacks, cross-domain, and compare — guards ranking quality on every PR |
 | 🔎 **`backendpro dedup`** | BM25 pairwise near-duplicate detection within and across domains. `--threshold`, `--cross-domain`, `--json`. Allowlist for intentional overlaps |
-| 📊 **`backendpro coverage`** | Per-domain coverage report with gap/thin detection against `coverage-targets.yml`. `--json`, `--badge` for shields.io |
+| 📊 **`backendpro coverage`** | Per-domain gap/thin detection with explicit topic aliases and supporting row names in JSON; bundled targets work in wheel installs. `--json`, `--badge` for shields.io |
 
 ---
 

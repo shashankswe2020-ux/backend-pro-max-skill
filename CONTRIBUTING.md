@@ -9,7 +9,7 @@ Thanks for helping make this skill smarter. The bar for contributions is:
 
 ```bash
 python -m pip install -e ".[dev]"
-pytest                                 # 37+ tests must pass
+pytest                                 # regression suite must pass
 python -m backendpro.scripts.validate  # every CSV must validate cleanly
 ruff check src tests                   # lint
 ```
@@ -87,6 +87,35 @@ def test_search_saga_finds_saga_in_patterns():
     res = core.search("saga", domain="pattern")
     assert any("saga" in str(v).lower() for v in res["results"][0].values())
 ```
+
+## Coverage targets and retrieval diagnostics
+
+Coverage targets live in [coverage-targets.yml](coverage-targets.yml). Keep
+the bundled [defaults](src/backend-pro-max/data/coverage-targets.yml) in sync;
+tests enforce parity so wheel installations use the same targets. Broad
+targets may map to exact category labels or primary row names through
+[coverage-aliases.json](src/backend-pro-max/data/coverage-aliases.json).
+Do not map arbitrary description text or unrelated categories just to remove
+a gap. JSON reports include `target_matches` as supporting evidence.
+
+Review the linked source before updating a row's review date. URL presence
+or a successful HTTP response does not establish factual correctness.
+
+```bash
+python -m pip install -e ".[dev,mcp,semantic,rerank]"
+python -m pytest tests/test_mcp_server.py tests/test_semantic.py tests/test_rerank.py
+python -m backendpro.scripts.benchmark tests/retrieval-benchmark.json --output benchmark.json
+python -m pip wheel --no-deps --wheel-dir dist .
+python scripts/smoke_wheel.py dist/backendpro-0.8.1-py3-none-any.whl
+```
+
+The benchmark reports binary Recall@K, MRR@K, nDCG@K, and warm-query p50/p95
+latency for BM25, hybrid, and hybrid-plus-reranking. Downloads, model loading,
+and index creation are excluded from latency. Use `--modes bm25` without ML
+dependencies, or `--max-p95-ms N` to enforce your environment's latency budget.
+The supplied eight-query set is an author-labeled diagnostic, not a held-out
+evaluation; review broader relevance labels independently before making
+retrieval-quality claims. CI retains the model benchmark as an artifact.
 
 ## Synonyms
 

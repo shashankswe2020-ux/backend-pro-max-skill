@@ -4,6 +4,8 @@ Tests that require sentence-transformers/CrossEncoder are skipped if not install
 """
 from __future__ import annotations
 
+from unittest import mock
+
 import pytest
 
 try:
@@ -29,15 +31,14 @@ class TestRerankModule:
 
     def test_rerank_without_deps_returns_original_order(self):
         """Without cross-encoder, rerank should return rows unchanged (truncated to top_k)."""
-        if HAS_CE:
-            pytest.skip("CrossEncoder is installed — this test is for missing-deps path")
         from rerank import rerank
         rows = [
             {"Name": "A", "_score": 5.0},
             {"Name": "B", "_score": 4.0},
             {"Name": "C", "_score": 3.0},
         ]
-        result = rerank("test", rows, top_k=2)
+        with mock.patch("rerank._get_model", return_value=None):
+            result = rerank("test", rows, top_k=2)
         assert len(result) == 2
         assert result[0]["Name"] == "A"
 
