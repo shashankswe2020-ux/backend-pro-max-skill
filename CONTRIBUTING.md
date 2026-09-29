@@ -106,7 +106,7 @@ python -m pip install -e ".[dev,mcp,semantic,rerank]"
 python -m pytest tests/test_mcp_server.py tests/test_semantic.py tests/test_rerank.py
 python -m backendpro.scripts.benchmark tests/retrieval-benchmark.json --output benchmark.json
 python -m pip wheel --no-deps --wheel-dir dist .
-python scripts/smoke_wheel.py dist/backendpro-0.8.1-py3-none-any.whl
+python scripts/smoke_wheel.py dist/backendpro-0.9.0-py3-none-any.whl
 ```
 
 The benchmark reports binary Recall@K, MRR@K, nDCG@K, and warm-query p50/p95

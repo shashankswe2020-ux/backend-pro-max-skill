@@ -4,6 +4,27 @@ All notable changes to **backendpro** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] — 2026-09-29
+
+### Added
+- Source-reviewed knowledge enrichment: 46 new entries since 0.8.1, bringing the domain knowledge base to 560 rows across 34 domains, alongside 12 language stacks.
+- Retrieval diagnostics comparing BM25, hybrid search, and reranking with ranking metrics and warm-query latency.
+- Explicit coverage aliases with supporting row evidence, bundled coverage defaults, and clean-wheel installation checks.
+- MCP stdio integration tests, real-model retrieval CI, and cost/domain data regression checks.
+- Animated README demo preview linked to the full MP4.
+
+### Changed
+- Reviewed all 22 cost entries and 184 entries across 13 further domains, correcting billing units, formulas, compatibility guarantees, operational advice, and source provenance.
+- Preserved stale dates on 31 compliance and latency entries where verification remains incomplete or measurements are historical; zero declared coverage gaps does not imply exhaustive knowledge depth.
+
+### Fixed
+- Semantic cache fallback now uses the home cache when its environment variable is unset or empty.
+- Export similarity links remain aligned when input rows have blank names.
+- Coverage test imports no longer collide with pytest-cov; CI measures the full source tree.
+- Installed distributions include coverage targets and aliases rather than silently omitting gap checks.
+- Missing-dependency tests behave consistently with optional model dependencies installed.
+- Runtime `backendpro.__version__` now matches distribution metadata, enforced by the installed-wheel smoke check.
+
 ## [0.8.1] — 2026-05-02
 
 ### Fixed

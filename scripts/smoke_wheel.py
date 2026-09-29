@@ -33,6 +33,11 @@ def main():
             )
 
         run("-m", "pip", "install", "--no-index", "--no-deps", str(wheel))
+        run(
+            "-c",
+            "import backendpro; from importlib.metadata import version; "
+            "assert backendpro.__version__ == version('backendpro'), 'Runtime version differs from metadata'",
+        )
         run("-m", "backendpro.scripts.validate")
         result = json.loads(run(
             "-m", "backendpro.scripts.search", "circuit breaker", "--domain", "pattern", "--json"
