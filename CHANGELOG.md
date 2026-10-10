@@ -4,7 +4,7 @@ All notable changes to **backendpro** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.9.0] — Unreleased
+## [0.9.0] — 2026-10-10
 
 ### Added
 - Source-reviewed knowledge enrichment: 46 new entries since 0.8.1, bringing the domain knowledge base to 560 rows across 34 domains, alongside 12 language stacks.
