@@ -1,0 +1,534 @@
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+
+(function(){
+  const ND=VD.N, ED=VD.E, DOMAINS=VD.D;
+
+  /* ── Container ────────────────────────────────────────── */
+  const container=document.getElementById('vault-3d-full')||document.getElementById('vault-3d');
+  if(!container)return;
+  const tooltip=document.getElementById('graph-tooltip-full')||document.getElementById('graph-tooltip');
+  const info=document.getElementById('graph-info-full')||document.getElementById('graph-info');
+  const legendEl=document.getElementById('graph-legend-full')||document.getElementById('graph-legend');
+  const hidden=new Set();
+
+  const domKeys=Object.keys(DOMAINS);
+  info.textContent=ND.length+' entries · '+ED.length+' connections · '+domKeys.length+' domain / stack groups';
+
+  /* ── Scene ────────────────────────────────────────────── */
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(50,container.clientWidth/container.clientHeight,0.1,300);
+  camera.position.set(0,3,18);
+
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setSize(container.clientWidth,container.clientHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1.2;
+  container.appendChild(renderer.domElement);
+
+  /* ── Post-processing (bloom) ──────────────────────────── */
+  const composer=new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene,camera));
+  const bloom=new UnrealBloomPass(
+    new THREE.Vector2(container.clientWidth,container.clientHeight),
+    0.8, 0.4, 0.15
+  );
+  composer.addPass(bloom);
+
+  /* ── Controls ─────────────────────────────────────────── */
+  const controls=new OrbitControls(camera,renderer.domElement);
+  controls.enableDamping=true;
+  controls.dampingFactor=0.06;
+  controls.autoRotate=true;
+  controls.autoRotateSpeed=0.5;
+  controls.enablePan=false;
+  controls.minDistance=8;
+  controls.maxDistance=35;
+
+  document.getElementById('btn-auto-full')?.addEventListener('click',function(){
+    controls.autoRotate=!controls.autoRotate;
+    this.style.color=controls.autoRotate?'#22d67a':'';
+  });
+  document.getElementById('btn-reset-full')?.addEventListener('click',()=>{
+    camera.position.set(0,3,18);
+    controls.reset();
+  });
+  document.getElementById('btn-auto')?.addEventListener('click',function(){
+    controls.autoRotate=!controls.autoRotate;
+    this.style.color=controls.autoRotate?'#22d67a':'';
+  });
+  document.getElementById('btn-reset')?.addEventListener('click',()=>{
+    camera.position.set(0,3,18);
+    controls.reset();
+  });
+
+  /* ── Lights ───────────────────────────────────────────── */
+  scene.add(new THREE.AmbientLight(0x334455,0.6));
+  const pointLight=new THREE.PointLight(0x22d67a,1.2,40);
+  pointLight.position.set(0,0,0);
+  scene.add(pointLight);
+  const rimLight=new THREE.DirectionalLight(0x5b9cf6,0.3);
+  rimLight.position.set(-5,5,5);
+  scene.add(rimLight);
+
+  /* ── Brain (dala.ai style — GLTF model + instanced particles) ── */
+  const BRAIN_SCALE=7;
+  const brainGroup=new THREE.Group();
+  scene.add(brainGroup);
+
+  // Raycaster for hover interaction
+  const brainPointer=new THREE.Vector2();
+  let brainMesh=null;
+  const domMeshes={};
+  const domIndices={};
+  const nodePositions=[];
+
+  // Load brain.glb
+  const loader=new GLTFLoader();
+  loader.load(window.BRAIN_URL||'./brain.glb',function(gltf){
+    // Get the brain mesh
+    let brainGeometry=null;
+    gltf.scene.traverse(function(child){
+      if(child.isMesh && !brainGeometry){
+        brainGeometry=child.geometry;
+      }
+    });
+    if(!brainGeometry){
+      console.error('No mesh found in brain.glb');
+      return;
+    }
+
+    // Create invisible brain mesh for raycasting
+    brainMesh=new THREE.Mesh(
+      brainGeometry.clone(),
+      new THREE.MeshBasicMaterial({visible:false})
+    );
+    brainMesh.scale.setScalar(BRAIN_SCALE);
+    brainGroup.add(brainMesh);
+
+    // Visible wireframe of brain (green glow outline)
+    const brainWire=new THREE.Mesh(
+      brainGeometry.clone(),
+      new THREE.MeshBasicMaterial({
+        color:0x22d67a, wireframe:true, transparent:true, opacity:0.08
+      })
+    );
+    brainWire.scale.setScalar(BRAIN_SCALE);
+    brainGroup.add(brainWire);
+
+    // Translucent shell
+    const brainShell=new THREE.Mesh(
+      brainGeometry.clone(),
+      new THREE.MeshStandardMaterial({
+        color:0x22d67a, emissive:0x22d67a, emissiveIntensity:0.15,
+        transparent:true, opacity:0.04, side:THREE.DoubleSide,
+        depthWrite:false, roughness:0.7
+      })
+    );
+    brainShell.scale.setScalar(BRAIN_SCALE);
+    brainGroup.add(brainShell);
+
+    // Outer glow rim
+    const brainRim=new THREE.Mesh(
+      brainGeometry.clone(),
+      new THREE.MeshBasicMaterial({
+        color:0x22d67a, transparent:true, opacity:0.03, side:THREE.BackSide
+      })
+    );
+    brainRim.scale.setScalar(BRAIN_SCALE*1.02);
+    brainGroup.add(brainRim);
+
+    // Get brain surface positions
+    const positions=brainGeometry.attributes.position.array;
+    const vertexCount=positions.length/3;
+
+    // Place instanced cubes on brain vertices (dala.ai style outline)
+    const dummy=new THREE.Object3D();
+    const outlineCount=Math.min(vertexCount,5000);
+    const cubeGeo=new THREE.BoxGeometry(0.012,0.012,0.012);
+    const cubeMat=new THREE.MeshBasicMaterial({
+      color:0x22d67a, wireframe:true, transparent:true, opacity:0.4
+    });
+    const outlineMesh=new THREE.InstancedMesh(cubeGeo,cubeMat,outlineCount);
+    const step=Math.max(1,Math.floor(vertexCount/outlineCount));
+    for(let i=0;i<outlineCount;i++){
+      const vi=(i*step)%vertexCount;
+      dummy.position.set(
+        positions[vi*3]*BRAIN_SCALE,
+        positions[vi*3+1]*BRAIN_SCALE,
+        positions[vi*3+2]*BRAIN_SCALE
+      );
+      dummy.scale.setScalar(0.8+Math.random()*1.5);
+      dummy.rotation.set(Math.random()*3.14,Math.random()*3.14,0);
+      dummy.updateMatrix();
+      outlineMesh.setMatrixAt(i,dummy.matrix);
+    }
+    outlineMesh.instanceMatrix.needsUpdate=true;
+    brainGroup.add(outlineMesh);
+
+    // ── Place 685 knowledge nodes on brain surface ──
+    const byDomain={};
+    ND.forEach((n,i)=>{
+      byDomain[n.d]=byDomain[n.d]||[];
+      byDomain[n.d].push({n,i});
+    });
+
+    const domsArr=Object.keys(byDomain);
+    const vertsPerDomain=Math.floor(vertexCount/domsArr.length);
+    let vIdx=0;
+    const nodeGeo=new THREE.SphereGeometry(1,8,8);
+
+    for(const [dom,entries] of Object.entries(byDomain)){
+      const dc=DOMAINS[dom];
+      if(!dc)continue;
+      const c=new THREE.Color(dc.c);
+      const mat=new THREE.MeshStandardMaterial({
+        color:c, emissive:c, emissiveIntensity:0.6,
+        roughness:0.3, metalness:0.2
+      });
+      const mesh=new THREE.InstancedMesh(nodeGeo,mat,entries.length);
+      mesh.userData={domain:dom};
+      domIndices[dom]=[];
+
+      entries.forEach((e,j)=>{
+        const vi=(vIdx+j*step)%vertexCount;
+        const pos=new THREE.Vector3(
+          positions[vi*3]*BRAIN_SCALE,
+          positions[vi*3+1]*BRAIN_SCALE,
+          positions[vi*3+2]*BRAIN_SCALE
+        );
+        // Small jitter
+        pos.x+=(Math.random()-0.5)*0.15;
+        pos.y+=(Math.random()-0.5)*0.15;
+        pos.z+=(Math.random()-0.5)*0.15;
+        nodePositions[e.i]=pos;
+
+        const size=0.04+e.n.w*0.04;
+        dummy.position.copy(pos);
+        dummy.scale.set(size,size,size);
+        dummy.rotation.set(0,0,0);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(j,dummy.matrix);
+        domIndices[dom].push({ndIdx:e.i,instIdx:j,size});
+      });
+      vIdx+=vertsPerDomain;
+
+      mesh.instanceMatrix.needsUpdate=true;
+      brainGroup.add(mesh);
+      domMeshes[dom]=mesh;
+    }
+
+    // Build edges
+    const edgePositions=new Float32Array(ED.length*6);
+    let ei=0;
+    ED.forEach(([a,b])=>{
+      const pa=nodePositions[a],pb=nodePositions[b];
+      if(!pa||!pb)return;
+      edgePositions[ei++]=pa.x;edgePositions[ei++]=pa.y;edgePositions[ei++]=pa.z;
+      edgePositions[ei++]=pb.x;edgePositions[ei++]=pb.y;edgePositions[ei++]=pb.z;
+    });
+    const edgeGeo=new THREE.BufferGeometry();
+    edgeGeo.setAttribute('position',new THREE.BufferAttribute(edgePositions.slice(0,ei),3));
+    brainGroup.add(new THREE.LineSegments(edgeGeo,new THREE.LineBasicMaterial({
+      color:0xffffff,transparent:true,opacity:0.04
+    })));
+
+    // Floating particles
+    const pCount=300;
+    const pGeo=new THREE.BufferGeometry();
+    const pPos=new Float32Array(pCount*3);
+    for(let i=0;i<pCount;i++){
+      const t=Math.random()*Math.PI*2,p2=Math.acos(2*Math.random()-1);
+      const r=BRAIN_SCALE*(0.6+Math.random()*0.8);
+      pPos[i*3]=r*Math.sin(p2)*Math.cos(t);
+      pPos[i*3+1]=r*Math.cos(p2);
+      pPos[i*3+2]=r*Math.sin(p2)*Math.sin(t);
+    }
+    pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
+    brainGroup.add(new THREE.Points(pGeo,new THREE.PointsMaterial({
+      color:0x22d67a,size:0.02,transparent:true,opacity:0.2,sizeAttenuation:true
+    })));
+
+    console.log('Brain loaded:',vertexCount,'vertices,',ND.length,'nodes placed');
+  }, undefined, function(err){
+    console.error('Failed to load brain.glb:',err);
+  });
+
+  /* ── Legend (scrollable, grouped) ─────────────────────── */
+  // Show domain domains first, then stacks
+  const coreDoms=domKeys.filter(d=>!d.startsWith('stack-'));
+  const stackDoms=domKeys.filter(d=>d.startsWith('stack-'));
+  [...coreDoms,...stackDoms].forEach(d=>{
+    const dc=DOMAINS[d];
+    if(!dc)return;
+    const el=document.createElement('div');
+    el.className='graph-legend-item active';
+    el.innerHTML='<span class="legend-dot" style="background:'+dc.c+'"></span>'+dc.l+' <span style="opacity:.4;font-size:9px">'+dc.n+'</span>';
+    el.addEventListener('click',()=>{
+      if(hidden.has(d)){
+        hidden.delete(d);el.classList.add('active');
+      }else{
+        hidden.add(d);el.classList.remove('active');
+      }
+      if(domMeshes[d])domMeshes[d].visible=!hidden.has(d);
+      // Rebuild edge visibility would be expensive; just toggle opacity
+    });
+    legendEl.appendChild(el);
+  });
+
+  /* ── Raycaster (hover — use individual sphere hit test) ── */
+  const raycaster=new THREE.Raycaster();
+  const mouse=new THREE.Vector2();
+  let hoveredNode=null;
+  let highlightMesh=null;
+
+  // Create highlight sphere (shown on hover)
+  const hlGeo=new THREE.SphereGeometry(1,16,16);
+  const hlMat=new THREE.MeshStandardMaterial({
+    color:0xffffff, emissive:0xffffff, emissiveIntensity:1,
+    transparent:true, opacity:0.9
+  });
+  highlightMesh=new THREE.Mesh(hlGeo,hlMat);
+  highlightMesh.visible=false;
+  scene.add(highlightMesh);
+
+  // Build connection lookup for tooltip
+  const connCount=new Map();
+  ED.forEach(([a,b])=>{
+    connCount.set(a,(connCount.get(a)||0)+1);
+    connCount.set(b,(connCount.get(b)||0)+1);
+  });
+
+  container.addEventListener('mousemove',e=>{
+    const rect=container.getBoundingClientRect();
+    mouse.x=((e.clientX-rect.left)/rect.width)*2-1;
+    mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
+
+    raycaster.setFromCamera(mouse,camera);
+
+    // Test against all instanced meshes
+    let closest=null, closestDist=Infinity;
+    for(const [dom,mesh] of Object.entries(domMeshes)){
+      if(hidden.has(dom))continue;
+      const hits=raycaster.intersectObject(mesh);
+      if(hits.length && hits[0].distance<closestDist){
+        closestDist=hits[0].distance;
+        closest={dom,instanceId:hits[0].instanceId};
+      }
+    }
+
+    if(closest){
+      const entry=domIndices[closest.dom][closest.instanceId];
+      if(!entry)return;
+      const nd=ND[entry.ndIdx];
+      const dc=DOMAINS[nd.d];
+
+      // Position highlight
+      highlightMesh.visible=true;
+      const pos=nodePositions[entry.ndIdx];
+      highlightMesh.position.copy(pos);
+      const hs=entry.size*2.5;
+      highlightMesh.scale.set(hs,hs,hs);
+      highlightMesh.userData.baseSize=hs;
+      hlMat.color.set(new THREE.Color(dc.c));
+      hlMat.emissive.set(new THREE.Color(dc.c));
+
+      // Tooltip
+      tooltip.style.display='block';
+      tooltip.style.left=(e.clientX-rect.left+16)+'px';
+      tooltip.style.top=(e.clientY-rect.top-10)+'px';
+      tooltip.querySelector('.tt-domain').textContent=dc.l;
+      tooltip.querySelector('.tt-domain').style.color=dc.c;
+      tooltip.querySelector('.tt-name').textContent=nd.n;
+      const c=connCount.get(nd.i)||0;
+      tooltip.querySelector('.tt-detail').textContent=c+' connection'+(c!==1?'s':'')+' · id:'+nd.i;
+      hoveredNode=nd;
+    }else{
+      highlightMesh.visible=false;
+      tooltip.style.display='none';
+      hoveredNode=null;
+    }
+  });
+
+  container.addEventListener('mouseleave',()=>{
+    highlightMesh.visible=false;
+    tooltip.style.display='none';
+    hoveredNode=null;
+  });
+
+  /* ── Click: highlight connections, dim unconnected ────── */
+  let activeEdges=null;
+  let activeNodeIdx=null;
+  const originalOpacities=new Map(); // dom -> original material opacity
+
+  // Build adjacency list
+  const adjacency=new Map();
+  ED.forEach(([a,b])=>{
+    if(!adjacency.has(a))adjacency.set(a,[]);
+    if(!adjacency.has(b))adjacency.set(b,[]);
+    adjacency.get(a).push(b);
+    adjacency.get(b).push(a);
+  });
+
+  // Build node->domain lookup
+  const nodeDomMap=new Map();
+  ND.forEach((n,i)=>nodeDomMap.set(i,n.d));
+
+  function resetSelection(){
+    // Remove highlighted edges
+    if(activeEdges){
+      brainGroup.remove(activeEdges);
+      activeEdges.geometry.dispose();
+      activeEdges.material.dispose();
+      activeEdges=null;
+    }
+    // Restore all domain meshes to full brightness
+    for(const [dom,mesh] of Object.entries(domMeshes)){
+      mesh.material.opacity=1;
+      mesh.material.transparent=false;
+      mesh.material.emissiveIntensity=0.6;
+      mesh.material.needsUpdate=true;
+    }
+    activeNodeIdx=null;
+  }
+
+  container.addEventListener('click',e=>{
+    if(!hoveredNode){
+      resetSelection();
+      return;
+    }
+
+    const ndIdx=hoveredNode.i;
+    if(activeNodeIdx===ndIdx){
+      resetSelection();
+      return;
+    }
+
+    // Reset previous state
+    resetSelection();
+    activeNodeIdx=ndIdx;
+
+    // Get connected nodes
+    const neighbors=adjacency.get(ndIdx)||[];
+    const connectedSet=new Set(neighbors);
+    connectedSet.add(ndIdx); // include the clicked node itself
+
+    // Determine which domains have connected nodes
+    const connectedDoms=new Set();
+    connectedSet.forEach(ni=>connectedDoms.add(nodeDomMap.get(ni)));
+
+    // Dim all domain meshes, then brighten connected ones
+    for(const [dom,mesh] of Object.entries(domMeshes)){
+      if(connectedDoms.has(dom)){
+        mesh.material.opacity=1;
+        mesh.material.transparent=false;
+        mesh.material.emissiveIntensity=0.8;
+      } else {
+        mesh.material.transparent=true;
+        mesh.material.opacity=0.08;
+        mesh.material.emissiveIntensity=0.05;
+      }
+      mesh.material.needsUpdate=true;
+    }
+
+    // Build highlighted edge lines from clicked node to neighbors
+    const pos=nodePositions[ndIdx];
+    if(!pos||neighbors.length===0)return;
+
+    const verts=[];
+    neighbors.forEach(ni=>{
+      const np=nodePositions[ni];
+      if(!np)return;
+      verts.push(pos.x,pos.y,pos.z,np.x,np.y,np.z);
+    });
+
+    if(verts.length===0)return;
+
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(verts),3));
+    const dc=DOMAINS[hoveredNode.d];
+    const mat=new THREE.LineBasicMaterial({
+      color:new THREE.Color(dc?dc.c:'#22d67a'),
+      transparent:true,
+      opacity:0.9,
+      linewidth:2
+    });
+    activeEdges=new THREE.LineSegments(geo,mat);
+    brainGroup.add(activeEdges);
+  });
+
+  /* ── Redesign hook: focus a set of nodes from the "ask the brain" box ── */
+  window.brainReset=resetSelection;
+  window.brainFocus=function(ids){
+    resetSelection();
+    if(!ids||!ids.length)return;
+    const lit=new Set();
+    ids.forEach(i=>{lit.add(i);(adjacency.get(i)||[]).forEach(n=>lit.add(n));});
+    const doms=new Set([...lit].map(i=>nodeDomMap.get(i)));
+    for(const [dom,mesh] of Object.entries(domMeshes)){
+      const on=doms.has(dom);
+      mesh.material.transparent=!on;
+      mesh.material.opacity=on?1:0.08;
+      mesh.material.emissiveIntensity=on?0.9:0.05;
+      mesh.material.needsUpdate=true;
+    }
+    const verts=[];
+    ids.forEach(i=>{const p=nodePositions[i];if(!p)return;
+      (adjacency.get(i)||[]).forEach(n=>{const q=nodePositions[n];if(q)verts.push(p.x,p.y,p.z,q.x,q.y,q.z);});});
+    if(verts.length){
+      const geo=new THREE.BufferGeometry();
+      geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(verts),3));
+      activeEdges=new THREE.LineSegments(geo,new THREE.LineBasicMaterial({color:0x22d67a,transparent:true,opacity:0.9}));
+      brainGroup.add(activeEdges);
+    }
+    const p=nodePositions[ids[0]];
+    if(p){highlightMesh.visible=true;highlightMesh.position.copy(p);highlightMesh.userData.baseSize=0.22;}
+    activeNodeIdx=ids[0];
+  };
+
+  /* ── Render loop ──────────────────────────────────────── */
+  const clock=new THREE.Clock();
+
+  function animate(){
+    requestAnimationFrame(animate);
+    const t=clock.getElapsedTime();
+    controls.update();
+
+    // Gentle brain rotation
+    brainGroup.rotation.y=t*0.08;
+    brainGroup.rotation.x=Math.sin(t*0.02)*0.05;
+
+    // Highlight pulse
+    if(highlightMesh.visible){
+      const p=1+Math.sin(t*4)*0.15;
+      highlightMesh.scale.setScalar(highlightMesh.userData.baseSize*p);
+    }
+
+    composer.render();
+  }
+  animate();
+
+  /* ── Resize ───────────────────────────────────────────── */
+  function onResize(){
+    const w=container.clientWidth, h=container.clientHeight;
+    camera.aspect=w/h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w,h);
+    composer.setSize(w,h);
+  }
+  window.addEventListener('resize',onResize);
+
+  /* ── Intro animation ───────────────────────────────────── */
+  // Bloom intro pulse
+  if(typeof anime!=='undefined'){
+    anime({targets:bloom, strength:[2.0,0.8], duration:3000, easing:'easeOutExpo'});
+  }
+
+})();
+</script>
