@@ -24,12 +24,6 @@ def build(root: Path, site: bool = False) -> Path:
         "{{BRAIN_MODULE}}",
         (designs / "redesign/brain-module.html").read_text(encoding="utf-8"),
     )
-    media = (
-        '<video autoplay muted loop playsinline preload="metadata" poster="{{B}}/video/mcp-cube-poster.jpg">'
-        '<source src="{{B}}/video/mcp-cube-loop.webm" type="video/webm">'
-        '<source src="{{B}}/video/mcp-cube-loop.mp4" type="video/mp4"></video>'
-    )
-    template = template.replace("{{MCP_MEDIA}}", media)
     template = template.replace("{{B}}", "brand" if site else "../brand")
     template = template.replace("{{SITES}}", "." if site else "../../sites")
     output = root / "sites/index.html" if site else designs / "redesign/landing.html"

@@ -1,14 +1,18 @@
 """The prototype and published landing page share one reproducible build."""
 
+import csv
+import json
 import re
 import shutil
 import subprocess
 import sys
+from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
 
 import pytest
+from core import CSV_CONFIG
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILDER = ROOT / "designs/scripts/build_landing.py"
@@ -18,9 +22,17 @@ class AssetParser(HTMLParser):
     def __init__(self):
         super().__init__()
         self.urls = []
+        self.ids = []
+        self.links = []
+        self.tags = []
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
+        self.tags.append(tag)
+        if "id" in attrs:
+            self.ids.append(attrs["id"])
+        if tag == "a" and "href" in attrs:
+            self.links.append(attrs["href"])
         self.urls.extend(attrs[key] for key in ("src", "poster") if key in attrs)
         if tag == "link" and attrs.get("rel") in {"stylesheet", "icon", "apple-touch-icon"}:
             self.urls.append(attrs["href"])
@@ -40,6 +52,14 @@ def test_landing_build(tmp_path, site):
     assert not re.search(r"\{\{[A-Z_]+(?::[\w-]+)?\}\}", html)
     parser = AssetParser()
     parser.feed(html)
+    assert len(parser.ids) == len(set(parser.ids))
+    for link in parser.links:
+        if link.startswith("#") and link != "#":
+            assert link[1:] in parser.ids, link
+    assert "video" not in parser.tags
+    assert not any("/3d/" in url or "/photo/" in url for url in parser.urls)
+    assert "https://www.agensi.io/skills/backend-pro-max" in parser.links
+    assert "https://buymeacoffee.com/shashanksw9" in parser.links
     for url in parser.urls:
         if not urlsplit(url).scheme and not url.startswith("//"):
             assert (output.parent / url).is_file(), url
@@ -62,3 +82,23 @@ def test_landing_build(tmp_path, site):
         assert (tokens.parent / url).is_file(), url
     subprocess.run(command, check=True, capture_output=True, text=True)
     assert output.read_text(encoding="utf-8") == html
+
+
+def test_landing_catalogue_matches_registered_domains():
+    template = (ROOT / "designs/scripts/landing.template.html").read_text(encoding="utf-8")
+    domains = json.loads(re.search(r"const DOMAINS=(\[.*?\]);", template, re.DOTALL).group(1))
+    names = [entry[0] for entry in domains]
+    assert len(names) == len(set(names))
+    assert set(names) == set(CSV_CONFIG)
+    assert f"Browse {len(names)} domains" in template
+    assert f"{len(names)} / {len(names)} domains" in template
+
+
+def test_landing_example_matches_knowledge_base():
+    template = (ROOT / "designs/scripts/landing.template.html").read_text(encoding="utf-8")
+    excerpt = re.search(r'<article class="rowcard".*?</article>', template, re.DOTALL).group(0)
+    excerpt = unescape(excerpt)
+    with (ROOT / "src/backend-pro-max/data/reliability.csv").open(encoding="utf-8", newline="") as source:
+        row = next(row for row in csv.DictReader(source) if row["Topic"] == "Retries with backoff + budget")
+    for field in ("Topic", "Mitigation", "Do", "Don't", "Source URL", "Source Type", "Last Updated"):
+        assert row[field] in excerpt, field
