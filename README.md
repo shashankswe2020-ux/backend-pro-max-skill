@@ -34,11 +34,11 @@ It works with Claude Code, Cursor, Windsurf, GitHub Copilot, Continue and Gemini
 
 <div align="center">
 
-<a href="https://youtu.be/ILJRIlXo6h4">
+<a href="https://youtu.be/UdzSAJJlM3w?si=eWOuRJXVVnDZSAU4">
   <img src="https://raw.githubusercontent.com/shashankswe2020-ux/backend-pro-max-skill/main/docs/readme/walkthrough.png" alt="Watch the Backend Pro Max walkthrough on YouTube" width="720" />
 </a>
 
-**[▶ I gave my AI a staff engineer's brain](https://youtu.be/ILJRIlXo6h4)**: an 18-minute tour of every feature. We design a payments service end to end with retries, a saga, idempotency keys, an outbox, a broker ADR and capacity maths, all of it cited. Every terminal shot is real CLI output, and both Claude sessions are real MCP calls.
+**[▶ I gave my AI a staff engineer's brain](https://youtu.be/UdzSAJJlM3w?si=eWOuRJXVVnDZSAU4)**: an 18-minute tour of every feature. We design a payments service end to end with retries, a saga, idempotency keys, an outbox, a broker ADR and capacity maths, all of it cited. Every terminal shot is real CLI output, and both Claude sessions are real MCP calls.
 
 </div>
 
@@ -434,7 +434,7 @@ Context7 gives your agent up-to-date *library documentation*. Backend Pro Max gi
 
 <div align="center">
 
-[MIT](LICENSE) © 2025 contributors · **[backendpro.cc](https://backendpro.cc)** · **[Watch the walkthrough](https://youtu.be/ILJRIlXo6h4)**
+[MIT](LICENSE) © 2025 contributors · **[backendpro.cc](https://backendpro.cc)** · **[Watch the walkthrough](https://youtu.be/UdzSAJJlM3w?si=eWOuRJXVVnDZSAU4)**
 
 <sub>Built for engineers who actually ship distributed systems. If it saves you one outage, ⭐ the repo.</sub>
 
