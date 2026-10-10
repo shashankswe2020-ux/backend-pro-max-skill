@@ -132,6 +132,61 @@ This repo uses GitHub Actions CI. A PR is mergeable when:
 - `python -m backendpro.scripts.validate` returns 0.
 - The CLI smoke tests in `ci.yml` succeed.
 
+### Preparing the Python/CLI release
+
+Check both [PyPI](https://pypi.org/project/backendpro/) and
+[GitHub releases](https://github.com/shashankswe2020-ux/backend-pro-max-skill/releases):
+their latest versions may differ. A version bump or merged PR does not publish
+a package.
+
+For the pending **0.9.0** release:
+
+1. Keep `pyproject.toml` and `src/backend-pro-max/__init__.py` at the same version.
+   Skill-marketplace and editor-extension manifests are outside this Python
+   release; do not bump them without validating those distribution channels.
+2. Update the 0.9.0 changelog section. Leave it marked **Unreleased** until
+   publication is approved, then set the actual release date.
+3. Run the CI checks above and the landing build tests. Regenerate the two
+   website pages if their template changes.
+4. Build into a version-specific directory, so old artifacts cannot be uploaded
+   accidentally:
+
+   ```bash
+   python -m pip install build twine
+   python -m build --outdir dist/0.9.0
+   python -m twine check --strict dist/0.9.0/backendpro-0.9.0.tar.gz dist/0.9.0/backendpro-0.9.0-py3-none-any.whl
+   python scripts/smoke_wheel.py dist/0.9.0/backendpro-0.9.0-py3-none-any.whl
+   python -m pip hash dist/0.9.0/backendpro-0.9.0.tar.gz dist/0.9.0/backendpro-0.9.0-py3-none-any.whl
+   ```
+
+   The default `build` command builds the wheel from a fresh source distribution.
+   The smoke check installs that wheel in a temporary environment, outside this
+   checkout, and checks runtime version parity, search, CSV schemas, and bundled
+   coverage targets.
+5. Open a release-preparation PR and wait for the Python matrix, MCP, retrieval,
+   and wheel checks. Preserve the verified artifacts and their hashes.
+
+### Publishing after approval
+
+Do not publish, tag, or create a public release as part of preparation alone.
+When publication is approved, finalize the release date through a PR. After
+merging, build and validate artifacts from that exact approved commit, and upload
+**only** those two files:
+
+```bash
+python -m twine upload dist/0.9.0/backendpro-0.9.0.tar.gz dist/0.9.0/backendpro-0.9.0-py3-none-any.whl
+```
+
+Use local credential storage or a trusted publisher; never put tokens in source,
+release notes, or command arguments. Tag that same approved commit as `v0.9.0`,
+create the GitHub release using the 0.9.0 changelog section, and attach the verified
+packages. Check the published PyPI version and file hashes before announcing it.
+If any packaged file changes after verification, rebuild and rerun the checks.
+
+The website is deployed separately to Netlify. Publish the complete `sites/`
+directory using the [site deployment guide](designs/README.md#5-shipping-it);
+a PyPI upload or GitHub release does not deploy it.
+
 ## Code style
 
 - Pure standard library only for runtime code (no new deps).

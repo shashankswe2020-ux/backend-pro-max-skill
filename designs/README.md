@@ -88,6 +88,9 @@ Edit `designs/scripts/landing.template.html`, `designs/redesign/brain-module.htm
 or `designs/brand/`, then regenerate both pages rather than editing generated HTML.
 The font files are local; three.js, anime.js and stack icons still require CDN
 access. Clipboard buttons require HTTPS or localhost and report copy failures.
+MCP setup requires `pip install 'backendpro[mcp]'` and starts the registered
+`backendpro-mcp` entry point. The page lists the eight server tools; lint,
+conflicts and learn remain CLI commands, not MCP tools.
 The closing CTA includes a “Buy me a coffee” button linking directly to
 https://buymeacoffee.com/shashanksw9, without a third-party widget or script.
 

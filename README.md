@@ -1,10 +1,10 @@
 <div align="center">
 
-<a href="docs/backend-pro.mp4">
-  <img src="docs/backend-pro-preview.gif" alt="Backend Pro Max video preview — click to watch the full demo" width="800" />
+<a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/backend-pro.mp4">
+  <img src="https://raw.githubusercontent.com/shashankswe2020-ux/backend-pro-max-skill/main/docs/backend-pro-preview.gif" alt="Backend Pro Max video preview — click to watch the full demo" width="800" />
 </a>
 
-<p><a href="docs/backend-pro.mp4">Watch the full Backend Pro Max demo (21 seconds)</a></p>
+<p><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/backend-pro.mp4">Watch the full Backend Pro Max demo (21 seconds)</a></p>
 
 # 🚀 Backend Pro Max
 
@@ -92,7 +92,7 @@ model is *instructed* to consult — so its advice cites a row, not a vibe.
 | 📤 **`backendpro export`** | Export the entire KB to Obsidian (wikilinks + MOC), Notion CSV, or Org-mode. `--domain` filter |
 | 🧠 **`backendpro learn`** | Spaced-repetition flashcards (SM-2 algorithm) from the KB. `--domain`, `--daily N`, `--stats`, `--reset` |
 | 💻 **VS Code extension** | Search, Explain Selection (right-click), CodeLens stack guidelines. CLI or MCP mode. `extensions/vscode/` |
-| 🌐 **Web playground** | [backendpro.cc](https://backendpro.cc) — search-as-you-type, domain filter, permalinks, compare view. Zero backend |
+| 🌐 **Website** | [backendpro.cc](https://backendpro.cc) — static knowledge graph, row-title search, domain catalogue and client setup. [Build and deployment guide](designs/README.md#5-shipping-it) |
 | 🧪 **Golden query suite** | 239 retrieval assertions across all domains, stacks, cross-domain, and compare — guards ranking quality on every PR |
 | 🔎 **`backendpro dedup`** | BM25 pairwise near-duplicate detection within and across domains. `--threshold`, `--cross-domain`, `--json`. Allowlist for intentional overlaps |
 | 📊 **`backendpro coverage`** | Per-domain gap/thin detection with explicit topic aliases and supporting row names in JSON; bundled targets work in wheel installs. `--json`, `--badge` for shields.io |
@@ -634,7 +634,7 @@ Ready to use after `pip install`:
 ```bash
 backendpro --list
 backendpro "redis cluster" --json
-backendpro-mcp                     # start MCP server
+backendpro-mcp                     # requires pip install 'backendpro[mcp]'
 ```
 
 ---
@@ -855,9 +855,14 @@ code --install-extension backendpro-*.vsix
 - **CodeLens** — stack guidelines shown at top of Go, Python, Java, TS, Rust files
 - **MCP mode** — set `backendpro.useMcp: true` to use `backendpro-mcp` instead of CLI
 
-### Web Playground
+### Website
 
-Live at [**backendpro.cc**](https://backendpro.cc) — search-as-you-type, domain filter, shareable permalinks, compare view. Zero backend.
+The static site in [`sites/`](sites/) provides an interactive knowledge graph,
+row-title search, a domain filter, a sourced CLI example, and client installation
+instructions. It does not run the CLI's BM25 search or comparison engine in the
+browser. The public site is [**backendpro.cc**](https://backendpro.cc); deployment
+is separate from Python releases. See the
+[build and deployment guide](designs/README.md#5-shipping-it).
 
 ---
 
