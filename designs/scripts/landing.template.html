@@ -436,15 +436,14 @@ footer{padding:var(--s-9) 0 var(--s-6)}
     <div class="mcp-body">
       <div class="label">Model Context Protocol</div>
       <h2>Connect your assistant</h2>
-      <p class="lede">Install the CLI, then add this server entry to your client's MCP configuration. The client must be able to run <code>backendpro</code> on its PATH.</p>
-      <div class="mcp-tools"><span>search</span><span>compare</span><span>decide</span><span>lint</span><span>conflicts</span><span>learn</span></div>
+      <p class="lede">Install <code>pip install 'backendpro[mcp]'</code>, then add this server entry to your client's MCP configuration. The client must be able to run <code>backendpro-mcp</code> on its PATH.</p>
+      <div class="mcp-tools"><span>backendpro_search</span><span>backendpro_search_all</span><span>backendpro_search_stack</span><span>backendpro_compare</span><span>backendpro_decide</span><span>backendpro_adr</span><span>backendpro_design</span><span>backendpro_find_stale</span></div>
     </div>
 <div class="cfg"><span class="c" style="color:var(--ink-500)">// claude_desktop_config.json</span>
 {
   <span class="k">"mcpServers"</span>: {
     <span class="k">"backendpro"</span>: {
-      <span class="k">"command"</span>: <span class="s">"backendpro"</span>,
-      <span class="k">"args"</span>: [<span class="s">"--mcp"</span>]
+      <span class="k">"command"</span>: <span class="s">"backendpro-mcp"</span>
     }
   }
 }</div>
@@ -495,7 +494,7 @@ footer{padding:var(--s-9) 0 var(--s-6)}
     <div class="reveal">
       <details open><summary>Does it need a network connection?</summary><p>Default BM25 search runs over local CSVs without a model or network call. Optional semantic search and reranking use model dependencies that may need downloads. Your AI client and this website have their own network requirements.</p></details>
       <details><summary>How does it differ from a docs MCP like Context7?</summary><p>Backend Pro Max stores curated guidance on patterns, trade-offs and common mistakes rather than a live library API reference. Follow the linked sources for details and current version requirements.</p></details>
-      <details><summary>Which assistants does it support?</summary><p>Claude Code, Cursor, Windsurf, GitHub Copilot and Continue via <code>backendpro --load &lt;tool&gt;</code>, plus any MCP-compatible agent via <code>backendpro --mcp</code>, and the CLI on its own.</p></details>
+      <details><summary>Which assistants does it support?</summary><p>Claude Code, Cursor, Windsurf, GitHub Copilot and Continue via <code>backendpro --load &lt;tool&gt;</code>, plus any MCP-compatible agent via <code>backendpro-mcp</code> after installing <code>backendpro[mcp]</code>, and the CLI on its own.</p></details>
       <details><summary>How current is the guidance?</summary><p>Check each row's Last Updated date and linked source. Weekly freshness scans flag older entries for review; they do not guarantee that every recommendation is current.</p></details>
       <details><summary>What does it cost?</summary><p>Nothing. It's MIT-licensed open source and needs Python 3.8+ with zero runtime dependencies.</p></details>
       <details><summary>Can I add my team's own rules?</summary><p>Yes. Rows are plain CSVs with a validated schema. See the <a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/CONTRIBUTING.md">contribution guide</a>; <code>backendpro coverage</code> reports gaps in domain coverage.</p></details>
@@ -573,7 +572,7 @@ const TOOLS=[
 ["Design document","Draft a design with capacity estimates.",'design "Postgres for 50M DAU"'],
 ["Interactive search","Keep a search session open while you work.","--interactive"],
 ["Conflicts","Find documented tensions between recommendations.","conflicts --domain cache"]];
-const CLIENTS=[["Claude Code","Adds SKILL.md to your project","pip install backendpro\nmkdir -p .claude/skills\nbackendpro --load claude"],["Cursor","Adds .cursor/rules/backend.mdc","pip install backendpro\nbackendpro --load cursor"],["Windsurf","Adds .windsurfrules","pip install backendpro\nbackendpro --load windsurf"],["GitHub Copilot","Adds .github/copilot-instructions.md","pip install backendpro\nbackendpro --load copilot"],["Continue","Adds AGENTS.md","pip install backendpro\nbackendpro --load continue"],["CLI / MCP","Search & serve from the terminal","pip install backendpro\nbackendpro \"redis cluster\" --json\nbackendpro --mcp"]];
+const CLIENTS=[["Claude Code","Adds SKILL.md to your project","pip install backendpro\nmkdir -p .claude/skills\nbackendpro --load claude"],["Cursor","Adds .cursor/rules/backend.mdc","pip install backendpro\nbackendpro --load cursor"],["Windsurf","Adds .windsurfrules","pip install backendpro\nbackendpro --load windsurf"],["GitHub Copilot","Adds .github/copilot-instructions.md","pip install backendpro\nbackendpro --load copilot"],["Continue","Adds AGENTS.md","pip install backendpro\nbackendpro --load continue"],["CLI / MCP","Search locally or serve the eight MCP tools","pip install 'backendpro[mcp]'\nbackendpro \"redis cluster\" --json\nbackendpro-mcp"]];
 const ICONS={{ICONS_JSON}};
 const icon=n=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">'+ICONS[n]+'</svg>';
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));

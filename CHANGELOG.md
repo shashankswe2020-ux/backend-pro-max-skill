@@ -4,7 +4,7 @@ All notable changes to **backendpro** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.9.0] — 2026-09-29
+## [0.9.0] — Unreleased
 
 ### Added
 - Source-reviewed knowledge enrichment: 46 new entries since 0.8.1, bringing the domain knowledge base to 560 rows across 34 domains, alongside 12 language stacks.
@@ -12,10 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Explicit coverage aliases with supporting row evidence, bundled coverage defaults, and clean-wheel installation checks.
 - MCP stdio integration tests, real-model retrieval CI, and cost/domain data regression checks.
 - Animated README demo preview linked to the full MP4.
+- A redesigned static website with a searchable knowledge graph, domain catalogue, client installation tabs, and a verified CLI example. The design kit, repeatable site build, and website regression tests are included in the repository, not the Python wheel.
 
 ### Changed
 - Reviewed all 22 cost entries and 184 entries across 13 further domains, correcting billing units, formulas, compatibility guarantees, operational advice, and source provenance.
 - Preserved stale dates on 31 compliance and latency entries where verification remains incomplete or measurements are historical; zero declared coverage gaps does not imply exhaustive knowledge depth.
+- Simplified website copy and layout, removed simulated comparison/ranking demos, and retained source links, optional README badges, the Agensi install milestone, and a support link.
 
 ### Fixed
 - Semantic cache fallback now uses the home cache when its environment variable is unset or empty.
@@ -24,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Installed distributions include coverage targets and aliases rather than silently omitting gap checks.
 - Missing-dependency tests behave consistently with optional model dependencies installed.
 - Runtime `backendpro.__version__` now matches distribution metadata, enforced by the installed-wheel smoke check.
+- Website catalogue names and counts now match the 34 registered CLI domains; clipboard failures are reported and installer tabs support keyboard navigation.
+- Website MCP setup now installs the optional extra and uses the registered `backendpro-mcp` entry point instead of the unsupported `backendpro --mcp` flag. The tool list matches the eight registered MCP tools.
 
 ## [0.8.1] — 2026-05-02
 

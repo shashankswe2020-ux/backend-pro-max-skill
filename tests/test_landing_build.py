@@ -1,5 +1,6 @@
 """The prototype and published landing page share one reproducible build."""
 
+import ast
 import csv
 import json
 import re
@@ -102,3 +103,36 @@ def test_landing_example_matches_knowledge_base():
         row = next(row for row in csv.DictReader(source) if row["Topic"] == "Retries with backoff + budget")
     for field in ("Topic", "Mitigation", "Do", "Don't", "Source URL", "Source Type", "Last Updated"):
         assert row[field] in excerpt, field
+
+
+def test_landing_mcp_setup_matches_package():
+    template = (ROOT / "designs/scripts/landing.template.html").read_text(encoding="utf-8")
+    block = re.search(r'<div class="cfg">(.*?)</div>', template, re.DOTALL).group(1)
+    plain = unescape(re.sub(r"<[^>]+>", "", block))
+    config = json.loads("\n".join(line for line in plain.splitlines() if not line.strip().startswith("//")))
+    server = config["mcpServers"]["backendpro"]
+    assert server == {"command": "backendpro-mcp"}
+    project = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    assert 'backendpro-mcp = "backendpro.scripts.mcp_server:main"' in project
+    clients = json.loads(re.search(r"const CLIENTS=(\[.*?\]);", template, re.DOTALL).group(1))
+    commands = next(commands for name, _, commands in clients if name == "CLI / MCP")
+    assert commands.splitlines()[0] == "pip install 'backendpro[mcp]'"
+    assert commands.splitlines()[-1] == server["command"]
+    assert "--mcp" not in template
+
+    module = ast.parse((ROOT / "src/backend-pro-max/scripts/mcp_server.py").read_text(encoding="utf-8"))
+    registered = {
+        node.name
+        for node in module.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and any(
+            isinstance(decorator, ast.Call)
+            and isinstance(decorator.func, ast.Attribute)
+            and decorator.func.attr == "tool"
+            for decorator in node.decorator_list
+        )
+    }
+    tools_block = re.search(r'<div class="mcp-tools">(.*?)</div>', template, re.DOTALL).group(1)
+    advertised = re.findall(r"<span>(.*?)</span>", tools_block)
+    assert len(advertised) == len(set(advertised))
+    assert set(advertised) == registered
