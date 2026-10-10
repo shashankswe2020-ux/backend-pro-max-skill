@@ -3,1642 +3,633 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Backend Pro Max — Staff-Engineer-in-a-Box</title>
-
-<!-- SEO -->
-<meta name="description" content="BM25-searchable backend & distributed-systems intelligence across 35 domains and 12 language stacks. Drop into Claude Code, Cursor, Copilot, or any AI assistant.">
-<meta name="keywords" content="backend engineering, distributed systems, system design, MCP, AI skill, BM25 search, Claude, Cursor, Copilot">
-<meta name="author" content="Backend Pro Max">
+<title>Backend Pro Max — Backend guidance with sources</title>
+<meta name="description" content="Search backend patterns, trade-offs and guidelines across 34 domains and 12 language stacks. Local BM25 search with source links, available through the CLI or MCP.">
 <link rel="canonical" href="https://backendpro.cc/">
-
-<!-- Open Graph (Facebook, LinkedIn, Discord, Slack, iMessage) -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://backendpro.cc/">
-<meta property="og:title" content="Backend Pro Max — Staff-Engineer-in-a-Box">
-<meta property="og:description" content="35 domains · 12 stacks · 685 concepts · BM25 search · MCP server · Zero dependencies. The backend knowledge base for AI-native engineers.">
-<meta property="og:image" content="https://backendpro.cc/backendpro_mcp.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:site_name" content="Backend Pro Max">
-
-<!-- Twitter Card -->
+<meta property="og:title" content="Backend Pro Max — Backend guidance with sources">
+<meta property="og:description" content="Search 34 backend domains and 12 language stacks from your terminal or AI assistant. Local BM25 retrieval with source links.">
+<meta property="og:image" content="https://backendpro.cc/brand/social/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Backend Pro Max — Staff-Engineer-in-a-Box">
-<meta name="twitter:description" content="35 domains · 12 stacks · 685 concepts · BM25 search · MCP server · Zero dependencies.">
-<meta name="twitter:image" content="https://backendpro.cc/backendpro_mcp.png">
-
-<!-- Favicon -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<meta name="twitter:image" content="https://backendpro.cc/brand/social/og.png">
+<link rel="icon" type="image/svg+xml" href="brand/logo/favicon.svg">
+<link rel="apple-touch-icon" href="brand/social/app-icon-180.png">
+<link rel="stylesheet" href="brand/tokens/tokens.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#060609;
-  --bg2:#0a0b10;
-  --bg3:#0f1018;
-  --surface:rgba(16,18,28,0.6);
-  --surface2:rgba(24,26,40,0.5);
-  --border:rgba(255,255,255,0.05);
-  --border2:rgba(255,255,255,0.08);
-  --text:#e2e4ed;
-  --muted:#4a5068;
-  --muted2:#7e8ba3;
-  --green:#22d67a;
-  --green2:#0f7a45;
-  --green-dim:rgba(34,214,122,0.06);
-  --amber:#f5c842;
-  --amber-dim:rgba(245,200,66,0.06);
-  --blue:#5b9cf6;
-  --blue-dim:rgba(91,156,246,0.06);
-  --red:#f56060;
-  --red-dim:rgba(245,96,96,0.06);
-  --purple:#a78bfa;
-  --purple-dim:rgba(167,139,250,0.06);
-  --cyan:#22d4e0;
-  --cyan-dim:rgba(34,212,224,0.06);
-  --orange:#fb8c3e;
-  --orange-dim:rgba(251,140,62,0.06);
-  --glow-green:rgba(34,214,122,0.15);
-  --glow-purple:rgba(167,139,250,0.12);
-  --glow-blue:rgba(91,156,246,0.12);
-}
-html{scroll-behavior:smooth}
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:'DM Sans',sans-serif;
-  font-size:15px;
-  line-height:1.65;
-  overflow-x:hidden;
-}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;overflow-x:clip}
+body{background:var(--paper);color:var(--text);font:400 var(--fs-body)/var(--lh-body) var(--font-ui);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+img,video{display:block;max-width:100%}
+.wrap{max-width:1240px;margin:0 auto;padding:0 32px}
+.hero-grid>*,.how-grid>*,.obs-grid>*,.mcp>*,.install>*,.badges>*{min-width:0}
+.mono{font-family:var(--font-mono)}
+.label{font:500 var(--fs-micro)/1 var(--font-mono);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-3)}
+.label b{color:var(--green-700);font-weight:500}
+h1,h2,h3{font-family:var(--font-display);font-weight:400;letter-spacing:-0.015em}
+h2{font-size:clamp(30px,3.5vw,46px);line-height:1.12}
+.lede{font-size:19px;color:var(--text-2);max-width:56ch}
+.ico{width:20px;height:20px;flex:none;display:inline-flex}
+.ico svg{width:100%;height:100%}
+section{position:relative}
+section[id]{scroll-margin-top:88px}
+:focus-visible{outline:2px solid var(--green-700);outline-offset:4px}
+.pill button:focus-visible,.tabs button:focus-visible,.chips button:focus-visible{outline:2px solid var(--green-700);outline-offset:4px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.sec{padding:var(--s-8) 0}
+.sec-head{display:grid;grid-template-columns:180px 1fr;gap:var(--s-6);margin-bottom:var(--s-6);align-items:start}
+.sec-head .label{padding-top:10px}
+.sec-head h2{max-width:26ch}
+.sec-head .lede{margin-top:var(--s-4)}
 
-/* NAV — Huly-style glass */
-nav{
-  position:sticky;top:0;z-index:100;
-  background:rgba(6,6,9,0.6);
-  backdrop-filter:blur(24px) saturate(1.4);
-  -webkit-backdrop-filter:blur(24px) saturate(1.4);
-  border-bottom:1px solid rgba(255,255,255,0.04);
-  display:flex;align-items:center;gap:0;
-  padding:0 40px;
-  height:60px;
-}
-.nav-logo{
-  font-family:'JetBrains Mono',monospace;
-  font-size:13px;font-weight:700;
-  color:var(--green);
-  letter-spacing:0.02em;
-  margin-right:auto;
-  text-decoration:none;
-}
-.nav-logo span{color:var(--muted2)}
-.nav-links{display:flex;gap:28px;list-style:none}
-.nav-links a{
-  font-size:13px;color:var(--muted2);
-  text-decoration:none;
-  transition:color .15s;
-}
-.nav-links a:hover{color:var(--text)}
-.nav-links a.active-link{color:var(--green)}
-.nav-gh{
-  margin-left:32px;
-  font-family:'JetBrains Mono',monospace;
-  font-size:12px;font-weight:500;
-  background:rgba(34,214,122,0.08);
-  border:1px solid rgba(34,214,122,0.2);
-  color:var(--green);
-  padding:7px 18px;
-  border-radius:20px;
-  text-decoration:none;
-  transition:all .3s;
-  box-shadow:0 0 20px rgba(34,214,122,0.05);
-}
-.nav-gh:hover{
-  background:rgba(34,214,122,0.14);
-  box-shadow:0 0 30px rgba(34,214,122,0.15);
-  border-color:rgba(34,214,122,0.4);
-}
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:10px;font:600 15px/1 var(--font-ui);padding:15px 22px;border-radius:var(--r-sm);text-decoration:none;border:1px solid transparent;cursor:pointer;transition:background .2s}
+.btn-ink{background:var(--ink-900);color:var(--paper)}
+.btn-ink:hover{background:var(--ink-700)}
+.btn-ghost{border-color:var(--rule);color:var(--text)}
+.btn-ghost:hover{background:var(--paper-2)}
+.btn .ico{width:18px;height:18px}
 
-/* HERO */
-.hero{
-  padding:100px 40px 80px;
-  max-width:1100px;margin:0 auto;
-  position:relative;
-}
-.hero-badges{
-  display:flex;flex-wrap:wrap;gap:8px;
-  margin-bottom:32px;
-}
-.badge{
-  font-family:'JetBrains Mono',monospace;
-  font-size:11px;font-weight:500;
-  padding:5px 14px;border-radius:20px;
-  border:1px solid rgba(255,255,255,0.06);
-  color:var(--muted2);
-  background:rgba(255,255,255,0.03);
-  backdrop-filter:blur(8px);
-}
-.badge.green{color:var(--green);border-color:rgba(34,214,122,0.15);background:rgba(34,214,122,0.06)}
-.badge.blue{color:var(--blue);border-color:rgba(91,156,246,0.15);background:rgba(91,156,246,0.06)}
-.badge.amber{color:var(--amber);border-color:rgba(245,200,66,0.15);background:rgba(245,200,66,0.06)}
+/* install pill */
+.pill{display:inline-flex;align-items:center;gap:14px;background:var(--ink-900);color:var(--paper);border-radius:var(--r-pill);padding:8px 8px 8px 22px;font:500 15px/1 var(--font-mono)}
+.pill .p{color:var(--green-500)}
+.pill button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;background:var(--ink-700);color:var(--paper);padding:10px 14px;border-radius:var(--r-pill);font:500 13px/1 var(--font-ui)}
+.pill button:hover{background:var(--green-500);color:var(--ink-950)}
+.pill button .ico{width:15px;height:15px}
 
-h1{
-  font-family:'Syne',sans-serif;
-  font-size:clamp(40px,6vw,72px);
-  font-weight:800;
-  line-height:1.05;
-  letter-spacing:-0.03em;
-  margin-bottom:8px;
-  color:#fff;
-}
-h1 .accent{
-  background:linear-gradient(135deg,#22d67a 0%,#22d4e0 50%,#5b9cf6 100%);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
-}
-h1 .dim{color:var(--muted2);font-weight:400}
+/* nav */
+nav.top{position:sticky;top:0;z-index:50;background:var(--paper);border-bottom:1px solid var(--rule)}
+nav.top .wrap{display:flex;align-items:center;justify-content:space-between;height:72px}
+nav.top .brand img{height:36px;width:auto}
+nav.top ul{display:flex;gap:28px;list-style:none;font-size:15px;font-weight:500}
+nav.top ul a{text-decoration:none;color:var(--text-2)}
+nav.top ul a:hover{color:var(--text)}
+nav.top .right{display:flex;gap:10px;align-items:center}
+nav.top .btn{padding:11px 16px;font-size:14px}
 
-.hero-sub{
-  font-family:'JetBrains Mono',monospace;
-  font-size:13px;color:var(--green);
-  margin-bottom:20px;letter-spacing:0.02em;
-}
+/* hero */
+.hero{padding:var(--s-8) 0 var(--s-7)}
+.hero-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:var(--s-8);align-items:center}
+.hero h1{font-size:clamp(44px,6vw,80px);line-height:1.02;letter-spacing:-0.025em;max-width:15ch}
+.hero .lede{margin:var(--s-5) 0 var(--s-6)}
+.hero .ctas{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.clients{margin-top:var(--s-4);font-size:14px;color:var(--text-2)}
+.adoption{display:inline-flex;align-items:center;gap:8px;margin-top:var(--s-4);font-size:14px;color:var(--green-700);text-underline-offset:4px}
+.adoption .ico{width:16px;height:16px}
+.adoption:hover{color:var(--green-900)}
+.hero-aside{display:flex;flex-direction:column;gap:var(--s-4);padding-bottom:10px}
+.spec{border-top:1px solid var(--text);}
+.spec-row{display:grid;grid-template-columns:110px 1fr auto;gap:12px;align-items:baseline;padding:13px 0;border-bottom:1px solid var(--rule);font-size:15px}
+.spec-row .k{font:500 11px/1 var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text-3)}
+.spec-row .v{font-family:var(--font-display);font-size:30px;line-height:1}
+.spec-row .n{color:var(--text-2)}
 
-.hero-desc{
-  font-size:17px;color:var(--muted2);
-  max-width:580px;line-height:1.7;
-  font-weight:300;
-  margin-bottom:40px;
-}
-
-.hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:60px}
-.btn-primary{
-  font-family:'JetBrains Mono',monospace;
-  font-size:13px;font-weight:600;
-  background:linear-gradient(135deg,#22d67a,#1abe6d);
-  color:#050805;
-  padding:12px 28px;border-radius:24px;
-  text-decoration:none;
-  transition:all .3s;
-  display:inline-flex;align-items:center;gap:8px;
-  box-shadow:0 0 30px rgba(34,214,122,0.2),0 0 60px rgba(34,214,122,0.08);
-}
-.btn-primary:hover{
-  box-shadow:0 0 40px rgba(34,214,122,0.35),0 0 80px rgba(34,214,122,0.15);
-  transform:translateY(-1px);
-}
-.btn-secondary{
-  font-family:'JetBrains Mono',monospace;
-  font-size:13px;font-weight:500;
-  background:rgba(255,255,255,0.03);
-  backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,0.08);
-  color:var(--muted2);
-  padding:12px 28px;border-radius:24px;
-  text-decoration:none;
-  transition:all .3s;
-  display:inline-flex;align-items:center;gap:8px;
-}
-.btn-secondary:hover{
-  border-color:rgba(255,255,255,0.18);
-  color:var(--text);
-  background:rgba(255,255,255,0.06);
-  box-shadow:0 0 30px rgba(255,255,255,0.03);
-}
-
-/* TERMINAL — glass + glow */
-.terminal{
-  background:rgba(10,11,16,0.7);
-  backdrop-filter:blur(20px);
-  border:1px solid rgba(34,214,122,0.1);
-  border-radius:16px;
-  overflow:hidden;
-  max-width:640px;
-  margin:0 auto;
-  box-shadow:
-    0 0 80px rgba(34,214,122,0.06),
-    0 0 160px rgba(34,214,122,0.02),
-    inset 0 1px 0 rgba(255,255,255,0.04);
-}
-.term-bar{
-  background:var(--surface);
-  padding:10px 16px;
-  display:flex;align-items:center;gap:8px;
-  border-bottom:1px solid var(--border);
-}
-.term-dot{width:10px;height:10px;border-radius:50%}
-.td-r{background:#f56060}.td-y{background:#f5c842}.td-g{background:#22d67a}
-.term-title{
-  font-family:'JetBrains Mono',monospace;
-  font-size:11px;color:var(--muted);
-  margin-left:8px;
-}
-.term-body{padding:20px 24px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:2}
-.t-prompt{color:var(--green)}
-.t-cmd{color:var(--text)}
-.t-comment{color:var(--muted)}
-.t-output{color:var(--cyan);font-size:12px;line-height:1.8}
-.t-key{color:var(--amber)}
-.t-val{color:var(--purple)}
-.t-cursor{
-  display:inline-block;width:8px;height:14px;
-  background:var(--green);
-  animation:blink 1.1s step-end infinite;
-  vertical-align:middle;margin-left:2px;
-}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-
-/* GRAPH PREVIEW — Three.js 3D vault */
-.graph-preview{max-width:960px;margin-top:48px;display:flex;flex-direction:column;align-items:center}
-.graph-label{
-  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-  margin-bottom:12px;
-  font-family:'DM Sans',sans-serif;
-  font-size:14px;color:var(--muted2);
-  width:100%;
-}
-.graph-label-icon{font-size:16px}
-.graph-label strong{color:var(--text);font-weight:500}
-.graph-cmd{
-  font-family:'JetBrains Mono',monospace;
-  font-size:11px;
-  background:var(--surface);
-  border:1px solid var(--border2);
-  color:var(--green);
-  padding:3px 10px;border-radius:3px;
-  margin-left:auto;
-}
-.graph-container{
-  position:relative;
-  width:100%;
-  aspect-ratio:16/10;
-  border-radius:20px;
-  overflow:hidden;
-  border:1px solid rgba(34,214,122,0.08);
-  background:rgba(5,7,9,0.8);
-  box-shadow:
-    0 0 120px rgba(34,214,122,0.08),
-    0 0 240px rgba(34,214,122,0.03),
-    0 0 40px rgba(91,156,246,0.04),
-    inset 0 1px 0 rgba(255,255,255,0.03);
-}
-#vault-3d{width:100%;height:100%;cursor:grab}
-#vault-3d:active{cursor:grabbing}
-#vault-3d canvas{display:block;border-radius:12px}
-#graph-canvas:active{cursor:grabbing}
-.graph-controls{
-  position:absolute;bottom:14px;right:14px;
-  display:flex;gap:6px;z-index:10;
-}
-.graph-controls button{
-  font-family:'JetBrains Mono',monospace;
-  font-size:12px;font-weight:600;
-  background:rgba(20,24,32,0.85);
-  backdrop-filter:blur(8px);
-  border:1px solid var(--border2);
-  color:var(--muted2);
-  padding:6px 12px;border-radius:6px;
-  cursor:pointer;transition:all .2s;
-}
-.graph-controls button:hover{color:#fff;border-color:rgba(34,214,122,0.4);box-shadow:0 0 12px rgba(34,214,122,0.15)}
-.graph-legend-bar{
-  display:flex;flex-wrap:wrap;gap:5px;
-  margin-top:14px;
-  justify-content:center;
-  max-height:120px;overflow-y:auto;
-  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent;
-  padding:2px 0;
-}
-.graph-legend-item{
-  font-family:'JetBrains Mono',monospace;
-  font-size:10px;
-  display:flex;align-items:center;gap:5px;
-  color:var(--muted2);cursor:pointer;
-  padding:3px 8px;border-radius:4px;
-  background:rgba(20,24,32,0.8);
-  backdrop-filter:blur(6px);
-  border:1px solid transparent;
-  transition:all .2s;user-select:none;
-}
-.graph-legend-item:hover{border-color:var(--border2)}
-.graph-legend-item.active{color:var(--text)}
+/* observatory (brain) */
+.observatory{margin-top:var(--s-7);background:var(--ink-950);border-radius:var(--r-md);position:relative;overflow:hidden;color:var(--paper)}
+.obs-grid{display:grid;grid-template-columns:360px 1fr;min-height:640px;position:relative}
+.obs-side{padding:var(--s-6);border-right:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:var(--s-5);position:relative;z-index:2}
+.obs-side .label{color:var(--ink-300)}
+.obs-side .label b{color:var(--green-500)}
+.obs-side h3{font-size:34px;line-height:1.05}
+.ask{display:flex;align-items:center;gap:10px;background:var(--ink-800);border:1px solid var(--ink-700);border-radius:var(--r-md);padding:4px 4px 4px 14px;transition:border-color .2s, box-shadow .2s}
+.ask:focus-within{border-color:var(--green-500);box-shadow:0 0 0 4px rgba(34,214,122,.15)}
+.ask .p{color:var(--green-500);font:600 15px var(--font-mono)}
+.ask input{all:unset;flex:1;font:400 15px var(--font-mono);color:var(--paper);min-width:0;padding:10px 0}
+.ask input::placeholder{color:var(--ink-300)}
+.ask kbd{font:500 11px var(--font-mono);color:var(--ink-300);border:1px solid var(--ink-700);border-radius:6px;padding:6px 8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{all:unset;cursor:pointer;font:400 12px/1 var(--font-mono);color:var(--ink-300);border:1px solid var(--ink-700);padding:7px 10px;border-radius:var(--r-pill)}
+.chips button:hover{color:var(--paper);border-color:var(--green-500)}
+.hits{display:flex;flex-direction:column;gap:2px;min-height:210px}
+.hit{display:grid;grid-template-columns:10px 1fr auto;gap:10px;align-items:center;padding:9px 10px;border-radius:var(--r-sm);font:inherit;font-size:14px;cursor:pointer;background:transparent;border:0;color:inherit;text-align:left;width:100%}
+.hit:hover,.hit.on{background:var(--ink-800)}
+.hit i{width:8px;height:8px;border-radius:50%}
+.hit small{font:400 11px var(--font-mono);color:var(--ink-300)}
+.hits .empty{font:400 13px/1.5 var(--font-mono);color:var(--ink-300);padding:10px}
+.obs-note{font:400 11px/1.5 var(--font-mono);color:var(--ink-300);margin-top:auto}
+.obs-stage{position:relative;min-height:640px}
+#graph-wrap-full{position:absolute;inset:0}
+#vault-3d-full{width:100%;height:100%;cursor:grab}
+#vault-3d-full:active{cursor:grabbing}
+#vault-3d-full canvas{display:block}
+.graph-controls{position:absolute;top:18px;right:18px;display:flex;gap:6px;z-index:10}
+.graph-controls button{font:500 12px var(--font-mono);background:rgba(13,17,16,.8);backdrop-filter:blur(8px);border:1px solid var(--ink-700);color:var(--ink-300);padding:8px 12px;border-radius:var(--r-pill);cursor:pointer}
+.graph-controls button:hover{color:var(--paper);border-color:var(--green-500)}
+.graph-info{position:absolute;top:22px;left:22px;font:400 11px var(--font-mono);color:var(--ink-300);z-index:10;letter-spacing:.04em}
+.graph-tooltip{position:absolute;pointer-events:none;background:rgba(13,17,16,.92);border:1px solid var(--ink-700);border-radius:var(--r-sm);padding:10px 14px;font:400 11px/1.5 var(--font-mono);color:var(--paper);z-index:20;display:none;max-width:260px;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.graph-tooltip .tt-domain{font-size:10px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px}
+.graph-tooltip .tt-name{font:400 20px/1.15 var(--font-display);margin-bottom:4px}
+.graph-tooltip .tt-detail{font-size:10px;color:var(--ink-300)}
+.legend-wrap{position:absolute;left:0;right:0;bottom:0;padding:14px 18px;background:linear-gradient(transparent,rgba(7,9,10,.9) 40%);z-index:5}
+.graph-legend-bar{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;mask-image:linear-gradient(90deg,#000 92%,transparent)}
+.graph-legend-bar::-webkit-scrollbar{display:none}
+.graph-legend-item{flex:none;font:400 11px var(--font-mono);display:flex;align-items:center;gap:6px;color:var(--ink-300);cursor:pointer;padding:6px 10px;border-radius:var(--r-pill);border:1px solid var(--ink-700);user-select:none;transition:opacity .2s}
+.graph-legend-item.active{color:var(--paper)}
 .graph-legend-item:not(.active){opacity:.35}
-.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.graph-tooltip{
-  position:absolute;
-  pointer-events:none;
-  background:var(--surface);
-  border:1px solid var(--border2);
-  border-radius:6px;
-  padding:10px 14px;
-  font-family:'JetBrains Mono',monospace;
-  font-size:11px;
-  color:var(--text);
-  box-shadow:0 8px 32px rgba(0,0,0,0.5);
-  z-index:20;
-  display:none;
-  max-width:260px;
-  line-height:1.5;
-}
-.graph-tooltip .tt-domain{font-size:9px;color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
-.graph-tooltip .tt-name{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px}
-.graph-tooltip .tt-detail{font-size:10px;color:var(--muted2)}
-.graph-info{
-  position:absolute;bottom:14px;left:14px;
-  font-family:'JetBrains Mono',monospace;
-  font-size:10px;color:var(--muted);
-  z-index:10;
-  background:rgba(20,24,32,0.7);
-  padding:3px 8px;border-radius:4px;
-  backdrop-filter:blur(6px);
-}
+.legend-dot{width:7px;height:7px;border-radius:50%}
 
-/* GSAP reveal classes — visible by default */
-.gs-reveal{opacity:1;transform:none}
-.gs-reveal-left{opacity:1;transform:none}
-.gs-reveal-right{opacity:1;transform:none}
-.gs-scale{opacity:1;transform:none}
+/* search example */
+.how-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:var(--s-7);align-items:start}
+.example-note{font-size:14px;color:var(--text-2);margin-top:16px}
+.rowcard{border-top:1px solid var(--text);padding:20px 0;font-size:15px}
+.rowcard h3{font-size:30px;margin-top:12px}
+.rowcard dl{display:grid;grid-template-columns:100px 1fr;gap:12px 14px;margin-top:20px}
+.rowcard dt{font:500 11px/1.6 var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+.rowcard dd{line-height:1.5}
+.rowcard dd a{color:var(--green-700);text-underline-offset:3px}
+.audit{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-6)}
+.audit div{border-top:1px solid var(--rule);padding-top:18px}
+.audit h3{font:600 16px var(--font-ui);margin-bottom:8px}
+.audit p{font-size:15px;color:var(--text-2)}
+.audit a{font-size:14px;display:inline-block;margin-top:12px;text-underline-offset:3px}
 
-/* STATS — glassmorphism */
-.stats-row{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
-  gap:1px;
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.06);
-  border-radius:16px;
-  overflow:hidden;
-  margin:0 40px 80px;
-  max-width:1020px;
-  box-shadow:0 0 60px rgba(34,214,122,0.03);
-}
-.stat{
-  background:rgba(10,11,16,0.6);
-  backdrop-filter:blur(12px);
-  padding:28px 24px;
-  text-align:center;
-}
-.stat-num{
-  font-family:'Syne',sans-serif;
-  font-size:36px;font-weight:800;
-  color:#fff;line-height:1;
-  margin-bottom:6px;
-}
-.stat-num span{color:var(--green)}
-.stat-label{
-  font-family:'JetBrains Mono',monospace;
-  font-size:11px;color:var(--muted);
-  text-transform:uppercase;letter-spacing:0.1em;
-}
+/* domains */
+.dom-tools{display:flex;gap:12px;align-items:center;margin-bottom:24px;flex-wrap:wrap}
+.dom-search{display:flex;align-items:center;gap:10px;border:1px solid var(--text);border-radius:var(--r-pill);padding:12px 18px;background:#fff;flex:1;max-width:420px}
+.dom-search input{all:unset;flex:1;min-width:0;font:400 15px var(--font-ui)}
+.dom-count{font:500 12px var(--font-mono);color:var(--text-3)}
+.domains{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));column-gap:var(--s-6)}
+.card{padding:16px 0;border-top:1px solid var(--rule)}
+.card .t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
+.card h4{font:600 16px var(--font-mono);letter-spacing:-.01em}
+.card p{font-size:14px;color:var(--text-2);line-height:1.5}
+.card.hide{display:none}
 
-/* SECTION */
-section{padding:80px 40px;max-width:1100px;margin:0 auto;position:relative}
-.section-tag{
-  font-family:'JetBrains Mono',monospace;
-  font-size:11px;
-  letter-spacing:0.12em;text-transform:uppercase;
-  margin-bottom:16px;
-  background:linear-gradient(135deg,var(--green),var(--cyan));
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
-}
+/* stacks */
+.stacks{display:grid;grid-template-columns:repeat(6,1fr);border-top:1px solid var(--text)}
+.stack{padding:18px 16px 20px;border-bottom:1px solid var(--rule);border-right:1px solid var(--rule)}
+.stack:nth-child(6n){border-right:0}
+.stack img{width:26px;height:26px;margin-bottom:12px}
+.stack h5{font:600 15px var(--font-ui)}
+.stack p{font:400 12px/1.5 var(--font-mono);color:var(--text-3);margin-top:4px}
 
-/* Section glow orbs — positioned via JS */
-.section-glow{
-  position:absolute;
-  width:500px;height:500px;
-  border-radius:50%;
-  pointer-events:none;
-  filter:blur(80px);
-  opacity:0.5;
-  z-index:-1;
-}
-.glow-green{background:radial-gradient(circle,rgba(34,214,122,0.08) 0%,transparent 70%)}
-.glow-purple{background:radial-gradient(circle,rgba(167,139,250,0.07) 0%,transparent 70%)}
-.glow-blue{background:radial-gradient(circle,rgba(91,156,246,0.07) 0%,transparent 70%)}
-.glow-amber{background:radial-gradient(circle,rgba(245,200,66,0.06) 0%,transparent 70%)}
-h2{
-  font-family:'Syne',sans-serif;
-  font-size:clamp(28px,4vw,44px);
-  font-weight:800;letter-spacing:-0.03em;
-  margin-bottom:12px;
-  background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.6) 100%);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
-}
-.section-desc{
-  font-size:16px;color:var(--muted2);
-  max-width:520px;margin-bottom:52px;
-  font-weight:300;line-height:1.7;
-}
+/* tools */
+.tools{display:grid;grid-template-columns:repeat(3,1fr);column-gap:var(--s-6)}
+.tool{padding:20px 0;border-top:1px solid var(--rule);min-width:0}
+.tool h5{font:600 16px var(--font-ui);margin-bottom:6px}
+.tool p{font-size:14px;color:var(--text-2)}
+.tool code{display:block;margin-top:12px;font:400 12px var(--font-mono);color:var(--text);overflow-wrap:anywhere}
 
-/* DOMAINS — glass cards with glow */
-.domains-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-  gap:10px;
-}
-.domain-card{
-  background:rgba(10,11,16,0.5);
-  backdrop-filter:blur(16px);
-  border:1px solid rgba(255,255,255,0.04);
-  border-radius:14px;
-  padding:22px 22px;
-  cursor:default;
-  transition:all .35s cubic-bezier(.4,0,.2,1);
-  position:relative;
-  overflow:hidden;
-}
-.domain-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
-  border-radius:14px;
-  background:radial-gradient(ellipse at 30% 0%,var(--card-color,rgba(34,214,122,0.06)) 0%,transparent 70%);
-  opacity:0;transition:opacity .35s;pointer-events:none;
-}
-.domain-card:hover{
-  border-color:color-mix(in srgb,var(--card-color,var(--green)) 30%,transparent);
-  box-shadow:0 0 40px color-mix(in srgb,var(--card-color,var(--green)) 12%,transparent);
-  transform:translateY(-2px);
-}
-.domain-card:hover::before{opacity:1}
-.domain-icon{width:24px;height:24px;margin-bottom:10px;display:block}
-.domain-icon img{width:24px;height:24px;filter:brightness(0) invert(1);opacity:0.85}
-.domain-name{
-  font-family:'JetBrains Mono',monospace;
-  font-size:12px;font-weight:700;
-  color:var(--card-color,var(--green));
-  margin-bottom:4px;
-}
-.domain-desc{font-size:12px;color:var(--muted2);line-height:1.5}
-.domain-count{
-  margin-top:12px;
-  font-family:'JetBrains Mono',monospace;
-  font-size:10px;
-  color:var(--muted);
-  display:flex;align-items:center;gap:6px;
-}
-.domain-count::before{
-  content:'';display:block;
-  width:4px;height:4px;border-radius:50%;
-  background:var(--card-color,var(--green));
-  opacity:.6;
-}
+/* mcp */
+.mcp{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-7);align-items:start}
+.mcp-body h2{margin:18px 0}
+.mcp-tools{display:flex;flex-wrap:wrap;gap:16px;margin-top:24px}
+.mcp-tools span{font:500 13px var(--font-mono);color:var(--text-2)}
+.cfg{background:var(--ink-900);border:1px solid var(--ink-700);border-radius:var(--r-md);font:400 13px/1.7 var(--font-mono);padding:18px 20px;color:#C9D1CB;white-space:pre;overflow-x:auto}
+.cfg .k{color:var(--green-300)} .cfg .s{color:var(--amber)}
 
-/* STACKS — glass cards */
-.stacks-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-  gap:10px;
-}
-.stack-card{
-  background:rgba(10,11,16,0.5);
-  backdrop-filter:blur(16px);
-  border:1px solid rgba(255,255,255,0.04);
-  border-radius:14px;
-  padding:22px;
-  transition:all .35s cubic-bezier(.4,0,.2,1);
-  position:relative;
-  overflow:hidden;
-  cursor:default;
-}
-.stack-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
-  border-radius:14px;
-  background:radial-gradient(ellipse at 30% 0%,var(--card-color,rgba(167,139,250,0.06)) 0%,transparent 70%);
-  opacity:0;transition:opacity .35s;pointer-events:none;
-}
-.stack-card:hover{
-  border-color:color-mix(in srgb,var(--card-color,var(--purple)) 30%,transparent);
-  box-shadow:0 0 40px color-mix(in srgb,var(--card-color,var(--purple)) 12%,transparent);
-  transform:translateY(-2px);
-}
-.stack-card:hover::before{opacity:1}
-.stack-lang{
-  width:28px;height:28px;margin-bottom:10px;display:block;
-}
-.stack-name{
-  font-family:'Syne',sans-serif;
-  font-size:15px;font-weight:700;
-  color:var(--card-color,var(--purple));
-  margin-bottom:4px;
-}
-.stack-sub{font-size:12px;color:var(--muted2)}
-.stack-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:12px}
-.stag{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;
-  background:var(--surface2);
-  border:1px solid var(--border);
-  color:var(--muted2);
-  padding:2px 6px;border-radius:3px;
-}
+/* install */
+.install{display:grid;grid-template-columns:260px 1fr;gap:0;border:1px solid var(--rule);border-radius:var(--r-sm);overflow:hidden;background:#fff}
+.tabs{display:flex;flex-direction:column;border-right:1px solid var(--rule);background:var(--paper)}
+.tabs button{all:unset;cursor:pointer;padding:18px 22px;border-bottom:1px solid var(--rule);font:500 15px var(--font-ui);display:flex;justify-content:space-between;align-items:center;color:var(--text-2)}
+.tabs button small{font:400 11px var(--font-mono);color:var(--text-3)}
+.tabs button.on{background:#fff;color:var(--text);box-shadow:inset 3px 0 0 var(--green-500)}
+.tabpanel{padding:34px 38px;display:none}
+.tabpanel.on{display:block}
+.tabpanel h4{font:400 34px/1 var(--font-display);margin-bottom:8px}
+.tabpanel p{color:var(--text-2);margin-bottom:22px}
+.code{position:relative;background:var(--ink-900);color:#D8DED9;border-radius:var(--r-md);padding:56px 24px 22px;font:400 14px/1.9 var(--font-mono);white-space:pre;overflow-x:auto}
+.code .p{color:var(--green-500)} .code .c{color:var(--ink-300)}
+.code .cp{position:absolute;top:12px;right:12px;all:unset;position:absolute;top:12px;right:12px;cursor:pointer;color:var(--ink-300);border:1px solid var(--ink-700);border-radius:8px;padding:7px 10px;font:500 12px var(--font-ui);display:flex;gap:6px;align-items:center}
+.code .cp:hover{color:var(--paper);border-color:var(--green-500)}
+.code .cp .ico{width:14px;height:14px}
 
-/* HOW IT WORKS */
-.how-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:40px;
-  align-items:start;
-}
-.steps-list{display:flex;flex-direction:column;gap:0}
-.step-item{
-  display:flex;gap:20px;
-  padding:24px 0;
-  border-bottom:1px solid var(--border);
-  cursor:pointer;
-  transition:all .2s;
-}
-.step-item:first-child{padding-top:0}
-.step-item.active .step-content-inner{color:var(--text)}
-.step-num{
-  font-family:'JetBrains Mono',monospace;
-  font-size:12px;font-weight:700;
-  color:var(--muted);
-  width:28px;flex-shrink:0;
-  padding-top:2px;
-  transition:color .2s;
-}
-.step-item.active .step-num{color:var(--green)}
-.step-content-inner{flex:1}
-.step-title{
-  font-family:'Syne',sans-serif;
-  font-size:15px;font-weight:700;
-  color:var(--muted2);margin-bottom:4px;
-  transition:color .2s;
-}
-.step-item.active .step-title{color:#fff}
-.step-detail{font-size:13px;color:var(--muted);line-height:1.6}
-.step-item.active .step-detail{color:var(--muted2)}
+/* badges */
+.badge-wrap{margin-bottom:var(--s-8)}
+.badges{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-6);align-items:center;padding-top:24px}
+.badges .row{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0}
+.badges .row img{height:34px;width:auto}
+.badges .code{font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-all}
 
-.step-visual{
-  background:rgba(10,11,16,0.6);
-  backdrop-filter:blur(20px);
-  border:1px solid rgba(255,255,255,0.06);
-  border-radius:16px;
-  overflow:hidden;
-  position:sticky;top:80px;
-  box-shadow:0 0 60px rgba(91,156,246,0.04);
-}
-.visual-tab{
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  padding:10px 16px;
-  display:flex;align-items:center;gap:8px;
-}
-.vtab-dot{width:8px;height:8px;border-radius:50%;background:var(--green);opacity:.7}
-.vtab-name{
-  font-family:'JetBrains Mono',monospace;
-  font-size:11px;color:var(--muted2);
-}
-.visual-body{padding:20px 24px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.9;min-height:280px}
-.vl-comment{color:var(--muted)}
-.vl-cmd{color:var(--text)}
-.vl-prompt{color:var(--green)}
-.vl-key{color:var(--amber)}
-.vl-val{color:var(--purple)}
-.vl-str{color:var(--cyan)}
-.vl-ok{color:var(--green)}
-.vl-warn{color:var(--amber)}
-.vl-head{color:var(--blue);font-weight:700}
+/* faq */
+.faq{display:grid;grid-template-columns:1fr 1.4fr;gap:var(--s-8)}
+details{border-top:1px solid var(--rule);padding:22px 0}
+details:last-child{border-bottom:1px solid var(--rule)}
+summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:20px;font:400 26px/1.2 var(--font-display)}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font:300 28px/1 var(--font-ui);color:var(--text-3);transition:transform .2s}
+details[open] summary::after{transform:rotate(45deg)}
+details p{color:var(--text-2);margin-top:12px;max-width:62ch}
+details code{font:400 13px var(--font-mono);background:var(--paper-2);padding:2px 6px;border-radius:4px}
 
-.visual-panel{display:none}
-.visual-panel.active{display:block}
+/* cta + footer */
+.cta{padding-top:var(--s-7);padding-bottom:var(--s-7);border-top:1px solid var(--rule)}
+.cta .lede{margin-top:16px}
+.cta .ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:var(--s-5)}
+footer{padding:var(--s-9) 0 var(--s-6)}
+.foot{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:var(--s-6)}
+.foot img{height:38px;width:auto;margin-bottom:16px}
+.foot p{font-size:14px;color:var(--text-2);max-width:32ch}
+.foot h6{font:500 11px var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px}
+.foot ul{list-style:none;display:flex;flex-direction:column;gap:9px;font-size:14px}
+.foot a{text-decoration:none;color:var(--text-2)}
+.foot a:hover{color:var(--text)}
+.legal{display:flex;justify-content:space-between;margin-top:var(--s-8);padding-top:var(--s-5);border-top:1px solid var(--rule);font:400 12px var(--font-mono);color:var(--text-3);gap:20px;flex-wrap:wrap}
 
-/* INSTALL — glass cards */
-.install-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:10px;
-}
-.install-card{
-  background:rgba(10,11,16,0.5);
-  backdrop-filter:blur(16px);
-  border:1px solid rgba(255,255,255,0.04);
-  border-radius:14px;
-  padding:26px;
-  transition:all .35s cubic-bezier(.4,0,.2,1);
-}
-.install-card:hover{
-  border-color:rgba(34,214,122,0.15);
-  box-shadow:0 0 40px rgba(34,214,122,0.05);
-  transform:translateY(-2px);
-}
-.install-tool{
-  font-family:'Syne',sans-serif;
-  font-size:16px;font-weight:700;
-  color:#fff;margin-bottom:4px;
-}
-.install-sub{font-size:12px;color:var(--muted2);margin-bottom:16px}
-.install-code{
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:4px;
-  padding:12px 14px;
-  font-family:'JetBrains Mono',monospace;
-  font-size:11px;
-  color:var(--cyan);
-  overflow-x:auto;
-  white-space:nowrap;
-}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
-/* CTA — dramatic glow */
-.cta-section{
-  padding:100px 40px;
-  text-align:center;
-  position:relative;
-  overflow:hidden;
-  border-top:1px solid rgba(255,255,255,0.04);
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 100%,rgba(34,214,122,0.08) 0%,transparent 70%),
-    radial-gradient(ellipse 60% 40% at 30% 80%,rgba(167,139,250,0.04) 0%,transparent 70%),
-    radial-gradient(ellipse 60% 40% at 70% 80%,rgba(91,156,246,0.04) 0%,transparent 70%);
+/* responsive */
+@media (max-width:1100px){
+  .stacks{grid-template-columns:repeat(4,1fr)} .stack:nth-child(6n){border-right:1px solid var(--rule)} .stack:nth-child(4n){border-right:0}
 }
-.cta-section h2{margin-bottom:12px}
-.cta-section p{
-  font-size:16px;color:var(--muted2);
-  max-width:480px;margin:0 auto 36px;
-  font-weight:300;
+@media (max-width:900px){
+  .wrap{padding:0 16px}
+  nav.top ul{display:none}
+  nav.top .btn-ghost{display:none}
+  .hero-grid,.how-grid,.badges,.faq,.foot,.mcp,.install{grid-template-columns:1fr}
+  .sec{padding:var(--s-7) 0}
+  .sec-head{grid-template-columns:1fr;gap:var(--s-4)}
+  .obs-grid{grid-template-columns:1fr}
+  .obs-side{border-right:0;border-bottom:1px solid rgba(255,255,255,.07);padding:var(--s-5)}
+  .obs-stage{min-height:460px}
+  .hits{min-height:0}
+  .tools{grid-template-columns:1fr 1fr}
+  .stacks{grid-template-columns:repeat(2,1fr)} .stack:nth-child(4n){border-right:1px solid var(--rule)} .stack:nth-child(2n){border-right:0}
+  .audit{grid-template-columns:1fr}
+  .tabs{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--rule)}
+  .tabs button{flex:none;border-bottom:0;border-right:1px solid var(--rule)}
+  .tabs button small{display:none}
+  .tabs button.on{box-shadow:inset 0 -3px 0 var(--green-500)}
+  .tabpanel{padding:24px 18px}
+  .rowcard dl{grid-template-columns:1fr;gap:4px}
+  .rowcard dd{margin-bottom:8px}
+  .pill{font-size:13px;padding-left:16px}
 }
-.cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.cta-trust{
-  margin-top:24px;
-  font-family:'JetBrains Mono',monospace;
-  font-size:11px;color:var(--muted);
-  display:flex;align-items:center;justify-content:center;gap:20px;
-}
-.cta-trust span::before{content:'✓ ';color:var(--green)}
-
-/* FOOTER — glass */
-footer{
-  border-top:1px solid rgba(255,255,255,0.04);
-  padding:48px 40px;
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr 1fr;
-  gap:40px;
-  max-width:1100px;margin:0 auto;
-  background:rgba(6,6,9,0.4);
-}
-.footer-brand .logo{
-  font-family:'JetBrains Mono',monospace;
-  font-size:14px;font-weight:700;color:var(--green);
-  margin-bottom:8px;
-}
-.footer-brand p{font-size:13px;color:var(--muted);max-width:220px;line-height:1.6}
-.footer-col h4{
-  font-family:'Syne',sans-serif;
-  font-size:13px;font-weight:700;color:#fff;
-  margin-bottom:14px;
-}
-.footer-col ul{list-style:none}
-.footer-col li{margin-bottom:8px}
-.footer-col a{
-  font-size:13px;color:var(--muted2);text-decoration:none;
-  transition:color .15s;
-}
-.footer-col a:hover{color:var(--text)}
-
-/* DIVIDER — gradient line */
-.divider{
-  border:none;
-  height:1px;
-  margin:0 40px;
-  background:linear-gradient(90deg,transparent 0%,rgba(34,214,122,0.15) 30%,rgba(167,139,250,0.1) 70%,transparent 100%);
-}
-
-/* GRID BG — subtler, Huly-style */
-.grid-bg{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  pointer-events:none;z-index:0;opacity:0.3;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-  background-size:80px 80px;
-}
-
-/* FLOATING GLOW ORBS — Huly signature */
-.hero-glow{
-  position:absolute;top:-200px;right:-100px;
-  width:800px;height:800px;
-  background:radial-gradient(circle,rgba(34,214,122,0.12) 0%,rgba(34,214,122,0.02) 40%,transparent 70%);
-  pointer-events:none;
-  filter:blur(40px);
-}
-.hero::after{
-  content:'';
-  position:absolute;top:100px;left:-300px;
-  width:600px;height:600px;
-  background:radial-gradient(circle,rgba(167,139,250,0.08) 0%,transparent 60%);
-  pointer-events:none;
-  filter:blur(60px);
-}
-
-/* ANIMATIONS */
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.hero>*{animation:fadeUp .5s ease both}
-.hero>*:nth-child(1){animation-delay:.05s}
-.hero>*:nth-child(2){animation-delay:.1s}
-.hero>*:nth-child(3){animation-delay:.15s}
-.hero>*:nth-child(4){animation-delay:.2s}
-.hero>*:nth-child(5){animation-delay:.25s}
-.hero>*:nth-child(6){animation-delay:.3s}
-
-@media(max-width:768px){
-  nav{padding:0 20px}
-  .nav-links{display:none}
-  .hero{padding:60px 20px 40px}
-  section{padding:60px 20px}
-  .stats-row{margin:0 20px 60px}
-  .how-grid{grid-template-columns:1fr}
-  .step-visual{position:static}
-  footer{grid-template-columns:1fr 1fr;padding:40px 20px;gap:32px}
-  .cta-section{padding:60px 20px}
-  .divider{margin:0 20px}
+@media (max-width:380px){
+  nav.top .brand img{height:28px}
+  nav.top .btn{padding:10px;font-size:12px}
+  nav.top .btn .ico{display:none}
+  .pill{gap:8px;padding-left:12px;font-size:11px}
+  .pill button{padding:10px;font-size:12px}
+  .tools{grid-template-columns:1fr}
 }
 </style>
-
-<!-- Animation Libraries -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
-<script type="importmap">
-{"imports":{"three":"https://unpkg.com/three@0.164.1/build/three.module.js","three/addons/":"https://unpkg.com/three@0.164.1/examples/jsm/"}}
-</script>
 </head>
 <body>
-<div class="grid-bg"></div>
+<div id="copy-status" class="sr-only" role="status" aria-live="polite"></div>
+<noscript><p class="wrap">Enable JavaScript for the interactive brain, catalogue and installer. Install the CLI with <code>pip install backendpro</code>, or <a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md">read the setup guide</a>.</p></noscript>
 
-<!-- NAV -->
-<nav>
-  <a class="nav-logo" href="#"><span>▸ </span>backend-pro-max</a>
-  <ul class="nav-links">
-    <li><a href="#domains">Domains</a></li>
-    <li><a href="#stacks">Stacks</a></li>
-    <li><a href="#power-tools">Power Tools</a></li>
-    <li><a href="#mcp">MCP</a></li>
-    <li><a href="#how">How it works</a></li>
-    <li><a href="#install">Install</a></li>
-  </ul>
-  <a class="nav-gh" href="https://github.com/shashankswe2020-ux/backend-pro-max-skill" target="_blank">★ GitHub</a>
+<nav class="top" id="top">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="Backend Pro Max home"><img src="brand/logo/wordmark-light.svg" alt="Backend Pro Max"></a>
+    <ul>
+      <li><a href="#brain">Brain</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#domains">Domains</a></li>
+      <li><a href="#tools">Tools</a></li>
+      <li><a href="#mcp">MCP</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="right">
+      <a class="btn btn-ghost" href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md">Docs</a>
+      <a class="btn btn-ink" href="https://github.com/shashankswe2020-ux/backend-pro-max-skill"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1.3-4-2-6-2.5M15 21v-3.5a3 3 0 0 0-.9-2.4c2.9-.3 6-1.4 6-6.4a5 5 0 0 0-1.4-3.5 4.6 4.6 0 0 0-.1-3.5s-1.1-.3-3.6 1.4a12.4 12.4 0 0 0-6.4 0C6.1 1.4 5 1.7 5 1.7a4.6 4.6 0 0 0-.1 3.5A5 5 0 0 0 3.5 8.7c0 5 3.1 6.1 6 6.4a3 3 0 0 0-.9 2.4V21"/></svg></span>Star on GitHub</a>
+    </div>
+  </div>
 </nav>
 
-<!-- HERO -->
-<div class="hero" style="position:relative">
-  <div class="hero-glow"></div>
-
-  <div class="hero-badges">
-    <span class="badge green">35 Domains</span>
-    <span class="badge blue">12 Stacks</span>
-    <span class="badge amber">BM25 + Synonyms</span>
-    <span class="badge green">Compare Mode</span>
-    <span class="badge blue">Interactive REPL</span>
-    <span class="badge amber">652 Tests · CI</span>
-    <span class="badge">100% Source Citations</span>
-    <span class="badge">Python 3.8+</span>
-    <span class="badge">Zero Dependencies</span>
-    <span class="badge">MIT License</span>
-  </div>
-
-  <div class="hero-sub">// Staff-Engineer-in-a-Box</div>
-
-  <h1>
-    Backend <span class="accent">Pro Max</span><br>
-    <span class="dim">Design Intelligence</span>
-  </h1>
-
-  <p class="hero-desc">
-    Curated, BM25-searchable backend &amp; distributed-systems intelligence across <strong style="color:var(--text)">35 domains</strong> and <strong style="color:var(--text)">12 language stacks</strong> — every row sourced, auditable, and freshness-tracked. Drop it into Claude Code, Cursor, Copilot, or any AI assistant.
-  </p>
-
-  <div class="hero-actions">
-    <a class="btn-primary" href="https://github.com/shashankswe2020-ux/backend-pro-max-skill" target="_blank">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-      Get on GitHub
-    </a>
-    <a class="btn-secondary" href="#how">How it works ↓</a>
-    <a class="btn-secondary" href="#domains">View Domains →</a>
-  </div>
-
-  <div class="graph-label" style="margin:10px auto 10px;max-width:900px">
-    <span class="graph-label-icon">📤</span>
-    <span>Export to <strong>Obsidian</strong> · <strong>Notion</strong> · <strong>Org-mode</strong></span>
-    <code class="graph-cmd">backendpro export --format obsidian</code>
-  </div>
-
-  <!-- BRAIN KNOWLEDGE GRAPH -->
-  <div class="graph-container" id="graph-wrap-full" style="height:550px;margin:30px auto 40px;max-width:900px">
-    <div id="vault-3d-full" style="width:100%;height:100%"></div>
-    <div class="graph-tooltip" id="graph-tooltip-full">
-      <div class="tt-domain"></div>
-      <div class="tt-name"></div>
-      <div class="tt-detail"></div>
-    </div>
-    <div class="graph-controls">
-      <button id="btn-auto-full" title="Toggle auto-rotate">⟳ Auto</button>
-      <button id="btn-reset-full" title="Reset camera">⟲ Reset</button>
-    </div>
-    <div class="graph-info" id="graph-info-full"></div>
-  </div>
-  <div class="graph-legend-bar" id="graph-legend-full"></div>
-
-  <div style="height:80px"></div>
-
-  <!-- TERMINAL -->
-  <div class="terminal">
-    <div class="term-bar">
-      <div class="term-dot td-r"></div>
-      <div class="term-dot td-y"></div>
-      <div class="term-dot td-g"></div>
-      <span class="term-title">bash — backend-pro-max</span>
-    </div>
-    <div class="term-body">
-      <div><span class="t-prompt">$</span> <span class="t-cmd">pip install backendpro</span></div>
-      <div class="t-output">Successfully installed backend-pro-max-skill</div>
-      <div style="margin-top:4px"><span class="t-prompt">$</span> <span class="t-cmd">backendpro "kafka exactly once delivery"</span></div>
-      <div class="t-output">
-        <span class="t-key">domain</span>: <span class="t-val">messaging</span> &nbsp;
-        <span class="t-key">score</span>: <span class="t-val">7.69</span> &nbsp;
-        <span class="t-key">confidence</span>: <span style="color:var(--green)">high</span><br>
-        <span class="t-key">do</span>: <span class="t-val">Use transactional.id + enable.idempotence=true</span><br>
-        <span class="t-key">don't</span>: <span class="t-val">Rely on at-least-once for financial events</span><br>
-        <span class="t-key">severity</span>: <span style="color:var(--red)">CRITICAL</span>
-      </div>
-      <div style="margin-top:4px"><span class="t-prompt">$</span> <span class="t-cmd">backendpro compare "Kafka" "RabbitMQ" --domain messaging</span></div>
-      <div class="t-output">
-        <span class="t-head" style="color:var(--blue);font-weight:700">| Field        | Kafka          | RabbitMQ       |</span><br>
-        <span class="t-key">| Throughput   |</span> <span class="t-val">Very High</span> &nbsp;&nbsp;&nbsp;&nbsp; <span class="t-key">|</span> <span class="t-val">Medium-High</span> &nbsp;&nbsp; <span class="t-key">|</span><br>
-        <span class="t-key">| Ordering     |</span> <span class="t-val">Per-partition</span> <span class="t-key">|</span> <span class="t-val">FIFO per queue</span> <span class="t-key">|</span><br>
-        <span class="t-key">| Replay       |</span> <span class="t-val">Yes</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="t-key">|</span> <span class="t-val">Limited</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="t-key">|</span>
-      </div>
-      <div style="margin-top:4px"><span class="t-prompt">$</span> <span class="t-cmd">backendpro --interactive</span> &nbsp;<span class="t-comment"># REPL for design sessions</span></div>
-      <div style="margin-top:4px"><span class="t-prompt">$</span> <span class="t-cmd">backendpro decide "Kafka vs Pulsar vs Pub/Sub" --constraints throughput=high</span></div>
-      <div class="t-output">
-        <span class="t-key">recommendation</span>: <span class="t-val">Apache Pulsar</span> &nbsp;
-        <span class="t-key">candidates</span>: <span class="t-val">5</span><br>
-        <span class="t-key">constraints</span>: <span class="t-val">throughput:high, cloud:gcp</span><br>
-        <span class="t-key">match</span>: <span style="color:var(--green)">2/2 ✓</span>
-      </div>
-      <div style="margin-top:4px"><span class="t-prompt">$</span> <span class="t-cursor"></span></div>
-    </div>
-  </div>
-
-</div>
-
-<!-- STATS -->
-<div class="stats-row gs-reveal" style="margin:0 40px 80px;max-width:none">
-  <div class="stat"><div class="stat-num"><span>35</span></div><div class="stat-label">Domains</div></div>
-  <div class="stat"><div class="stat-num"><span>12</span></div><div class="stat-label">Stacks</div></div>
-  <div class="stat"><div class="stat-num">BM<span>25</span></div><div class="stat-label">+ Synonyms</div></div>
-  <div class="stat"><div class="stat-num"><span>0</span></div><div class="stat-label">Dependencies</div></div>
-  <div class="stat"><div class="stat-num"><span>652</span></div><div class="stat-label">Tests · CI Green</div></div>
-  <div class="stat"><div class="stat-num"><span>6</span></div><div class="stat-label">AI Tools Supported</div></div>
-</div>
-
-<hr class="divider">
-
-<!-- DOMAINS -->
-<section id="domains" class="gs-reveal">
-  <div class="section-glow glow-green" style="top:-100px;right:-200px"></div>
-  <div class="section-tag">// Knowledge Base</div>
-  <h2>35 Backend Domains</h2>
-  <p class="section-desc">Every domain contains opinionated, source-citable, staff-engineer-grade rows with Do / Don't examples and severity ratings.</p>
-
-  <div class="domains-grid">
-    <div class="domain-card" style="--card-color:var(--green)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/puzzle.svg" alt="pattern"></span>
-      <div class="domain-name">pattern</div>
-      <div class="domain-desc">Saga, CQRS, Outbox, Circuit Breaker, Bulkhead, Idempotency, Leader Election, Rate Limiting, Sharding</div>
-      <div class="domain-count">22 patterns</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--blue)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/database.svg" alt="database"></span>
-      <div class="domain-name">database</div>
-      <div class="domain-desc">Postgres, MongoDB, Cassandra, DynamoDB, Redis, ClickHouse, vector DBs, S3, etcd</div>
-      <div class="domain-count">20+ engines</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--orange)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/mail.svg" alt="messaging"></span>
-      <div class="domain-name">messaging</div>
-      <div class="domain-desc">Kafka, Redpanda, Pulsar, RabbitMQ, NATS, SQS, SNS, Kinesis, Pub/Sub</div>
-      <div class="domain-count">12 brokers</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--cyan)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/zap.svg" alt="cache"></span>
-      <div class="domain-name">cache</div>
-      <div class="domain-desc">In-process LRU, Redis cluster, Memcached, CDN, negative caching, Bloom filters, L1+L2 hybrid</div>
-      <div class="domain-count">10 strategies</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--purple)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/cloud.svg" alt="cloud"></span>
-      <div class="domain-name">cloud</div>
-      <div class="domain-desc">AWS / GCP / Azure / Cloudflare service mapping and equivalents across all major primitives</div>
-      <div class="domain-count">3 providers</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--amber)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/activity.svg" alt="observability"></span>
-      <div class="domain-name">observability</div>
-      <div class="domain-desc">Prometheus, Grafana, Loki, Tempo, OpenTelemetry, Pyroscope, SLO frameworks, Datadog</div>
-      <div class="domain-count">15+ tools</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--red)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/shield.svg" alt="security"></span>
-      <div class="domain-name">security</div>
-      <div class="domain-desc">OWASP Top 10, CSRF, SSRF, supply chain (SLSA, Sigstore), zero-trust, TLS, PII, SAST</div>
-      <div class="domain-count">Critical severity</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--green)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/key-round.svg" alt="auth"></span>
-      <div class="domain-name">auth</div>
-      <div class="domain-desc">OAuth 2.0+PKCE, OIDC, JWT, SAML, mTLS, passkeys, RBAC/ABAC/ReBAC, SCIM, workload identity</div>
-      <div class="domain-count">12 mechanisms</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--blue)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/plug.svg" alt="api"></span>
-      <div class="domain-name">api</div>
-      <div class="domain-desc">REST, GraphQL, gRPC, WebSocket, SSE, HTTP/2+3, Webhooks, JSON-RPC</div>
-      <div class="domain-count">10 protocols</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--purple)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/container.svg" alt="container"></span>
-      <div class="domain-name">container</div>
-      <div class="domain-desc">Docker, Kubernetes, EKS/GKE/AKS, Helm, ArgoCD, Istio, Envoy, Karpenter</div>
-      <div class="domain-count">20+ tools</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--orange)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/scale.svg" alt="consistency"></span>
-      <div class="domain-name">consistency</div>
-      <div class="domain-desc">Linearizability, CAP, PACELC, Raft, Paxos, 2PC, snapshot isolation, Lamport clocks</div>
-      <div class="domain-count">8 models</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--cyan)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/life-buoy.svg" alt="reliability"></span>
-      <div class="domain-name">reliability</div>
-      <div class="domain-desc">SLO/SLI/error budget, timeouts, retries, circuit breaker, graceful shutdown, chaos engineering</div>
-      <div class="domain-count">18 practices</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--amber)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/trending-up.svg" alt="scaling"></span>
-      <div class="domain-name">scaling</div>
-      <div class="domain-desc">Autoscaling (HPA/KEDA), sharding, backpressure, hedged requests, geo-distribution, CDN</div>
-      <div class="domain-count">16 techniques</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--green)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/rocket.svg" alt="performance"></span>
-      <div class="domain-name">performance</div>
-      <div class="domain-desc">N+1, GC pauses, hot keys, tail latency, thundering herd, cold starts, TLS overhead</div>
-      <div class="domain-count">14 anti-patterns</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--blue)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/flask-conical.svg" alt="testing"></span>
-      <div class="domain-name">testing</div>
-      <div class="domain-desc">Unit, integration (Testcontainers), contract (Pact), fuzz, mutation, chaos, load, smoke</div>
-      <div class="domain-count">10 types</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--red)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/landmark.svg" alt="architecture"></span>
-      <div class="domain-name">architecture</div>
-      <div class="domain-desc">Monolith, microservices, serverless, event-driven, hexagonal, DDD, CQRS+ES, cell-based</div>
-      <div class="domain-count">12 styles</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--purple)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/git-branch.svg" alt="cicd"></span>
-      <div class="domain-name">cicd</div>
-      <div class="domain-desc">GitHub Actions, GitLab CI, ArgoCD, Flux, Argo Rollouts, Renovate, SonarQube, GHAS</div>
-      <div class="domain-count">15+ tools</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--orange)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/hard-hat.svg" alt="iac"></span>
-      <div class="domain-name">iac</div>
-      <div class="domain-desc">Terraform/OpenTofu, Pulumi, AWS CDK, CloudFormation, Bicep, Ansible, Crossplane, Helm</div>
-      <div class="domain-count">9 tools</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--cyan)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/bar-chart-3.svg" alt="data"></span>
-      <div class="domain-name">data</div>
-      <div class="domain-desc">Spark, Flink, Kafka Streams, dbt, Airflow, Iceberg/Delta/Hudi, Debezium, vector DBs</div>
-      <div class="domain-count">20+ tools</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--amber)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/brain.svg" alt="language"></span>
-      <div class="domain-name">language</div>
-      <div class="domain-desc">Go, Java, Kotlin, Python, Rust, Node.js/TS, C#, Scala, Elixir, Ruby, PHP, C++</div>
-      <div class="domain-count">12 languages</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--red)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/alert-triangle.svg" alt="antipattern"></span>
-      <div class="domain-name">antipattern</div>
-      <div class="domain-desc">Distributed Monolith, God Service, Dual Writes, Sync-over-Async, Chatty Microservices, Unbounded Retry, N+1 Query</div>
-      <div class="domain-count">15 anti-patterns</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--amber)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/coins.svg" alt="cost"></span>
-      <div class="domain-name">cost</div>
-      <div class="domain-desc">FinOps, spot instances, reserved capacity, right-sizing, cost allocation tags, waste detection</div>
-      <div class="domain-count">12 strategies</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--green)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/smartphone.svg" alt="mobile-backend"></span>
-      <div class="domain-name">mobile-backend</div>
-      <div class="domain-desc">BFF pattern, push notifications, offline sync, GraphQL federation, edge caching, app config</div>
-      <div class="domain-count">10 patterns</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--blue)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/users.svg" alt="multi-tenant"></span>
-      <div class="domain-name">multi-tenant</div>
-      <div class="domain-desc">Schema-per-tenant, row-level isolation, silo vs pool, noisy neighbor, tenant routing</div>
-      <div class="domain-count">8 models</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--cyan)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/file-check.svg" alt="api-contract"></span>
-      <div class="domain-name">api-contract</div>
-      <div class="domain-desc">OpenAPI, AsyncAPI, Protobuf, consumer-driven contracts (Pact), schema registry, versioning</div>
-      <div class="domain-count">8 standards</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--purple)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/workflow.svg" alt="data-engineering"></span>
-      <div class="domain-name">data-engineering</div>
-      <div class="domain-desc">ELT/ETL, data lakehouse, medallion architecture, schema evolution, data contracts, lineage</div>
-      <div class="domain-count">14 practices</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--orange)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/radio-tower.svg" alt="edge"></span>
-      <div class="domain-name">edge</div>
-      <div class="domain-desc">Edge compute (Cloudflare Workers, Lambda@Edge), CDN logic, geo-routing, edge databases</div>
-      <div class="domain-count">9 patterns</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--red)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/siren.svg" alt="incident"></span>
-      <div class="domain-name">incident</div>
-      <div class="domain-desc">On-call, runbooks, blameless postmortems, incident severity, SLA communication, war rooms</div>
-      <div class="domain-count">11 practices</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--green)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/graduation-cap.svg" alt="interview"></span>
-      <div class="domain-name">interview</div>
-      <div class="domain-desc">System design interview patterns, capacity estimation, trade-off analysis, communication frameworks</div>
-      <div class="domain-count">20 topics</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--blue)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/gauge.svg" alt="capacity"></span>
-      <div class="domain-name">capacity</div>
-      <div class="domain-desc">QPS estimation, storage projections, bandwidth math, replication factors, back-of-envelope</div>
-      <div class="domain-count">10 formulas</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--amber)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/badge-check.svg" alt="compliance"></span>
-      <div class="domain-name">compliance</div>
-      <div class="domain-desc">SOC 2, GDPR, HIPAA, PCI-DSS, ISO 27001, data residency, audit logging, retention policies</div>
-      <div class="domain-count">8 frameworks</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--cyan)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/timer.svg" alt="latency-numbers"></span>
-      <div class="domain-name">latency-numbers</div>
-      <div class="domain-desc">L1/L2 cache, RAM, SSD, network hops, cross-region, DNS, TLS handshake — Jeff Dean's numbers updated</div>
-      <div class="domain-count">25+ benchmarks</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--purple)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/move-right.svg" alt="migration"></span>
-      <div class="domain-name">migration</div>
-      <div class="domain-desc">Strangler Fig, blue-green DB, dual writes, shadow traffic, feature flags, zero-downtime schema</div>
-      <div class="domain-count">12 strategies</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--orange)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/cpu.svg" alt="ml-platform"></span>
-      <div class="domain-name">ml-platform</div>
-      <div class="domain-desc">Feature stores, model serving, A/B testing, GPU scheduling, MLOps pipelines, vector search</div>
-      <div class="domain-count">14 components</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--green)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/ship.svg" alt="release"></span>
-      <div class="domain-name">release</div>
-      <div class="domain-desc">Canary, blue-green, rolling, feature flags, dark launches, ring deployments, rollback strategies</div>
-      <div class="domain-count">10 strategies</div>
-    </div>
-  </div>
-</section>
-
-<hr class="divider">
-
-<!-- STACKS -->
-<section id="stacks" class="gs-reveal">
-  <div class="section-glow glow-purple" style="top:-50px;left:-200px"></div>
-  <div class="section-tag">// Stack Guidelines</div>
-  <h2>12 Language Stacks</h2>
-  <p class="section-desc">What would a staff engineer say in code review? Opinionated Do / Don't with real code examples, per stack.</p>
-
-  <div class="stacks-grid">
-    <div class="stack-card" style="--card-color:var(--cyan)">
-      <img class="stack-lang" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg" alt="Go">
-      <div class="stack-name">Go</div>
-      <div class="stack-sub">context.Context, errgroup, pgx/sqlc</div>
-      <div class="stack-tags"><span class="stag">concurrency</span><span class="stag">http</span><span class="stag">testing</span></div>
-    </div>
-    <div class="stack-card" style="--card-color:var(--orange)">
-      <img class="stack-lang" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java">
-      <div class="stack-name">Java / Spring</div>
-      <div class="stack-sub">Virtual threads (Loom), constructor DI</div>
-      <div class="stack-tags"><span class="stag">loom</span><span class="stag">flyway</span><span class="stag">native</span></div>
-    </div>
-    <div class="stack-card" style="--card-color:var(--blue)">
-      <img class="stack-lang" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python">
-      <div class="stack-name">Python / FastAPI</div>
-      <div class="stack-sub">async-all-the-way, Pydantic v2, uv</div>
-      <div class="stack-tags"><span class="stag">async</span><span class="stag">ruff</span><span class="stag">structlog</span></div>
-    </div>
-    <div class="stack-card" style="--card-color:var(--green)">
-      <img class="stack-lang" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" alt="Node.js">
-      <div class="stack-name">Node / Express</div>
-      <div class="stack-sub">Fastify &gt; Express, zod, pino, Vitest</div>
-      <div class="stack-tags"><span class="stag">fastify</span><span class="stag">otel</span><span class="stag">undici</span></div>
-    </div>
-    <div class="stack-card" style="--card-color:var(--orange)">
-      <img class="stack-lang" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-original.svg" alt="Rust">
-      <div class="stack-name">Rust / Axum</div>
-      <div class="stack-sub">Tokio + Tower, sqlx compile-time queries</div>
-      <div class="stack-tags"><span class="stag">tokio</span><span class="stag">tracing</span><span class="stag">thiserror</span></div>
-    </div>
-    <div class="stack-card" style="--card-color:var(--purple)">
-      <img class="stack-lang" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" alt="C#">
-      <div class="stack-name">C# / ASP.NET</div>
-      <div class="stack-sub">Minimal APIs, Polly v8, Native AOT</div>
-      <div class="stack-tags"><span class="stag">minimal-api</span><span class="stag">ef-core</span><span class="stag">aot</span></div>
-    </div>
-    <div class="stack-card" style="--card-color:var(--amber)">
-      <img class="stack-lang" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin">
-      <div class="stack-name">Kotlin / Spring</div>
-      <div class="stack-sub">Coroutines, structured concurrency, kotest</div>
-      <div class="stack-tags"><span class="stag">coroutines</span><span class="stag">jooq</span><span class="stag">kotest</span></div>
-    </div>
-    <div class="stack-card" style="--card-color:var(--red)">
-      <img class="stack-lang" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/scala/scala-original.svg" alt="Scala">
-      <div class="stack-name">Scala / Akka</div>
-      <div class="stack-sub">Pekko, Typed actors, Cats Effect / ZIO</div>
-      <div class="stack-tags"><span class="stag">pekko</span><span class="stag">streams</span><span class="stag">zio</span></div>
-    </div>
-    <div class="stack-card" style="--card-color:var(--purple)">
-      <img class="stack-lang" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/elixir/elixir-original.svg" alt="Elixir">
-      <div class="stack-name">Elixir / Phoenix</div>
-      <div class="stack-sub">OTP, GenServer, Broadway, libcluster</div>
-      <div class="stack-tags"><span class="stag">otp</span><span class="stag">liveview</span><span class="stag">broadway</span></div>
-    </div>
-    <div class="stack-card" style="--card-color:var(--red)">
-      <img class="stack-lang" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" alt="Ruby">
-      <div class="stack-name">Ruby / Rails</div>
-      <div class="stack-sub">Modular Rails, Sidekiq, Solid Queue</div>
-      <div class="stack-tags"><span class="stag">packwerk</span><span class="stag">puma</span><span class="stag">bullet</span></div>
-    </div>
-    <div class="stack-card" style="--card-color:var(--blue)">
-      <img class="stack-lang" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP">
-      <div class="stack-name">PHP / Laravel</div>
-      <div class="stack-sub">Octane (Swoole/FrankenPHP), PHPStan</div>
-      <div class="stack-tags"><span class="stag">octane</span><span class="stag">horizon</span><span class="stag">opcode</span></div>
-    </div>
-    <div class="stack-card" style="--card-color:var(--cyan)">
-      <img class="stack-lang" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++">
-      <div class="stack-name">C++</div>
-      <div class="stack-sub">C++20, RAII, jthread, sanitizers, CMake</div>
-      <div class="stack-tags"><span class="stag">c++20</span><span class="stag">conan</span><span class="stag">clang-tidy</span></div>
-    </div>
-  </div>
-</section>
-
-<hr class="divider">
-
-<!-- POWER TOOLS -->
-<section id="power-tools" class="gs-reveal">
-  <div class="section-glow glow-blue" style="top:100px;right:-250px"></div>
-  <div class="section-tag">// Beyond search</div>
-  <h2>Built for staff-level decisions</h2>
-  <p class="section-desc">Search is the floor. Compare modes, freshness audits, an interactive REPL, and confidence scores turn the skill into a real decision-support tool.</p>
-
-  <div class="domains-grid">
-    <div class="domain-card" style="--card-color:var(--green)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/scale.svg" alt="compare"></span>
-      <div class="domain-name">compare mode</div>
-      <div class="domain-desc">Side-by-side markdown table of two or more options — perfect for ADRs.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro compare<br>"Kafka" "RabbitMQ"<br>--domain messaging</code></div>
-      <div class="domain-count">ADR-ready output</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--blue)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/terminal.svg" alt="repl"></span>
-      <div class="domain-name">interactive repl</div>
-      <div class="domain-desc">Exploratory design sessions with <code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">/d</code>, <code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">/s</code>, <code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">/all</code>, <code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">/cmp</code>, <code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">/stale</code>.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro --interactive</code></div>
-      <div class="domain-count">Design-session friendly</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--amber)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/calendar-clock.svg" alt="freshness"></span>
-      <div class="domain-name">freshness tracking</div>
-      <div class="domain-desc">Every row can carry a <code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">Last Updated</code> date. Filter or audit.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro --stale<br>--domain pattern<br>--max-age-months 18</code></div>
-      <div class="domain-count">Quarterly audit ready</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--purple)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/target.svg" alt="confidence"></span>
-      <div class="domain-name">confidence scores</div>
-      <div class="domain-desc">Every result includes a BM25 score and a high / medium / low label so the AI agent knows when to trust the hit.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">--min-score 1.5</code></div>
-      <div class="domain-count">Agent-grade signal</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--cyan)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/repeat.svg" alt="synonym"></span>
-      <div class="domain-name">synonym hybrid</div>
-      <div class="domain-desc">Plain-English queries reach the right rows even when keywords don't overlap. "Partial failure" → Saga.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">--no-expand</code> to disable</div>
-      <div class="domain-count">Bridges keyword gaps</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--orange)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/zap.svg" alt="cached"></span>
-      <div class="domain-name">cached index</div>
-      <div class="domain-desc">Lazy in-memory BM25 index, mtime-invalidated. Sub-millisecond repeat queries — agent loops stay snappy.</div>
-      <div class="domain-count">No recompute per query</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--red)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/check-circle.svg" alt="validator"></span>
-      <div class="domain-name">csv validator</div>
-      <div class="domain-desc">Schema-validates every CSV against its declared columns and date formats. Wired into CI to block bad rows.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro-validate</code></div>
-      <div class="domain-count">Enforced on every PR</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--green)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/flask-conical.svg" alt="tested"></span>
-      <div class="domain-name">tested + linted</div>
-      <div class="domain-desc">652 pytest cases covering ranking quality, golden queries (239 assertions), edge cases, decision intelligence, intent classification, trust/verifiability, freshness, provenance, conflict detection, dedup, and coverage analysis. Ruff lint + CSV validation on Python 3.9 / 3.11 / 3.12.</div>
-      <div class="domain-count">Green on every push</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--blue)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/brain.svg" alt="intent"></span>
-      <div class="domain-name">intent classifier</div>
-      <div class="domain-desc">Auto-detects query intent — comparison, troubleshoot, migration, incident, definition, best-practice, checklist — and applies structured templates to output.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro "how to fix<br>connection pool exhaustion"<br>--intent troubleshoot</code></div>
-      <div class="domain-count">7 intent types</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--purple)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/git-merge.svg" alt="hybrid"></span>
-      <div class="domain-name">hybrid retrieval</div>
-      <div class="domain-desc">Optional embedding-based search via sentence-transformers + Reciprocal Rank Fusion with BM25. Graceful fallback to pure BM25.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">pip install backendpro[semantic]<br>backendpro "conceptual query"<br>--engine hybrid</code></div>
-      <div class="domain-count">BM25 + embeddings</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--orange)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/trophy.svg" alt="rerank"></span>
-      <div class="domain-name">cross-encoder rerank</div>
-      <div class="domain-desc">Optional cross-encoder re-ranking for precision-critical queries. Graceful fallback when not installed.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">pip install backendpro[rerank]<br>backendpro "saga pattern"<br>--rerank</code></div>
-      <div class="domain-count">Precision boost</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--cyan)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/brain.svg" alt="intent"></span>
-      <div class="domain-name">decide</div>
-      <div class="domain-desc">Constraint-aware ranked recommendations. Extracts facets (throughput, latency, cloud, consistency) and scores every candidate.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro decide<br>"Kafka vs Pulsar vs Pub/Sub"</code></div>
-      <div class="domain-count">Beats plain LLM comparison</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--purple)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/file-text.svg" alt="adr"></span>
-      <div class="domain-name">adr generator</div>
-      <div class="domain-desc">Auto-generates Architecture Decision Records in Markdown with context, options, trade-offs, and citations.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro adr<br>"Redis vs Memcached"</code></div>
-      <div class="domain-count">Markdown ADR output</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--amber)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/ruler.svg" alt="design"></span>
-      <div class="domain-name">design doc</div>
-      <div class="domain-desc">Capacity-aware design documents with QPS estimates, storage projections, and replication calculations.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro design<br>"Postgres for 50M DAU"</code></div>
-      <div class="domain-count">Capacity math included</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--green)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/link.svg" alt="citations"></span>
-      <div class="domain-name">source citations</div>
-      <div class="domain-desc">Every row carries a Source URL, Source Type, and Last Updated date. 100% coverage across 685 rows — official docs, RFCs, papers, OWASP cheat sheets.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro-validate --strict</code></div>
-      <div class="domain-count">685/685 rows sourced</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--red)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/alert-triangle.svg" alt="conflict"></span>
-      <div class="domain-name">conflict detector</div>
-      <div class="domain-desc">12 curated architectural tension rules surface trade-offs: retry vs latency, cache vs consistency, outbox vs CDC, sharding vs joins, and more.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro conflicts<br>--domain cache</code></div>
-      <div class="domain-count">Known trade-offs surfaced</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--amber)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/clock.svg" alt="freshness"></span>
-      <div class="domain-name">auto-freshness</div>
-      <div class="domain-desc">Weekly GitHub Action flags stale rows (&gt;18 months) and broken Source URLs. Opens issues per domain — no manual auditing needed.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro-validate<br>--check-urls</code></div>
-      <div class="domain-count">Weekly automated audit</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--cyan)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/flask-conical.svg" alt="tested"></span>
-      <div class="domain-name">golden queries</div>
-      <div class="domain-desc">239 retrieval assertions across all 35 domains, 12 stacks, cross-domain, and compare mode. Guards BM25 ranking quality on every PR — actionable failure output shows expected vs actual top-5 with scores.</div>
-      <div class="domain-count">239 assertions · CI gate</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--purple)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/search.svg" alt="dedup"></span>
-      <div class="domain-name">dedup</div>
-      <div class="domain-desc">BM25 pairwise self-similarity detects near-duplicate rows within and across domains. Configurable threshold, allowlist for intentional overlaps.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro dedup<br>--cross-domain --threshold 0.7</code></div>
-      <div class="domain-count">Catches silent drift</div>
-    </div>
-    <div class="domain-card" style="--card-color:var(--green)">
-      <span class="domain-icon"><img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/bar-chart-3.svg" alt="coverage"></span>
-      <div class="domain-name">coverage report</div>
-      <div class="domain-desc">Per-domain coverage analysis with gap detection (missing categories), thin detection (&lt;3 rows), and summary stats. Drives contribution by making gaps visible.<br><br><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--cyan)">backendpro coverage<br>--domain messaging --json</code></div>
-      <div class="domain-count">Gaps made visible</div>
-    </div>
-  </div>
-</section>
-
-<hr class="divider">
-
-<!-- MCP — Model Context Protocol -->
-<section id="mcp" class="gs-reveal">
-  <div class="section-glow glow-purple" style="top:-80px;right:-200px"></div>
-  <div class="section-tag">// MCP Integration</div>
-  <h2>Model Context Protocol</h2>
-  <p class="section-desc">Backend Pro Max runs as an MCP server — Claude Desktop, Cursor, Windsurf, and any MCP-compatible agent can query 685 knowledge rows natively.</p>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;margin-top:40px">
-    <div>
-      <div style="display:flex;flex-direction:column;gap:20px">
-        <div style="display:flex;gap:14px;align-items:flex-start">
-          <img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/plug.svg" alt="connect" style="width:20px;height:20px;filter:brightness(0) invert(1);opacity:0.8;margin-top:3px">
-          <div>
-            <div style="font-family:'Syne',sans-serif;font-weight:700;color:#fff;margin-bottom:4px">Zero-config MCP server</div>
-            <div style="font-size:13px;color:var(--muted2)">Install once, add to <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan)">claude_desktop_config.json</code> — Claude sees all 35 domains instantly.</div>
-          </div>
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="label">Backend Pro Max · v0.9</div>
+        <h1 style="margin-top:22px">Backend guidance, with sources.</h1>
+        <p class="lede">Search patterns, trade-offs and stack guidelines from your terminal or AI assistant. Results include source links so you can check the advice before using it.</p>
+        <div class="ctas reveal">
+          <span class="pill"><span><span class="p">$</span> pip install backendpro</span><button data-copy="pip install backendpro"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></span>Copy</button></span>
+          <a class="btn btn-ghost" href="#install">Setup instructions <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M14 6l6 6-6 6"/></svg></span></a>
         </div>
-        <div style="display:flex;gap:14px;align-items:flex-start">
-          <img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/search.svg" alt="search" style="width:20px;height:20px;filter:brightness(0) invert(1);opacity:0.8;margin-top:3px">
-          <div>
-            <div style="font-family:'Syne',sans-serif;font-weight:700;color:#fff;margin-bottom:4px">6 MCP Tools exposed</div>
-            <div style="font-size:13px;color:var(--muted2)"><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan)">search</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan)">compare</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan)">decide</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan)">lint</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan)">conflicts</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan)">learn</code> — all callable by the agent directly.</div>
-          </div>
+        <a class="adoption reveal" href="https://www.agensi.io/skills/backend-pro-max"><span><strong>44+ installs</strong> on Agensi</span><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M14 6l6 6-6 6"/></svg></span></a>
+        <p class="clients">Claude Code, Cursor, Windsurf, Copilot, Continue, or an MCP client.</p>
+      </div>
+      <aside class="hero-aside reveal">
+        <div class="label">Included</div>
+        <div class="spec">
+          <div class="spec-row"><span class="k">Domains</span><span class="v">34</span><span class="n">patterns to releases</span></div>
+          <div class="spec-row"><span class="k">Stacks</span><span class="v">12</span><span class="n">Go to C++</span></div>
+          <div class="spec-row"><span class="k">Search</span><span class="v">BM25</span><span class="n">local CSV files</span></div>
+          <div class="spec-row"><span class="k">Requires</span><span class="v">Python</span><span class="n">3.8+ · MIT license</span></div>
         </div>
-        <div style="display:flex;gap:14px;align-items:flex-start">
-          <img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/shield-check.svg" alt="trust" style="width:20px;height:20px;filter:brightness(0) invert(1);opacity:0.8;margin-top:3px">
-          <div>
-            <div style="font-family:'Syne',sans-serif;font-weight:700;color:#fff;margin-bottom:4px">Cited, verifiable answers</div>
-            <div style="font-size:13px;color:var(--muted2)">Every response includes source URLs, confidence scores, and freshness dates — no hallucination.</div>
+      </aside>
+    </div>
+
+    <!-- THE BRAIN (preserved: same three.js scene, same data, same interactions) -->
+    <section class="observatory reveal" id="brain" aria-label="Interactive knowledge brain">
+      <div class="obs-grid">
+        <div class="obs-side">
+          <div class="label">Knowledge graph</div>
+          <h3>Explore the connections.</h3>
+          <label class="ask" for="ask">
+            <span class="p">&gt;</span>
+            <input id="ask" type="text" aria-label="Search brain row titles" placeholder="Search row titles…" autocomplete="off" spellcheck="false">
+            <kbd>/</kbd>
+          </label>
+          <div class="chips" id="ask-chips">
+            <button>idempotency</button><button>retry</button><button>kafka</button><button>saga</button><button>rate limit</button><button>postgres</button>
           </div>
+          <div class="hits" id="hits"><div class="empty">Type a concept. Matching rows light up in the brain with their cross-domain connections.</div></div>
+          <div class="obs-note">Preview matches row titles in your browser. The CLI &amp; MCP server rank with BM25 + synonym expansion.</div>
         </div>
-        <div style="display:flex;gap:14px;align-items:flex-start">
-          <img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/terminal.svg" alt="setup" style="width:20px;height:20px;filter:brightness(0) invert(1);opacity:0.8;margin-top:3px">
-          <div>
-            <div style="font-family:'Syne',sans-serif;font-weight:700;color:#fff;margin-bottom:4px">One-line setup</div>
-            <div style="font-size:13px;color:var(--muted2)">
-              <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);display:block;background:rgba(34,214,122,0.06);padding:8px 12px;border-radius:8px;margin-top:6px;border:1px solid rgba(34,214,122,0.1)">pip install backendpro<br>backendpro --mcp</code>
+        <div class="obs-stage">
+          <div id="graph-wrap-full">
+            <div id="vault-3d-full"></div>
+            <div class="graph-tooltip" id="graph-tooltip-full"><div class="tt-domain"></div><div class="tt-name"></div><div class="tt-detail"></div></div>
+            <div class="graph-controls">
+              <button id="btn-auto-full" title="Toggle auto-rotate">⟳ Auto</button>
+              <button id="btn-reset-full" title="Reset camera">⟲ Reset</button>
             </div>
+            <div class="graph-info" id="graph-info-full"></div>
+            <div class="legend-wrap"><div class="graph-legend-bar" id="graph-legend-full"></div></div>
           </div>
         </div>
       </div>
-    </div>
-    <div style="border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);box-shadow:0 0 60px rgba(167,139,250,0.08)">
-      <img src="backendpro_mcp.png" alt="Backend Pro Max running in Claude Desktop via MCP" style="width:100%;display:block">
-    </div>
-  </div>
-</section>
+    </section>
 
-<hr class="divider">
+  </div>
+</header>
 
 <!-- HOW IT WORKS -->
-<section id="how" class="gs-reveal">
-  <div class="section-glow glow-amber" style="top:-80px;left:-180px"></div>
-  <div class="section-tag">// Workflow</div>
-  <h2>How AI agents use this</h2>
-  <p class="section-desc">From prompt to production-grade, cited advice in 5 intelligent steps. The model searches before answering.</p>
-
-  <div class="how-grid">
-    <div class="steps-list">
-      <div class="step-item active" onclick="setStep(0)">
-        <div class="step-num">01</div>
-        <div class="step-content-inner">
-          <div class="step-title">Your Prompt</div>
-          <div class="step-detail">You ask your AI assistant a backend question. Natural language, no special syntax needed.</div>
-        </div>
-      </div>
-      <div class="step-item" onclick="setStep(1)">
-        <div class="step-num">02</div>
-        <div class="step-content-inner">
-          <div class="step-title">Domain Detection</div>
-          <div class="step-detail">The skill detects which domain applies — messaging, reliability, pattern, stack — from your query automatically.</div>
-        </div>
-      </div>
-      <div class="step-item" onclick="setStep(2)">
-        <div class="step-num">03</div>
-        <div class="step-content-inner">
-          <div class="step-title">BM25 + Synonym Expansion</div>
-          <div class="step-detail">Pure Python BM25 ranks rows across 35 domain CSVs, with synonym expansion ("partial failure" → "compensation, saga") and an mtime-cached in-memory index. Every result carries a confidence score. No network, no model.</div>
-        </div>
-      </div>
-      <div class="step-item" onclick="setStep(3)">
-        <div class="step-num">04</div>
-        <div class="step-content-inner">
-          <div class="step-title">Cited Answer</div>
-          <div class="step-detail">The model answers with the right library, code pattern, and a citation to the exact row. Reviewers can verify.</div>
-        </div>
-      </div>
-      <div class="step-item" onclick="setStep(4)">
-        <div class="step-num">05</div>
-        <div class="step-content-inner">
-          <div class="step-title">Cross-domain Synthesis</div>
-          <div class="step-detail">Complex queries pull from multiple domains — a saga answer combines pattern + messaging + consistency + reliability.</div>
-        </div>
-      </div>
+<section class="sec" id="how">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="label">CLI example</div>
+      <div><h2>Search a topic. Read the source.</h2><p class="lede">This result comes from the reliability knowledge base. The same search is available to your assistant through MCP.</p></div>
     </div>
-
-    <div class="step-visual">
-      <div class="visual-tab">
-        <div class="vtab-dot"></div>
-        <span class="vtab-name" id="vtab-name">— user prompt</span>
+    <div class="how-grid">
+      <div>
+        <div class="code"><button class="cp" data-copy="backendpro &quot;retry backoff jitter&quot; --domain reliability -n 1"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></span>Copy</button><span class="p">$</span> backendpro "retry backoff jitter" \
+    --domain reliability -n 1</div>
+        <p class="example-note">Selected fields from the result, not a generated answer. Use <code>--json</code> for the full response, including ranking and citation metadata.</p>
       </div>
-      <div class="visual-body">
-
-        <div class="visual-panel active" id="vp0">
-          <div class="vl-comment"># Your question to the AI assistant</div>
-          <br>
-          <div class="vl-prompt">You: </div>
-          <div style="color:var(--text);margin-top:4px">"Add retries to our outbound HTTP client<br>without melting the dependency.<br>We're using Python + FastAPI."</div>
-          <br>
-          <div class="vl-comment"># Any natural language works.</div>
-          <div class="vl-comment"># No special syntax required.</div>
-        </div>
-
-        <div class="visual-panel" id="vp1">
-          <div class="vl-comment"># Auto-detection from query keywords</div>
-          <br>
-          <div><span class="vl-key">query_keywords</span>: [<span class="vl-str">"retry"</span>, <span class="vl-str">"http"</span>, <span class="vl-str">"circuit"</span>]</div>
-          <div><span class="vl-key">detected_domains</span>:</div>
-          <div style="padding-left:16px"><span class="vl-ok">✓</span> <span class="vl-val">reliability</span> — score 0.91</div>
-          <div style="padding-left:16px"><span class="vl-ok">✓</span> <span class="vl-val">pattern</span> &nbsp;&nbsp;&nbsp;— score 0.84</div>
-          <div style="padding-left:16px"><span class="vl-ok">✓</span> <span class="vl-val">stack</span> &nbsp;&nbsp;&nbsp;&nbsp;— <span class="vl-str">python-fastapi</span></div>
-          <br>
-          <div class="vl-comment"># Skip --domain and engine picks it.</div>
-        </div>
-
-        <div class="visual-panel" id="vp2">
-          <div class="vl-comment"># Pure Python BM25 — no installs</div>
-          <br>
-          <div><span class="vl-prompt">$</span> backendpro <span class="vl-str">"retry backoff jitter"</span> \</div>
-          <div style="padding-left:16px">--domain reliability \</div>
-          <div style="padding-left:16px">--stack python-fastapi</div>
-          <br>
-          <div><span class="vl-head">Searching reliability.csv …</span></div>
-          <div><span class="vl-ok">✓</span> <span class="vl-key">row</span>: <span class="vl-val">retry-exponential-jitter</span></div>
-          <div><span class="vl-ok">✓</span> <span class="vl-key">score</span>: <span class="vl-val">0.96</span></div>
-          <div><span class="vl-ok">✓</span> <span class="vl-key">severity</span>: <span style="color:var(--amber)">HIGH</span></div>
-        </div>
-
-        <div class="visual-panel" id="vp3">
-          <div class="vl-comment"># Model answers with citation</div>
-          <br>
-          <div class="vl-head">Answer (reliability › retry-backoff-jitter):</div>
-          <br>
-          <div><span class="vl-ok">✓ Do</span>: Use tenacity with exponential</div>
-          <div style="padding-left:16px">backoff + full jitter. Wrap only</div>
-          <div style="padding-left:16px">outbound calls, not route handlers.</div>
-          <br>
-          <div><span style="color:var(--red)">✗ Don't</span>: Retry on 4xx. Cap at</div>
-          <div style="padding-left:16px">3 attempts with a budget timeout.</div>
-          <br>
-          <div><span class="vl-key">lib</span>: <span class="vl-val">tenacity</span> + <span class="vl-val">httpx</span></div>
-        </div>
-
-        <div class="visual-panel" id="vp4">
-          <div class="vl-comment"># Saga pulls 4 domains at once</div>
-          <br>
-          <div><span class="vl-prompt">$</span> backendpro <span class="vl-str">"saga distributed tx"</span> --all</div>
-          <br>
-          <div><span class="vl-head">Cross-domain synthesis:</span></div>
-          <div><span class="vl-ok">✓</span> <span class="vl-val">pattern</span> &nbsp;&nbsp;&nbsp;→ choreography vs orchestration</div>
-          <div><span class="vl-ok">✓</span> <span class="vl-val">messaging</span> &nbsp;→ outbox + idempotent consumers</div>
-          <div><span class="vl-ok">✓</span> <span class="vl-val">consistency</span>→ eventual, not 2PC</div>
-          <div><span class="vl-ok">✓</span> <span class="vl-val">reliability</span>→ compensating transactions</div>
-        </div>
-
-      </div>
+      <article class="rowcard" aria-label="Actual reliability search result">
+        <div class="label">reliability · Resilience</div>
+        <h3>Retries with backoff + budget</h3>
+        <dl>
+          <dt>Mitigation</dt><dd>Exponential backoff + jitter; cap attempts; total retry budget per call</dd>
+          <dt>Do</dt><dd>Retry only idempotent calls; carry idempotency keys</dd>
+          <dt>Don't</dt><dd>Retry every error</dd>
+          <dt>Source</dt><dd><a href="https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/">AWS Builders' Library: Timeouts, retries, and backoff with jitter</a></dd>
+          <dt>Source type</dt><dd>engineering-blog</dd>
+          <dt>Last updated</dt><dd><time datetime="2026-04-28">2026-04-28</time></dd>
+        </dl>
+      </article>
     </div>
   </div>
 </section>
 
-<hr class="divider">
+<!-- SOURCE MAINTENANCE -->
+<section class="sec" id="sourced" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="label">Maintenance</div>
+      <div><h2>How the knowledge base is checked</h2><p class="lede">A source link makes advice traceable, not automatically correct. Check its date, assumptions and relevance to your system.</p></div>
+    </div>
+    <div class="audit reveal">
+      <div><h3>Schema validation</h3><p>CI checks CSV columns and date formats on pull requests.</p><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/actions/workflows/ci.yml">View CI runs</a></div>
+      <div><h3>Freshness checks</h3><p>A weekly scan checks source URLs and flags rows older than 18 months.</p><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/actions/workflows/freshness.yml">View freshness runs</a></div>
+      <div><h3>Corrections</h3><p>The knowledge base is plain CSV. Open an issue or propose an edit with a supporting source.</p><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/CONTRIBUTING.md">Contribution guide</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- DOMAINS -->
+<section class="sec" id="domains" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="label">Knowledge base</div>
+      <div><h2>Browse 34 domains</h2><p class="lede">Filter by a topic or technology. Use the domain name with <code>--domain</code> to narrow a CLI search.</p></div>
+    </div>
+    <div class="dom-tools reveal">
+      <label class="dom-search"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></span><input id="dom-q" aria-label="Filter domains" placeholder="Filter domains — try “kafka”, “oauth”, “canary”"></label>
+      <span class="dom-count" id="dom-count" role="status">34 / 34 domains</span>
+    </div>
+    <div class="domains" id="dom-grid"></div>
+  </div>
+</section>
+
+<!-- STACKS -->
+<section class="sec" id="stacks" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="label">Stack guidelines</div>
+      <div><h2>Language-specific guidance</h2><p class="lede">Search conventions, libraries and common mistakes for your stack.</p></div>
+    </div>
+    <div class="stacks reveal" id="stack-grid"></div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section class="sec" id="tools" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="label">CLI tools</div>
+      <div><h2>Compare options and record decisions</h2><p class="lede">Run these commands after <code>backendpro</code>. <a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md">Read the full CLI reference</a> for flags and output formats.</p></div>
+    </div>
+    <div class="tools reveal" id="tool-grid"></div>
+  </div>
+</section>
+
+<!-- MCP -->
+<section id="mcp" class="sec" style="padding-top:0">
+  <div class="wrap mcp">
+    <div class="mcp-body">
+      <div class="label">Model Context Protocol</div>
+      <h2>Connect your assistant</h2>
+      <p class="lede">Install the CLI, then add this server entry to your client's MCP configuration. The client must be able to run <code>backendpro</code> on its PATH.</p>
+      <div class="mcp-tools"><span>search</span><span>compare</span><span>decide</span><span>lint</span><span>conflicts</span><span>learn</span></div>
+    </div>
+<div class="cfg"><span class="c" style="color:var(--ink-500)">// claude_desktop_config.json</span>
+{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"backendpro"</span>: {
+      <span class="k">"command"</span>: <span class="s">"backendpro"</span>,
+      <span class="k">"args"</span>: [<span class="s">"--mcp"</span>]
+    }
+  }
+}</div>
+  </div>
+</section>
 
 <!-- INSTALL -->
-<section id="install" class="gs-reveal">
-  <div class="section-glow glow-green" style="top:0;right:-200px"></div>
-  <div class="section-tag">// Get Started</div>
-  <h2>Drop into any AI tool</h2>
-  <p class="section-desc">Install once with pip, then load the skill into your favourite assistant.</p>
+<section class="sec" id="install">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="label">Installation</div>
+      <div><h2>Choose your client</h2><p class="lede">Run these commands from your project directory.</p></div>
+    </div>
+    <div class="install reveal">
+      <div class="tabs" id="tabs" role="tablist" aria-label="Installation client"></div>
+      <div id="panels"></div>
+    </div>
+  </div>
+</section>
 
-  <div class="install-grid">
-    <div class="install-card">
-      <div class="install-tool">🟣 Claude Code</div>
-      <div class="install-sub">Adds SKILL.md to your project</div>
-      <div class="install-code">pip install backendpro<br>mkdir -p .claude/skills<br>backendpro --load claude</div>
+<!-- BADGES -->
+<div class="wrap badge-wrap">
+  <details id="badges">
+    <summary>README badges</summary>
+    <div class="badges">
+      <div>
+        <p>Optional badges for projects using Backend Pro Max.</p>
+        <div class="row">
+          <img src="brand/buttons/badge-ink.svg" alt="Grounded by Backend Pro Max badge, ink">
+          <img src="brand/buttons/badge-green.svg" alt="Grounded by Backend Pro Max badge, green">
+          <img src="brand/buttons/badge-paper.svg" alt="Grounded by Backend Pro Max badge, paper">
+          <img src="brand/buttons/badge-outline.svg" alt="Grounded by Backend Pro Max badge, outline">
+        </div>
+      </div>
+<div class="code"><button class="cp" data-copy="[![Grounded by Backend Pro Max](https://backendpro.cc/brand/buttons/badge-ink.svg)](https://backendpro.cc)"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></span>Copy</button><span class="c">&lt;!-- README.md --&gt;</span>
+[![Grounded by Backend Pro Max](https://backendpro.cc/brand/buttons/badge-ink.svg)](https://backendpro.cc)</div>
     </div>
-    <div class="install-card">
-      <div class="install-tool">🟦 Cursor</div>
-      <div class="install-sub">Adds .cursor/rules/backend.mdc</div>
-      <div class="install-code">pip install backendpro<br>backendpro --load cursor</div>
+  </details>
+</div>
+
+<!-- FAQ -->
+<section class="sec" id="faq" style="padding-top:0">
+  <div class="wrap faq">
+    <div class="reveal">
+      <div class="label">FAQ</div>
+      <h2 style="margin-top:18px">Before you install</h2>
     </div>
-    <div class="install-card">
-      <div class="install-tool">🌊 Windsurf</div>
-      <div class="install-sub">Adds .windsurfrules to your project</div>
-      <div class="install-code">pip install backendpro<br>backendpro --load windsurf</div>
-    </div>
-    <div class="install-card">
-      <div class="install-tool">🐙 GitHub Copilot</div>
-      <div class="install-sub">Adds .github/copilot-instructions.md</div>
-      <div class="install-code">pip install backendpro<br>backendpro --load copilot</div>
-    </div>
-    <div class="install-card">
-      <div class="install-tool">🔷 Continue</div>
-      <div class="install-sub">Adds AGENTS.md to your project</div>
-      <div class="install-code">pip install backendpro<br>backendpro --load continue</div>
-    </div>
-    <div class="install-card">
-      <div class="install-tool">⚙️ CLI / MCP</div>
-      <div class="install-sub">Search &amp; serve from the terminal</div>
-      <div class="install-code">pip install backendpro<br>backendpro "redis cluster" --json<br>backendpro --list<br>backendpro-mcp</div>
-    </div>
-    <div class="install-card">
-      <div class="install-tool">🧪 Contributors</div>
-      <div class="install-sub">Tests, lint &amp; CSV validator</div>
-      <div class="install-code">pip install -e ".[dev]"<br><br>pytest                    # 652 tests<br>ruff check src tests      # lint<br>backendpro-validate       # CSVs</div>
+    <div class="reveal">
+      <details open><summary>Does it need a network connection?</summary><p>Default BM25 search runs over local CSVs without a model or network call. Optional semantic search and reranking use model dependencies that may need downloads. Your AI client and this website have their own network requirements.</p></details>
+      <details><summary>How does it differ from a docs MCP like Context7?</summary><p>Backend Pro Max stores curated guidance on patterns, trade-offs and common mistakes rather than a live library API reference. Follow the linked sources for details and current version requirements.</p></details>
+      <details><summary>Which assistants does it support?</summary><p>Claude Code, Cursor, Windsurf, GitHub Copilot and Continue via <code>backendpro --load &lt;tool&gt;</code>, plus any MCP-compatible agent via <code>backendpro --mcp</code>, and the CLI on its own.</p></details>
+      <details><summary>How current is the guidance?</summary><p>Check each row's Last Updated date and linked source. Weekly freshness scans flag older entries for review; they do not guarantee that every recommendation is current.</p></details>
+      <details><summary>What does it cost?</summary><p>Nothing. It's MIT-licensed open source and needs Python 3.8+ with zero runtime dependencies.</p></details>
+      <details><summary>Can I add my team's own rules?</summary><p>Yes. Rows are plain CSVs with a validated schema. See the <a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/CONTRIBUTING.md">contribution guide</a>; <code>backendpro coverage</code> reports gaps in domain coverage.</p></details>
     </div>
   </div>
 </section>
 
 <!-- CTA -->
-<div class="cta-section">
-  <div class="section-tag" style="display:inline-block;margin-bottom:20px">// Ready to ship?</div>
-  <h2>Stop guessing. Start citing.</h2>
-  <p>Ground your AI assistant in opinionated, staff-engineer-grade backend knowledge. Zero setup, zero dependencies.</p>
-  <div class="cta-actions">
-    <a class="btn-primary" href="https://github.com/shashankswe2020-ux/backend-pro-max-skill" target="_blank">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-      Get on GitHub
-    </a>
-    <a class="btn-secondary" href="#domains">Browse Domains →</a>
+<section class="reveal">
+  <div class="wrap cta">
+    <h2>Contribute to Backend Pro Max</h2>
+    <p class="lede">Report a missing topic, propose a correction, or support maintenance.</p>
+    <div class="ctas">
+      <a class="btn btn-ghost" href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/issues">Report an issue</a>
+      <a class="btn btn-ink" href="https://github.com/shashankswe2020-ux/backend-pro-max-skill"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1.3-4-2-6-2.5M15 21v-3.5a3 3 0 0 0-.9-2.4c2.9-.3 6-1.4 6-6.4a5 5 0 0 0-1.4-3.5 4.6 4.6 0 0 0-.1-3.5s-1.1-.3-3.6 1.4a12.4 12.4 0 0 0-6.4 0C6.1 1.4 5 1.7 5 1.7a4.6 4.6 0 0 0-.1 3.5A5 5 0 0 0 3.5 8.7c0 5 3.1 6.1 6 6.4a3 3 0 0 0-.9 2.4V21"/></svg></span>Star on GitHub</a>
+      <a class="btn btn-ink" href="https://buymeacoffee.com/shashanksw9">Buy me a coffee <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M14 6l6 6-6 6"/></svg></span></a>
+    </div>
   </div>
-  <div class="cta-trust">
-    <span>Open Source</span>
-    <span>MIT License</span>
-    <span>Zero Dependencies</span>
-    <span>Python 3.8+</span>
-  </div>
-</div>
+</section>
 
-<!-- FOOTER -->
 <footer>
-  <div class="footer-brand">
-    <div class="logo">▸ backend-pro-max</div>
-    <p>Staff-engineer-grade backend knowledge for AI coding assistants. Built for engineers who ship distributed systems.</p>
-  </div>
-  <div class="footer-col">
-    <h4>Knowledge</h4>
-    <ul>
-      <li><a href="#domains">20 Domains</a></li>
-      <li><a href="#stacks">12 Stacks</a></li>
-      <li><a href="#power-tools">Power Tools</a></li>
-      <li><a href="#how">How it Works</a></li>
-      <li><a href="#install">Installation</a></li>
-    </ul>
-  </div>
-  <div class="footer-col">
-    <h4>CLI</h4>
-    <ul>
-      <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md" target="_blank">backendpro search</a></li>
-      <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md#compare-two-or-more-options-side-by-side" target="_blank">backendpro compare</a></li>
-      <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md#interactive-repl" target="_blank">--interactive REPL</a></li>
-      <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md#freshness--staleness" target="_blank">--stale audit</a></li>
-      <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md" target="_blank">backendpro decide</a></li>
-      <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md" target="_blank">backendpro adr</a></li>
-    </ul>
-  </div>
-  <div class="footer-col">
-    <h4>Links</h4>
-    <ul>
-      <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill" target="_blank">GitHub</a></li>
-      <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md" target="_blank">Usage Docs</a></li>
-      <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/CONTRIBUTING.md" target="_blank">Contributing</a></li>
-      <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/CLAUDE.md" target="_blank">CLAUDE.md</a></li>
-      <li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/LICENSE" target="_blank">MIT License</a></li>
-    </ul>
+  <div class="wrap">
+    <div class="foot">
+      <div><img src="brand/logo/wordmark-light.svg" alt="Backend Pro Max"><p>Backend reference material for your terminal and AI assistant.</p></div>
+      <div><h6>Knowledge</h6><ul><li><a href="#domains">34 Domains</a></li><li><a href="#stacks">12 Stacks</a></li><li><a href="#tools">CLI tools</a></li><li><a href="#how">Search example</a></li><li><a href="#install">Install</a></li></ul></div>
+      <div><h6>CLI</h6><ul><li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md">backendpro search</a></li><li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md#compare-two-or-more-options-side-by-side">compare</a></li><li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md">decide · adr</a></li><li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/docs/USAGE.md#interactive-repl">--interactive</a></li></ul></div>
+      <div><h6>Project</h6><ul><li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill">GitHub</a></li><li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/CONTRIBUTING.md">Contributing</a></li><li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/CHANGELOG.md">Changelog</a></li><li><a href="https://github.com/shashankswe2020-ux/backend-pro-max-skill/blob/main/LICENSE">MIT License</a></li></ul></div>
+    </div>
+    <div class="legal"><span>© 2026 Backend Pro Max · MIT</span><a href="#badges">README badges</a></div>
   </div>
 </footer>
-<div style="text-align:center;padding:20px;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">
-  Built for engineers who actually ship distributed systems. If this saves you one outage, ⭐ the repo.
-</div>
 
 <script>
-const tabs = ['— user prompt','— domain detection','— bm25 search','— cited answer','— cross-domain'];
-function setStep(i){
-  document.querySelectorAll('.step-item').forEach((s,j)=>{
-    s.classList.toggle('active',j===i);
-  });
-  document.querySelectorAll('.visual-panel').forEach((p,j)=>{
-    p.classList.toggle('active',j===i);
-  });
-  document.getElementById('vtab-name').textContent = tabs[i];
-}
+/* ---------- data ---------- */
+const DOMAINS=[
+["pattern","Saga, CQRS, Outbox, Circuit Breaker, Bulkhead, Idempotency, Leader Election, Rate Limiting, Sharding","22 patterns","#22D67A"],
+["database","Postgres, MongoDB, Cassandra, DynamoDB, Redis, ClickHouse, vector DBs, S3, etcd","20+ engines","#5B9CF6"],
+["messaging","Kafka, Redpanda, Pulsar, RabbitMQ, NATS, SQS, SNS, Kinesis, Pub/Sub","12 brokers","#A78BFA"],
+["cache","In-process LRU, Redis cluster, Memcached, CDN, negative caching, Bloom filters, L1+L2 hybrid","10 strategies","#EE6A4E"],
+["cloud","AWS / GCP / Azure / Cloudflare service mapping and equivalents across all major primitives","3 providers","#60A5FA"],
+["observability","Prometheus, Grafana, Loki, Tempo, OpenTelemetry, Pyroscope, SLO frameworks, Datadog","15+ tools","#22D4E0"],
+["security","OWASP Top 10, CSRF, SSRF, supply chain (SLSA, Sigstore), zero-trust, TLS, PII, SAST","critical severity","#EE6A4E"],
+["auth","OAuth 2.0+PKCE, OIDC, JWT, SAML, mTLS, passkeys, RBAC/ABAC/ReBAC, SCIM, workload identity","12 mechanisms","#F2C14A"],
+["api","REST, GraphQL, gRPC, WebSocket, SSE, HTTP/2+3, Webhooks, JSON-RPC","10 protocols","#A78BFA"],
+["container","Docker, Kubernetes, EKS/GKE/AKS, Helm, ArgoCD, Istio, Envoy, Karpenter","20+ tools","#5B9CF6"],
+["consistency","Linearizability, CAP, PACELC, Raft, Paxos, 2PC, snapshot isolation, Lamport clocks","8 models","#FBBF24"],
+["reliability","SLO/SLI/error budget, timeouts, retries, circuit breaker, graceful shutdown, chaos engineering","18 practices","#22D67A"],
+["scaling","Autoscaling (HPA/KEDA), sharding, backpressure, hedged requests, geo-distribution, CDN","16 techniques","#34D399"],
+["performance","N+1, GC pauses, hot keys, tail latency, thundering herd, cold starts, TLS overhead","14 anti-patterns","#FB8C3E"],
+["testing","Unit, integration (Testcontainers), contract (Pact), fuzz, mutation, chaos, load, smoke","10 types","#22D4E0"],
+["architecture","Monolith, microservices, serverless, event-driven, hexagonal, DDD, CQRS+ES, cell-based","12 styles","#22D4E0"],
+["cicd","GitHub Actions, GitLab CI, ArgoCD, Flux, Argo Rollouts, Renovate, SonarQube, GHAS","15+ tools","#34D399"],
+["iac","Terraform/OpenTofu, Pulumi, AWS CDK, CloudFormation, Bicep, Ansible, Crossplane, Helm","9 tools","#C084FC"],
+["data","Spark, Flink, Kafka Streams, dbt, Airflow, Iceberg/Delta/Hudi, Debezium, vector DBs","20+ tools","#5B9CF6"],
+["language","Go, Java, Kotlin, Python, Rust, Node.js/TS, C#, Scala, Elixir, Ruby, PHP, C++","12 languages","#A78BFA"],
+["antipattern","Distributed Monolith, God Service, Dual Writes, Sync-over-Async, Chatty Microservices, Unbounded Retry, N+1","15 anti-patterns","#EE6A4E"],
+["cost","FinOps, spot instances, reserved capacity, right-sizing, cost allocation tags, waste detection","12 strategies","#F2C14A"],
+["mobile-backend","BFF pattern, push notifications, offline sync, GraphQL federation, edge caching, app config","10 patterns","#60A5FA"],
+["multi-tenant","Schema-per-tenant, row-level isolation, silo vs pool, noisy neighbor, tenant routing","8 models","#C084FC"],
+["api-contract","OpenAPI, AsyncAPI, Protobuf, consumer-driven contracts (Pact), schema registry, versioning","8 standards","#5B9CF6"],
+["edge","Edge compute (Cloudflare Workers, Lambda@Edge), CDN logic, geo-routing, edge databases","9 patterns","#FB8C3E"],
+["incident","On-call, runbooks, blameless postmortems, incident severity, SLA communication, war rooms","11 practices","#EE6A4E"],
+["interview","System design interview patterns, capacity estimation, trade-off analysis, communication","20 topics","#A78BFA"],
+["capacity","QPS estimation, storage projections, bandwidth math, replication factors, back-of-envelope","10 formulas","#FB8C3E"],
+["compliance","SOC 2, GDPR, HIPAA, PCI-DSS, ISO 27001, data residency, audit logging, retention","8 frameworks","#C084FC"],
+["latency","Cache, memory, disk and network latency reference numbers; check assumptions before sizing","reference values","#FBBF24"],
+["migration","Strangler Fig, blue-green DB, dual writes, shadow traffic, feature flags, zero-downtime schema","12 strategies","#34D399"],
+["ml-platform","Feature stores, model serving, A/B testing, GPU scheduling, MLOps pipelines, vector search","14 components","#22D67A"],
+["release","Canary, blue-green, rolling, feature flags, dark launches, ring deployments, rollback","10 strategies","#5B9CF6"]];
+const STACKS=[["Go","go/go-original","context.Context, errgroup, pgx/sqlc"],["Java / Spring","java/java-original","Virtual threads, constructor DI"],["Python / FastAPI","python/python-original","async all the way, Pydantic v2, uv"],["Node / Express","nodejs/nodejs-original","Fastify, zod, pino, Vitest"],["Rust / Axum","rust/rust-original","Tokio + Tower, sqlx"],["C# / ASP.NET","csharp/csharp-original","Minimal APIs, Polly v8, AOT"],["Kotlin / Spring","kotlin/kotlin-original","Coroutines, kotest"],["Scala / Akka","scala/scala-original","Pekko, Cats Effect / ZIO"],["Elixir / Phoenix","elixir/elixir-original","OTP, GenServer, Broadway"],["Ruby / Rails","ruby/ruby-original","Modular Rails, Solid Queue"],["PHP / Laravel","php/php-original","Octane, PHPStan"],["C++","cplusplus/cplusplus-original","C++20, RAII, sanitizers"]];
+const TOOLS=[
+["Compare","Read options side by side.",'compare "Kafka" "RabbitMQ"'],
+["Decide","Rank candidates against your constraints.",'decide "Kafka vs Pulsar"'],
+["ADR","Draft a decision record with options and citations.",'adr "Redis vs Memcached"'],
+["Design document","Draft a design with capacity estimates.",'design "Postgres for 50M DAU"'],
+["Interactive search","Keep a search session open while you work.","--interactive"],
+["Conflicts","Find documented tensions between recommendations.","conflicts --domain cache"]];
+const CLIENTS=[["Claude Code","Adds SKILL.md to your project","pip install backendpro\nmkdir -p .claude/skills\nbackendpro --load claude"],["Cursor","Adds .cursor/rules/backend.mdc","pip install backendpro\nbackendpro --load cursor"],["Windsurf","Adds .windsurfrules","pip install backendpro\nbackendpro --load windsurf"],["GitHub Copilot","Adds .github/copilot-instructions.md","pip install backendpro\nbackendpro --load copilot"],["Continue","Adds AGENTS.md","pip install backendpro\nbackendpro --load continue"],["CLI / MCP","Search & serve from the terminal","pip install backendpro\nbackendpro \"redis cluster\" --json\nbackendpro --mcp"]];
+const ICONS={"search": "<circle cx=\"11\" cy=\"11\" r=\"6.5\"/><path d=\"M16 16l4.5 4.5\"/>", "compare": "<rect x=\"3\" y=\"4\" width=\"7.5\" height=\"16\" rx=\"1.5\"/><rect x=\"13.5\" y=\"4\" width=\"7.5\" height=\"16\" rx=\"1.5\"/><path d=\"M6 9h2M6 13h2M16.5 9h2M16.5 13h2\"/>", "repl": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2.5\"/><path d=\"M7 10l3 2.5L7 15M12.5 15H17\"/>", "freshness": "<circle cx=\"12\" cy=\"13\" r=\"7.5\"/><path d=\"M12 9v4l2.5 2M9.5 3h5\"/>", "confidence": "<path d=\"M4 18a8 8 0 0 1 16 0\"/><path d=\"M12 18l4.5-5.5\"/><circle cx=\"12\" cy=\"18\" r=\"1.2\"/>", "synonym": "<path d=\"M4 8h12l-3-3M20 16H8l3 3\"/>", "cache": "<path d=\"M13 3L5 13.5h6L10 21l8-10.5h-6z\"/>", "validator": "<path d=\"M4 5h16M4 10h10M4 15h7\"/><path d=\"M14 17l2.5 2.5L21 15\"/>", "tests": "<path d=\"M9 3h6M10 3v6.5L4.8 18.2A1.8 1.8 0 0 0 6.4 21h11.2a1.8 1.8 0 0 0 1.6-2.8L14 9.5V3\"/><path d=\"M7.5 15h9\"/>", "intent": "<circle cx=\"12\" cy=\"12\" r=\"8\"/><circle cx=\"12\" cy=\"12\" r=\"4\"/><circle cx=\"12\" cy=\"12\" r=\".6\"/>", "hybrid": "<circle cx=\"6\" cy=\"6\" r=\"2.5\"/><circle cx=\"6\" cy=\"18\" r=\"2.5\"/><circle cx=\"18\" cy=\"12\" r=\"2.5\"/><path d=\"M8.3 7.2l7.4 3.6M8.3 16.8l7.4-3.6\"/>", "rerank": "<path d=\"M7 20V4M7 4L4 7M7 4l3 3\"/><path d=\"M13 6h7M13 11h5M13 16h3\"/>", "decide": "<path d=\"M12 3v6M12 9l-6 6v6M12 9l6 6v6\"/><circle cx=\"18\" cy=\"15\" r=\"1.4\"/>", "adr": "<path d=\"M6 3h8l4 4v14H6z\"/><path d=\"M14 3v4h4M9 12h6M9 16h4\"/>", "design-doc": "<path d=\"M3 20h18M5 20V9l7-5 7 5v11\"/><path d=\"M9.5 20v-6h5v6\"/>", "citation": "<path d=\"M10 14l4-4\"/><path d=\"M8.5 11.5L6 14a3 3 0 0 0 4.2 4.2l2.5-2.5M15.5 12.5L18 10a3 3 0 0 0-4.2-4.2l-2.5 2.5\"/>", "conflict": "<path d=\"M12 3.5L2.8 19.5h18.4z\"/><path d=\"M12 10v4M12 17v.2\"/>", "dedup": "<rect x=\"3\" y=\"3\" width=\"12\" height=\"12\" rx=\"2\"/><rect x=\"9\" y=\"9\" width=\"12\" height=\"12\" rx=\"2\"/>", "coverage": "<path d=\"M4 20V10M10 20V4M16 20v-7M20 20H3\"/>", "mcp": "<path d=\"M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0z\"/><path d=\"M12 17v4\"/>", "brain": "<path d=\"M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1z\"/><path d=\"M15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1\"/>", "github": "<path d=\"M9 19c-4 1.3-4-2-6-2.5M15 21v-3.5a3 3 0 0 0-.9-2.4c2.9-.3 6-1.4 6-6.4a5 5 0 0 0-1.4-3.5 4.6 4.6 0 0 0-.1-3.5s-1.1-.3-3.6 1.4a12.4 12.4 0 0 0-6.4 0C6.1 1.4 5 1.7 5 1.7a4.6 4.6 0 0 0-.1 3.5A5 5 0 0 0 3.5 8.7c0 5 3.1 6.1 6 6.4a3 3 0 0 0-.9 2.4V21\"/>", "copy": "<rect x=\"8\" y=\"8\" width=\"12\" height=\"12\" rx=\"2\"/><path d=\"M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3\"/>", "arrow-right": "<path d=\"M4 12h15M14 6l6 6-6 6\"/>", "check": "<path d=\"M4.5 12.5l5 5L19.5 7\"/>", "x": "<path d=\"M6 6l12 12M18 6L6 18\"/>", "terminal": "<path d=\"M4 7l5 5-5 5M12 18h8\"/>", "shield": "<path d=\"M12 3l7.5 3v6c0 4.5-3.2 7.8-7.5 9-4.3-1.2-7.5-4.5-7.5-9V6z\"/><path d=\"M9 12l2 2 4-4\"/>"};
+const icon=n=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">'+ICONS[n]+'</svg>';
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- domains ---------- */
+const dg=document.getElementById('dom-grid');
+dg.innerHTML=DOMAINS.map(([n,d])=>`<article class="card" data-k="${(n+' '+d).toLowerCase()}"><div class="t"><h4>${n}</h4></div><p>${d}</p></article>`).join('');
+document.getElementById('dom-q').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();let k=0;dg.querySelectorAll('.card').forEach(c=>{const on=!q||c.dataset.k.includes(q);c.classList.toggle('hide',!on);k+=on});document.getElementById('dom-count').textContent=k+' / '+DOMAINS.length+' domains'});
+
+/* ---------- stacks / tools ---------- */
+document.getElementById('stack-grid').innerHTML=STACKS.map(([n,i,d])=>`<div class="stack"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/${i}.svg" alt="" loading="lazy"><h5>${n}</h5><p>${d}</p></div>`).join('');
+document.getElementById('tool-grid').innerHTML=TOOLS.map(([n,d,c])=>`<div class="tool"><h5>${n}</h5><p>${d}</p><code>${esc(c)}</code></div>`).join('');
+
+/* ---------- install tabs ---------- */
+const tabs=document.getElementById('tabs'),panels=document.getElementById('panels');
+tabs.innerHTML=CLIENTS.map(([n,d],i)=>`<button class="${i?'':'on'}" data-i="${i}" id="client-tab-${i}" role="tab" aria-controls="client-panel-${i}" aria-selected="${!i}" tabindex="${i?-1:0}">${n}<small>${['skill','rules','rules','instr.','agents','mcp'][i]}</small></button>`).join('');
+panels.innerHTML=CLIENTS.map(([n,d,c],i)=>`<div class="tabpanel ${i?'':'on'}" id="client-panel-${i}" role="tabpanel" aria-labelledby="client-tab-${i}" tabindex="0"><h4>${n}</h4><p>${d}</p><div class="code"><button class="cp" data-copy="${esc(c)}"><span class="ico">${icon('copy')}</span>Copy</button>${c.split('\n').map(l=>'<span class="p">$</span> '+esc(l)).join('\n')}</div></div>`).join('');
+function selectClient(b){tabs.querySelectorAll('button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-selected',String(x===b));x.tabIndex=x===b?0:-1});panels.querySelectorAll('.tabpanel').forEach((p,i)=>p.classList.toggle('on',i==b.dataset.i))}
+tabs.addEventListener('click',e=>{const b=e.target.closest('button');if(b)selectClient(b)});
+tabs.addEventListener('keydown',e=>{const buttons=[...tabs.querySelectorAll('button')],i=buttons.indexOf(e.target);if(i<0)return;
+  const next={ArrowRight:(i+1)%buttons.length,ArrowDown:(i+1)%buttons.length,ArrowLeft:(i+buttons.length-1)%buttons.length,ArrowUp:(i+buttons.length-1)%buttons.length,Home:0,End:buttons.length-1}[e.key];
+  if(next===undefined)return;e.preventDefault();selectClient(buttons[next]);buttons[next].focus()});
+
+/* ---------- copy buttons ---------- */
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-copy]');if(!b||b.disabled)return;
+  const lbl=[...b.childNodes].find(n=>n.nodeType===3),original=lbl?.textContent,status=document.getElementById('copy-status');
+  b.disabled=true;
+  try{await navigator.clipboard.writeText(b.dataset.copy);if(lbl)lbl.textContent='Copied';status.textContent='Copied to clipboard.'}
+  catch(error){console.error('Clipboard copy failed:',error);if(lbl)lbl.textContent='Copy failed';status.textContent='Copy failed. Select the command and copy it manually.'}
+  finally{setTimeout(()=>{if(lbl)lbl.textContent=original;b.disabled=false},1800)}});
+
+/* ---------- ask the brain ---------- */
+(function(){
+  const inp=document.getElementById('ask'),hits=document.getElementById('hits');
+  const SYN={retry:['retry','backoff','jitter','circuit'],idempotency:['idempot','dedup','exactly'],kafka:['kafka','partition','consumer','exactly'],saga:['saga','compensat','outbox','choreograph','orchestrat'],'rate limit':['rate','throttl','token bucket','limit'],postgres:['postgres','pgx','sql','index']};
+  function search(q){q=q.trim().toLowerCase();if(!q||typeof VD==='undefined')return[];
+    const terms=SYN[q]||q.split(/\s+/).filter(Boolean);
+    return VD.N.map((n,i)=>{const t=n.n.toLowerCase();let s=0;terms.forEach(w=>{if(t.includes(w))s+=t.startsWith(w)?2:1});return[s*(.6+n.w),i]}).filter(x=>x[0]>0).sort((a,b)=>b[0]-a[0]).slice(0,6).map(x=>x[1])}
+  let tmr;function run(){const ids=search(inp.value);
+    if(!inp.value.trim()){hits.innerHTML='<div class="empty">Type a concept. Matching rows light up in the brain with their cross-domain connections.</div>';window.brainReset&&window.brainReset();return}
+    if(!ids.length){hits.innerHTML='<div class="empty">No title match in the preview. Try another term, or use the CLI for full BM25 search with synonym expansion.</div>';window.brainReset&&window.brainReset();return}
+    hits.innerHTML=ids.map((i,k)=>{const n=VD.N[i],d=VD.D[n.d]||{c:'#22D67A',l:n.d};return`<button class="hit ${k?'':'on'}" data-i="${i}"><i style="background:${d.c}"></i><span>${esc(n.n)}</span><small>${esc(d.l)}</small></button>`}).join('');
+    window.brainFocus&&window.brainFocus(ids)}
+  inp.addEventListener('input',()=>{clearTimeout(tmr);tmr=setTimeout(run,140)});
+  hits.addEventListener('click',e=>{const h=e.target.closest('.hit');if(!h)return;hits.querySelectorAll('.hit').forEach(x=>x.classList.toggle('on',x===h));window.brainFocus&&window.brainFocus([+h.dataset.i])});
+  document.getElementById('ask-chips').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;inp.value=b.textContent;run()});
+  document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==inp&&!/input|textarea/i.test(document.activeElement.tagName)){e.preventDefault();inp.focus();inp.scrollIntoView({block:'center',behavior:'smooth'})}});
+})();
+
 </script>
 
-<!-- Vault graph data (685 entries, 1405 connections, 46 domains) -->
-<script src="vault-graph.js"></script>
-
-<!-- Force-directed vault graph — Three.js 3D + GSAP + Anime.js -->
+<!-- Brain data (685 entries, 1405 connections) + three.js scene — carried over from the current site -->
+<script>window.BRAIN_URL='./brain.glb';</script>
+<script src="./vault-graph.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"}}</script>
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
@@ -1659,7 +650,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
   const hidden=new Set();
 
   const domKeys=Object.keys(DOMAINS);
-  info.textContent=ND.length+' entries · '+ED.length+' connections · '+domKeys.length+' domains';
+  info.textContent=ND.length+' entries · '+ED.length+' connections · '+domKeys.length+' domain / stack groups';
 
   /* ── Scene ────────────────────────────────────────────── */
   const scene=new THREE.Scene();
@@ -1732,7 +723,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 
   // Load brain.glb
   const loader=new GLTFLoader();
-  loader.load('./brain.glb',function(gltf){
+  loader.load(window.BRAIN_URL||'./brain.glb',function(gltf){
     // Get the brain mesh
     let brainGeometry=null;
     gltf.scene.traverse(function(child){
@@ -2104,6 +1095,35 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
     brainGroup.add(activeEdges);
   });
 
+  /* ── Redesign hook: focus a set of nodes from the "ask the brain" box ── */
+  window.brainReset=resetSelection;
+  window.brainFocus=function(ids){
+    resetSelection();
+    if(!ids||!ids.length)return;
+    const lit=new Set();
+    ids.forEach(i=>{lit.add(i);(adjacency.get(i)||[]).forEach(n=>lit.add(n));});
+    const doms=new Set([...lit].map(i=>nodeDomMap.get(i)));
+    for(const [dom,mesh] of Object.entries(domMeshes)){
+      const on=doms.has(dom);
+      mesh.material.transparent=!on;
+      mesh.material.opacity=on?1:0.08;
+      mesh.material.emissiveIntensity=on?0.9:0.05;
+      mesh.material.needsUpdate=true;
+    }
+    const verts=[];
+    ids.forEach(i=>{const p=nodePositions[i];if(!p)return;
+      (adjacency.get(i)||[]).forEach(n=>{const q=nodePositions[n];if(q)verts.push(p.x,p.y,p.z,q.x,q.y,q.z);});});
+    if(verts.length){
+      const geo=new THREE.BufferGeometry();
+      geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(verts),3));
+      activeEdges=new THREE.LineSegments(geo,new THREE.LineBasicMaterial({color:0x22d67a,transparent:true,opacity:0.9}));
+      brainGroup.add(activeEdges);
+    }
+    const p=nodePositions[ids[0]];
+    if(p){highlightMesh.visible=true;highlightMesh.position.copy(p);highlightMesh.userData.baseSize=0.22;}
+    activeNodeIdx=ids[0];
+  };
+
   /* ── Render loop ──────────────────────────────────────── */
   const clock=new THREE.Clock();
 
@@ -2145,164 +1165,5 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 })();
 </script>
 
-<!-- GSAP ScrollTrigger + Anime.js — Huly-style animations -->
-<script>
-(function(){
-  if(typeof gsap==='undefined'||typeof ScrollTrigger==='undefined'){
-    // Fallback: show all sections if GSAP fails to load
-    document.querySelectorAll('.gs-reveal,.gs-reveal-left,.gs-reveal-right').forEach(function(el){
-      el.style.opacity='1';el.style.transform='none';
-    });
-    return;
-  }
-  gsap.registerPlugin(ScrollTrigger);
-  if(typeof ScrollToPlugin!=='undefined')gsap.registerPlugin(ScrollToPlugin);
-
-  /* ── Section reveals (smoother, longer) ───────────────── */
-  gsap.utils.toArray('.gs-reveal').forEach(el=>{
-    gsap.to(el,{
-      opacity:1,y:0,duration:1.2,ease:'power3.out',
-      scrollTrigger:{trigger:el,start:'top 88%',toggleActions:'play none none none'}
-    });
-  });
-
-  /* ── Section glow orbs — parallax float ───────────────── */
-  gsap.utils.toArray('.section-glow').forEach(orb=>{
-    gsap.to(orb,{
-      y:-80,x:30,
-      ease:'none',
-      scrollTrigger:{
-        trigger:orb.parentElement,
-        start:'top bottom',
-        end:'bottom top',
-        scrub:1.5
-      }
-    });
-  });
-
-  /* ── Card animations disabled — show immediately ────── */
-
-  /* ── Stats counter animation (Anime.js) ───────────────── */
-  const statsRow=document.querySelector('.stats-row');
-  if(statsRow){
-    const observer=new IntersectionObserver(entries=>{
-      entries.forEach(entry=>{
-        if(entry.isIntersecting){
-          statsRow.querySelectorAll('.stat-num span').forEach(span=>{
-            const target=parseInt(span.textContent)||0;
-            if(target>0){
-              const obj={v:0};
-              anime({
-                targets:obj,
-                v:target,
-                round:1,
-                duration:2200,
-                easing:'easeOutExpo',
-                update:()=>{span.textContent=obj.v;}
-              });
-            }
-          });
-          observer.disconnect();
-        }
-      });
-    },{threshold:0.3});
-    observer.observe(statsRow);
-  }
-
-  /* ── Hero entrance — cinematic stagger ────────────────── */
-  const heroTl=gsap.timeline({delay:0.3});
-  heroTl
-    .from('.hero-glow',{opacity:0,scale:0.5,duration:2,ease:'power2.out'})
-    .from('.hero-badges',{opacity:0,y:30,duration:0.8,ease:'power3.out'},'-=1.5')
-    .from('h1',{opacity:0,y:40,duration:1,ease:'power3.out'},'-=0.5')
-    .from('.hero-sub',{opacity:0,y:25,duration:0.7,ease:'power3.out'},'-=0.6')
-    .from('.hero-desc',{opacity:0,y:25,duration:0.7,ease:'power3.out'},'-=0.5')
-    .from('.hero-actions',{opacity:0,y:25,duration:0.7,ease:'power3.out'},'-=0.4')
-    .from('.terminal',{opacity:0,y:40,scale:0.94,duration:1,ease:'power3.out'},'-=0.4');
-
-  /* ── Smooth nav active state on scroll ────────────────── */
-  document.querySelectorAll('section[id]').forEach(sec=>{
-    ScrollTrigger.create({
-      trigger:sec,
-      start:'top 40%',
-      end:'bottom 40%',
-      toggleClass:{targets:'.nav-links a[href="#'+sec.id+'"]',className:'active-link'}
-    });
-  });
-
-  /* ── Parallax grid bg + hero glow ─────────────────────── */
-  gsap.to('.grid-bg',{
-    yPercent:-12,
-    ease:'none',
-    scrollTrigger:{trigger:'body',start:'top top',end:'bottom bottom',scrub:2}
-  });
-  gsap.to('.hero-glow',{
-    y:-150,scale:1.2,opacity:0.5,
-    ease:'none',
-    scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:1}
-  });
-
-  /* ── Card hover — Anime.js elastic + glow pulse ──────── */
-  document.querySelectorAll('.domain-card,.stack-card,.install-card').forEach(card=>{
-    card.addEventListener('mouseenter',()=>{
-      anime.remove(card);
-      anime({
-        targets:card,
-        translateY:-6,
-        scale:1.03,
-        duration:350,
-        easing:'easeOutCubic'
-      });
-    });
-    card.addEventListener('mouseleave',()=>{
-      anime.remove(card);
-      anime({
-        targets:card,
-        translateY:0,
-        scale:1,
-        duration:500,
-        easing:'easeOutElastic(1,0.5)'
-      });
-    });
-  });
-
-  /* ── Button glow pulse on hover (Anime.js) ────────────── */
-  document.querySelectorAll('.btn-primary').forEach(btn=>{
-    btn.addEventListener('mouseenter',()=>{
-      anime({
-        targets:btn,
-        boxShadow:['0 0 30px rgba(34,214,122,0.2),0 0 60px rgba(34,214,122,0.08)',
-                    '0 0 50px rgba(34,214,122,0.4),0 0 100px rgba(34,214,122,0.15)'],
-        duration:400,
-        easing:'easeOutQuad'
-      });
-    });
-    btn.addEventListener('mouseleave',()=>{
-      anime({
-        targets:btn,
-        boxShadow:'0 0 30px rgba(34,214,122,0.2),0 0 60px rgba(34,214,122,0.08)',
-        duration:600,
-        easing:'easeOutQuad'
-      });
-    });
-  });
-
-  /* ── Smooth scroll for anchor links ───────────────────── */
-  document.querySelectorAll('a[href^="#"]').forEach(a=>{
-    a.addEventListener('click',e=>{
-      const target=document.querySelector(a.getAttribute('href'));
-      if(target){
-        e.preventDefault();
-        gsap.to(window,{
-          scrollTo:{y:target,offsetY:70},
-          duration:1,
-          ease:'power3.inOut'
-        });
-      }
-    });
-  });
-
-})();
-</script>
 </body>
 </html>
