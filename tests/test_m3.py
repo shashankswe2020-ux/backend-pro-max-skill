@@ -82,7 +82,7 @@ def test_baseline_has_no_knowledge_tools(m3, policy):
     workflow = m3.RetrievalWorkflow(policy, "baseline")
     called = []
     with pytest.raises(ValueError, match="unavailable"):
-        workflow.retrieve("backendpro_search", {"query": "Kafka"}, lambda *_: called.append(1), "offline_fixture")
+        workflow.retrieve("search", {"query": "Kafka"}, lambda *_: called.append(1), "offline_fixture")
     workflow.guard("shell")
     workflow.guard("finish")
     assert called == []
@@ -93,9 +93,9 @@ def test_required_both_reserves_budget_for_other_source(m3):
     with pytest.raises(ValueError, match="missing sources"):
         workflow.guard("shell")
     for _ in range(2):
-        workflow.retrieve("backendpro_search", {"query": "retry"}, lambda *_: {"results": []}, "offline_fixture")
+        workflow.retrieve("search", {"query": "retry"}, lambda *_: {"results": []}, "offline_fixture")
     with pytest.raises(ValueError, match="reserved"):
-        workflow.retrieve("backendpro_search", {"query": "retry"}, lambda *_: {}, "offline_fixture")
+        workflow.retrieve("search", {"query": "retry"}, lambda *_: {}, "offline_fixture")
     workflow.retrieve("context7", {"query": "Starlette routing"}, lambda *_: {"results": []}, "offline_fixture")
     workflow.guard("shell")
     with pytest.raises(ValueError, match="three-call"):
@@ -124,7 +124,7 @@ def test_failure_and_empty_results_are_retained_not_retried(m3):
 def test_bounded_response_remains_parseable_and_hash_bound(m3):
     value = {"results": [{"content": '"\n\u6570' * 12000}]}
     workflow = m3.RetrievalWorkflow("optional", "backendpro")
-    event = workflow.retrieve("backendpro_search", {"query": "Kafka"}, lambda *_: value, "offline_fixture")
+    event = workflow.retrieve("search", {"query": "Kafka"}, lambda *_: value, "offline_fixture")
     assert len(event["output"]) <= 6000
     assert json.loads(event["output"])["truncated"]
     assert event["payload"] == value
@@ -136,9 +136,9 @@ def test_schema_and_transport_checks_precede_execution(m3):
     workflow = m3.RetrievalWorkflow("required", "backendpro")
     called = []
     with pytest.raises(ValueError, match="Invalid tool arguments"):
-        workflow.retrieve("backendpro_search", {"query": "x", "domain": "wrong"}, lambda *_: called.append(1), "mcp_stdio")
+        workflow.retrieve("search", {"query": "x", "domain": "wrong"}, lambda *_: called.append(1), "mcp_stdio")
     with pytest.raises(ValueError, match="Transport"):
-        workflow.retrieve("backendpro_search", {"query": "x"}, lambda *_: called.append(1), "context7_search_api")
+        workflow.retrieve("search", {"query": "x"}, lambda *_: called.append(1), "context7_search_api")
     assert workflow.calls == 0
     assert called == []
 
@@ -146,7 +146,7 @@ def test_schema_and_transport_checks_precede_execution(m3):
 def test_replay_retains_rejections_without_executing_shell(m3):
     result = m3.replay("required", "both", [
         {"name": "shell"},
-        {"name": "backendpro_search", "arguments": {"query": "retry"}, "fixture": {"results": []}},
+        {"name": "search", "arguments": {"query": "retry"}, "fixture": {"results": []}},
         {"name": "finish"},
         {"name": "context7", "arguments": {"query": "docs"}, "fixture": {"error": "unavailable"}},
         {"name": "shell"},
@@ -168,12 +168,12 @@ def test_real_backendpro_replay_never_uses_context7_network(m3, monkeypatch):
 
     monkeypatch.setattr(m3, "backendpro_mcp", local)
     result = m3.replay("required", "both", [
-        {"name": "backendpro_search", "arguments": {"query": "retry"}},
+        {"name": "search", "arguments": {"query": "retry"}},
         {"name": "context7", "arguments": {"query": "docs"}, "fixture": {"results": []}},
         {"name": "finish"},
     ], real_backendpro=True)
     assert result["finished"]
-    assert calls == ["backendpro_search"]
+    assert calls == ["search"]
     assert result["trace"][0]["event"]["transport"] == "mcp_stdio"
     assert result["trace"][1]["event"]["transport"] == "offline_fixture"
 
@@ -237,11 +237,43 @@ def test_invalid_costs_do_not_become_zero_cost_success(m3, frozen, tmp_path, val
 
 def test_offline_fixture_cannot_be_mislabeled_a_model_result(m3, frozen, tmp_path):
     flow = m3.RetrievalWorkflow("optional", "backendpro")
-    event = flow.retrieve("backendpro_search", {"query": "retry"}, lambda *_: {"results": []}, "offline_fixture")
-    row = {**record("backend-01.backendpro.r1"), "trace": [{"name": "backendpro_search", "event": event}]}
+    event = flow.retrieve("search", {"query": "retry"}, lambda *_: {"results": []}, "offline_fixture")
+    row = {**record("backend-01.backendpro.r1"), "trace": [{"name": "search", "event": event}]}
     path = observations(m3, frozen, tmp_path, [row])
     with pytest.raises(ValueError, match="Offline fixtures"):
         m3.report(frozen, path, "optional")
+
+
+def test_historical_report_uses_frozen_names_not_current_tools(m3, frozen, tmp_path):
+    tools_path = frozen / "tools.json"
+    tools = json.loads(tools_path.read_bytes())
+    for tool in tools["openai"]:
+        tool["function"]["name"] = "backendpro_" + tool["function"]["name"]
+    for tool in tools["anthropic"]:
+        tool["name"] = "backendpro_" + tool["name"]
+    tools_path.write_bytes(m3.encode(tools))
+    manifest_path = frozen / "manifest.json"
+    manifest = json.loads(manifest_path.read_bytes())
+    manifest["files"]["tools.json"] = m3.sha(tools_path.read_bytes())
+    manifest_path.write_bytes(m3.encode(manifest))
+    contracts = {tool["function"]["name"]: tool["function"] for tool in tools["openai"]}
+    flow = m3.RetrievalWorkflow("required", "backendpro", contracts=contracts)
+    event = flow.retrieve(
+        "backendpro_search", {"query": "retry"}, lambda *_: {"results": []}, "mcp_stdio",
+    )
+    row = {
+        **record("backend-01.backendpro.r1"), "status": "time_limit",
+        "trace": [{"name": "backendpro_search", "event": event}],
+    }
+    path = observations(m3, frozen, tmp_path, [row], policy="required")
+    result = m3.report(frozen, path, "required")
+    assert result["attempts"][0]["retrieval_calls"] == 1
+    assert result["attempts"][0]["retrieval_compliant"]
+    assert result["attempts"][0]["retrieval_statuses"] == {"empty": 1}
+    with pytest.raises(ValueError, match="unavailable"):
+        m3.RetrievalWorkflow("required", "backendpro").retrieve(
+            "backendpro_search", {"query": "retry"}, lambda *_: {}, "mcp_stdio",
+        )
 
 
 def test_grade_artifact_must_match_task_environment_and_candidate(m3, frozen, tmp_path):

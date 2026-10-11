@@ -27,7 +27,7 @@ async def check_session(session) -> dict:
         if tool.outputSchema is not None and tool.outputSchema.get("type") != "object":
             raise ValueError(f"MCP output is no longer a structured dictionary: {tool.name}")
 
-    result = await session.call_tool("backendpro_search", {"query": "Kafka", "domain": "messaging"})
+    result = await session.call_tool("search", {"query": "Kafka", "domain": "messaging"})
     if result.isError:
         raise ValueError("Known-answer MCP retrieval failed")
     value = json.loads(result.content[0].text)
@@ -37,19 +37,19 @@ async def check_session(session) -> dict:
     if not all(row.get("_citation") for row in rows):
         raise ValueError("Known-answer MCP retrieval lacks citations")
     empty = await session.call_tool(
-        "backendpro_search", {"query": "Kafka", "domain": "messaging", "min_score": 1e100},
+        "search", {"query": "Kafka", "domain": "messaging", "min_score": 1e100},
     )
     if empty.isError or json.loads(empty.content[0].text).get("count") != 0:
         raise ValueError("Empty retrieval must remain a successful zero-result response")
     invalid_cases = [
-        ("backendpro_search", {"query": "Kafka", "domain": "nonexistent"}),
-        ("backendpro_search", {"query": "Kafka", "max_results": 0}),
-        ("backendpro_search_stack", {"query": "errors", "stack": "nonexistent"}),
-        ("backendpro_compare", {"names": ["Kafka"]}),
-        ("backendpro_adr", {"title": "Decision", "context_domains": []}),
-        ("backendpro_find_stale", {"domain": "pattern", "months": -1}),
-        ("backendpro_search", {}),
-        ("backendpro_adr", {"title": "zzqxvzzqxv", "context_domains": ["pattern"]}),
+        ("search", {"query": "Kafka", "domain": "nonexistent"}),
+        ("search", {"query": "Kafka", "max_results": 0}),
+        ("search_stack", {"query": "errors", "stack": "nonexistent"}),
+        ("compare", {"names": ["Kafka"]}),
+        ("adr", {"title": "Decision", "context_domains": []}),
+        ("find_stale", {"domain": "pattern", "months": -1}),
+        ("search", {}),
+        ("adr", {"title": "zzqxvzzqxv", "context_domains": ["pattern"]}),
         ("nonexistent", {}),
     ]
     for name, arguments in invalid_cases:

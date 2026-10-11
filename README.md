@@ -226,7 +226,7 @@ backendpro-mcp                    # stdio transport
 ```
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/shashankswe2020-ux/backend-pro-max-skill/main/docs/readme/mcp-session.gif" alt="A real MCP session: Claude calls backendpro_search twice, backendpro_compare (Apache Kafka vs RabbitMQ), backendpro_decide and backendpro_adr, then designs the payments service with every point cited." width="100%" />
+<img src="https://raw.githubusercontent.com/shashankswe2020-ux/backend-pro-max-skill/main/docs/readme/mcp-session.gif" alt="A real MCP session: Claude calls search twice, compare (Apache Kafka vs RabbitMQ), decide and adr, then designs the payments service with every point cited." width="100%" />
 <sub>A real session against <code>backendpro-mcp</code>: five tool calls, then a payments-service design where every point carries a <code>[BPM:…]</code> citation.</sub>
 </div>
 
@@ -244,14 +244,22 @@ backendpro-mcp                    # stdio transport
 
 | Tool | Arguments | Returns |
 |---|---|---|
-| `backendpro_search` | `query`, `domain?`, `max_results?`, `min_score?` | Ranked rows from one domain (auto-detected if omitted) |
-| `backendpro_search_all` | `query`, `max_results?` | Top hits per domain |
-| `backendpro_search_stack` | `query`, `stack` | Stack guidelines with good and bad code |
-| `backendpro_compare` | `names[]`, `domain?` | Side-by-side table |
-| `backendpro_decide` | `requirement` | Constraint-scored recommendation |
-| `backendpro_adr` | `title`, `context_domains[]` | Nygard-format ADR |
-| `backendpro_design` | `description` | Design scaffold with capacity estimates |
-| `backendpro_find_stale` | `domain`, `months` | Rows older than the threshold |
+| `search` | `query`, `domain?`, `max_results?`, `min_score?` | Ranked rows from one domain (auto-detected if omitted) |
+| `search_all` | `query`, `max_results?` | Top hits per domain |
+| `search_stack` | `query`, `stack` | Stack guidelines with good and bad code |
+| `compare` | `names[]`, `domain?` | Side-by-side table |
+| `decide` | `requirement` | Constraint-scored recommendation |
+| `adr` | `title`, `context_domains[]` | Nygard-format ADR |
+| `design` | `description` | Design scaffold with capacity estimates |
+| `find_stale` | `domain`, `months` | Rows older than the threshold |
+
+**Tool-name migration (#38):** tool names no longer include `backendpro_`.
+With a server configured as `backendpro`, a client such as Claude now sees
+`mcp__backendpro__search`, rather than `mcp__backendpro__backendpro_search`.
+Update saved tool calls and allowlists, then restart/reconnect the client to
+refresh discovery. The server configuration and `backendpro-mcp` command are
+unchanged; old tool names are not registered as aliases. Older recordings and
+frozen benchmark protocols retain their original names.
 
 Every tool returns structured JSON with `[BPM:domain.slug]` citation tokens, so you can find grounded advice in a PR with `grep -r '\[BPM:' .`
 

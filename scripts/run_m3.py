@@ -210,10 +210,11 @@ def load_frozen(root: Path) -> dict:
 class RetrievalWorkflow:
     """Enforce treatment before an external client executes shell or finish."""
 
-    def __init__(self, policy: str, arm: str):
+    def __init__(self, policy: str, arm: str, contracts: dict | None = None):
         if policy not in ("optional", "required") or arm not in ARMS:
             raise ValueError("Unknown treatment")
         self.policy, self.arm = policy, arm
+        self.contracts = CONTRACTS if contracts is None else contracts
         self.attempted = set()
         self.events = []
         self.calls = 0
@@ -231,7 +232,7 @@ class RetrievalWorkflow:
     def retrieve(self, name: str, arguments: dict, invoke, transport: str) -> dict:
         if self.finished:
             raise ValueError("Retrieval after finish is invalid")
-        provider = "backendpro" if name in CONTRACTS else "context7" if name == "context7" else None
+        provider = "backendpro" if name in self.contracts else "context7" if name == "context7" else None
         if provider not in PROVIDERS[self.arm]:
             raise ValueError("Knowledge tool is unavailable in this arm")
         if self.calls >= 3:
@@ -239,7 +240,7 @@ class RetrievalWorkflow:
         missing = PROVIDERS[self.arm] - self.attempted
         if self.policy == "required" and provider not in missing and 3 - self.calls <= len(missing):
             raise ValueError("Remaining calls are reserved for the other required source")
-        schema = CONTRACTS[name]["parameters"] if provider == "backendpro" else {
+        schema = self.contracts[name]["parameters"] if provider == "backendpro" else {
             "type": "object", "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 500}},
             "required": ["query"], "additionalProperties": False,
         }
@@ -469,6 +470,10 @@ def holm(pairs: dict) -> None:
 
 def report(root: Path, observations: Path, policy: str) -> dict:
     manifest = load_frozen(root)
+    frozen_contracts = {
+        tool["function"]["name"]: tool["function"]
+        for tool in json.loads((root / "tools.json").read_bytes())["openai"]
+    }
     if policy not in ("optional", "required"):
         raise ValueError("Unknown policy")
     supplied = json.loads(observations.read_bytes())
@@ -522,7 +527,7 @@ def report(root: Path, observations: Path, policy: str) -> dict:
             evaluation_status = "not_graded"
         if not isinstance(row.get("trace"), list):
             raise ValueError("Each attempt must retain its action trace")
-        workflow = RetrievalWorkflow(policy, identity["arm"])
+        workflow = RetrievalWorkflow(policy, identity["arm"], contracts=frozen_contracts)
         compliant, usage, retrieval_seconds, rejected = True, Counter(), 0.0, 0
         for action in row["trace"]:
             if action.get("status") == "rejected":

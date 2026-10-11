@@ -262,6 +262,17 @@ and distinguishes empty results from invalid inputs and tool errors. It
 does not certify an editor's skill activation or either provider's availability.
 The canonical schemas derive all domain and stack enums from core registries.
 
+**Tool-name migration (#38):** the eight MCP tools and both generated
+function-calling manifests now use `search`, `search_all`, `search_stack`,
+`compare`, `decide`, `adr`, `design`, and `find_stale`. Update tool calls,
+allowlists, and direct imports from `mcp_server.py`; the obsolete `backendpro_`
+names are not aliases. Restart clients to refresh tool discovery. Server
+configuration, argument schemas, response formats, and the CLI are unchanged.
+Keep historical protocols and traces byte-for-byte: the M3 reporter validates
+them against each run's frozen tool manifest rather than today's registry.
+New runs must use a fresh snapshot; an old snapshot cannot authorize a changed
+collector or schema.
+
 **Compatibility:** successful MCP results retain their dictionary shape.
 MCP invalid arguments and domain/tool failures now set `isError=true`;
 clients must check this flag instead of assuming every response is successful.
@@ -364,7 +375,7 @@ backendpro "idempotency" --all --compact
 ```
 
 The equivalent MCP option is `response_format: "compact"` on
-`backendpro_search`, `backendpro_search_stack`, and `backendpro_search_all`.
+`search`, `search_stack`, and `search_all`.
 Other MCP tools retain their existing output contracts. CLI compact output
 is JSON, can be combined with `--json`, and rejects incompatible modes such
 as `--jsonl`, compare, design, ADR, stale, and interactive mode.
@@ -421,7 +432,7 @@ For future exploratory MCP-client observations, the offline scorer accepts:
       "case_id": "activate-01",
       "repeat": 0,
       "status": "completed",
-      "tool_calls": [{"name": "backendpro_search", "is_error": false}]
+      "tool_calls": [{"name": "search", "is_error": false}]
     }
   ]
 }

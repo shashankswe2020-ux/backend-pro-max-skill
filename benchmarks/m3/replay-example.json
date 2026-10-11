@@ -1,7 +1,7 @@
 [
   {"name": "shell"},
   {
-    "name": "backendpro_search",
+    "name": "search",
     "arguments": {"query": "circuit breaker", "domain": "pattern", "response_format": "compact"}
   },
   {"name": "finish"},

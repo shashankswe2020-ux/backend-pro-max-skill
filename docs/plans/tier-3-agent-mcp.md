@@ -54,14 +54,14 @@ MCP-aware client. Uses stdio transport (stdin/stdout JSON-RPC).
 
 | Tool | Description | Inputs |
 |------|-------------|--------|
-| `backendpro_search` | BM25 search in a domain | `query`, `domain?`, `max_results?`, `min_score?` |
-| `backendpro_search_all` | Cross-domain search | `query`, `max_results?` |
-| `backendpro_search_stack` | Stack-specific search | `query`, `stack`, `max_results?` |
-| `backendpro_compare` | Side-by-side comparison | `names[]`, `domain?` |
-| `backendpro_decide` | Opinionated recommendation | `requirement` |
-| `backendpro_adr` | Generate ADR | `title`, `context_domains[]` |
-| `backendpro_design` | System design scaffold | `description` |
-| `backendpro_find_stale` | Freshness audit | `domain`, `months` |
+| `search` | BM25 search in a domain | `query`, `domain?`, `max_results?`, `min_score?` |
+| `search_all` | Cross-domain search | `query`, `max_results?` |
+| `search_stack` | Stack-specific search | `query`, `stack`, `max_results?` |
+| `compare` | Side-by-side comparison | `names[]`, `domain?` |
+| `decide` | Opinionated recommendation | `requirement` |
+| `adr` | Generate ADR | `title`, `context_domains[]` |
+| `design` | System design scaffold | `description` |
+| `find_stale` | Freshness audit | `domain`, `months` |
 
 ### Subtasks
 
@@ -69,11 +69,11 @@ MCP-aware client. Uses stdio transport (stdin/stdout JSON-RPC).
 |---|---------|-------|-----|
 | 3.1.1 | `pyproject.toml` — add `[mcp]` optional extra (`mcp>=1.0`) + `backendpro-mcp` entry point | `pyproject.toml` | 0.5h |
 | 3.1.2 | MCP server scaffold — `FastMCP` init, stdio transport, server metadata | `scripts/mcp_server.py` (new) | 1.5h |
-| 3.1.3 | `backendpro_search` tool — wire to `core.search()`, typed schema | `scripts/mcp_server.py` | 1h |
-| 3.1.4 | `backendpro_search_all` + `backendpro_search_stack` tools | `scripts/mcp_server.py` | 1h |
-| 3.1.5 | `backendpro_compare` tool | `scripts/mcp_server.py` | 0.5h |
-| 3.1.6 | `backendpro_decide` + `backendpro_adr` + `backendpro_design` tools (Tier 1 deps) | `scripts/mcp_server.py` | 1.5h |
-| 3.1.7 | `backendpro_find_stale` tool | `scripts/mcp_server.py` | 0.5h |
+| 3.1.3 | `search` tool — wire to `core.search()`, typed schema | `scripts/mcp_server.py` | 1h |
+| 3.1.4 | `search_all` + `search_stack` tools | `scripts/mcp_server.py` | 1h |
+| 3.1.5 | `compare` tool | `scripts/mcp_server.py` | 0.5h |
+| 3.1.6 | `decide` + `adr` + `design` tools (Tier 1 deps) | `scripts/mcp_server.py` | 1.5h |
+| 3.1.7 | `find_stale` tool | `scripts/mcp_server.py` | 0.5h |
 | 3.1.8 | Error handling — graceful errors as tool results, not crashes | `scripts/mcp_server.py` | 1h |
 | 3.1.9 | Claude Desktop config snippet in README | `README.md` | 0.5h |
 | 3.1.10 | Tests — mock MCP client calls each tool, validates response schema | `tests/test_mcp_server.py` (new) | 3h |

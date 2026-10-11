@@ -40,13 +40,13 @@ from mcp.types import TextContent  # noqa: E402
 
 # Import core functions — works both as package and standalone.
 try:
-    from .core import compare, find_stale, search, search_all, search_stack
-    from .decide import adr, decide, design
+    from . import core
+    from . import decide as decisions
     from .gen_tools_schema import TOOLS
     from .templates import compact_json, format_search_response
 except ImportError:
-    from core import compare, find_stale, search, search_all, search_stack  # type: ignore[no-redef]
-    from decide import adr, decide, design  # type: ignore[no-redef]
+    import core  # type: ignore[no-redef]
+    import decide as decisions  # type: ignore[no-redef]
     from gen_tools_schema import TOOLS  # type: ignore[no-redef]
     from templates import compact_json, format_search_response  # type: ignore[no-redef]
 
@@ -101,7 +101,7 @@ def expose(function):
 # ── Tool definitions ─────────────────────────────────────────────
 
 @expose
-def backendpro_search(
+def search(
     query: str,
     domain: str | None = None,
     max_results: int = 5,
@@ -113,12 +113,12 @@ def backendpro_search(
     Returns ranked results with citations. Domain is auto-detected if omitted.
     """
     return format_search_response(
-        search(query, domain=domain, max_results=max_results, min_score=min_score), response_format,
+        core.search(query, domain=domain, max_results=max_results, min_score=min_score), response_format,
     )
 
 
 @expose
-def backendpro_search_all(
+def search_all(
     query: str,
     max_results: int = 2,
     response_format: str = "raw",
@@ -127,11 +127,11 @@ def backendpro_search_all(
 
     Returns top hits per domain with citations.
     """
-    return format_search_response(search_all(query, max_results=max_results), response_format)
+    return format_search_response(core.search_all(query, max_results=max_results), response_format)
 
 
 @expose
-def backendpro_search_stack(
+def search_stack(
     query: str,
     stack: str,
     max_results: int = 5,
@@ -143,11 +143,11 @@ def backendpro_search_stack(
     rust-axum, csharp-aspnet, kotlin-spring, scala-akka, elixir-phoenix,
     ruby-rails, php-laravel, cpp.
     """
-    return format_search_response(search_stack(query, stack, max_results=max_results), response_format)
+    return format_search_response(core.search_stack(query, stack, max_results=max_results), response_format)
 
 
 @expose
-def backendpro_compare(
+def compare(
     names: list[str],
     domain: str | None = None,
 ) -> dict:
@@ -155,22 +155,22 @@ def backendpro_compare(
 
     Returns a structured table with citations.
     """
-    return compare(names, domain=domain)
+    return core.compare(names, domain=domain)
 
 
 @expose
-def backendpro_decide(
+def decide(
     requirement: str,
 ) -> dict:
     """Opinionated, constraint-scored recommendation for a backend requirement.
 
     Searches across relevant domains and ranks candidates by constraint fit.
     """
-    return decide(requirement)
+    return decisions.decide(requirement)
 
 
 @expose
-def backendpro_adr(
+def adr(
     title: str,
     context_domains: list[str],
 ) -> dict:
@@ -178,11 +178,11 @@ def backendpro_adr(
 
     Searches the specified domains for context and produces a structured ADR.
     """
-    return adr(title, context_domains)
+    return decisions.adr(title, context_domains)
 
 
 @expose
-def backendpro_design(
+def design(
     description: str,
 ) -> dict:
     """Generate a system-design scaffold from a one-liner requirement.
@@ -190,11 +190,11 @@ def backendpro_design(
     Extracts scale numbers, searches relevant domains, and produces a
     candidate architecture with capacity math.
     """
-    return design(description)
+    return decisions.design(description)
 
 
 @expose
-def backendpro_find_stale(
+def find_stale(
     domain: str,
     months: int,
 ) -> dict:
@@ -202,7 +202,7 @@ def backendpro_find_stale(
 
     Useful for freshness audits of the KB data.
     """
-    return find_stale(domain, months)
+    return core.find_stale(domain, months)
 
 
 # ── Entry point ───────────────────────────────────────────────────
