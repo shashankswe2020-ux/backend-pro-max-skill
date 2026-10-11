@@ -36,10 +36,27 @@ def test_stdio_transport(tmp_path):
                     result = await check_session(session)
                     assert result["status"] == "passed"
                     assert result["tools"] == 8
+                    cases = {
+                        "search": {"query": "Kafka", "domain": "messaging"},
+                        "search_all": {"query": "idempotency"},
+                        "search_stack": {"query": "error handling", "stack": "go"},
+                        "compare": {"names": ["Kafka", "RabbitMQ"], "domain": "messaging"},
+                        "decide": {"requirement": "message broker for 100k msg/s on AWS"},
+                        "adr": {"title": "Adopt circuit breaker", "context_domains": ["pattern"]},
+                        "design": {"description": "URL shortener serving 10M reads/day"},
+                        "find_stale": {"domain": "pattern", "months": 0},
+                    }
+                    assert {tool.name for tool in (await session.list_tools()).tools} == set(cases)
+                    for name, arguments in cases.items():
+                        response = await session.call_tool(name, arguments)
+                        assert not response.isError, name
+                        assert isinstance(json.loads(response.content[0].text), dict)
+                        obsolete = await session.call_tool(f"backendpro_{name}", arguments)
+                        assert obsolete.isError, name
                     for name, arguments in [
-                        ("backendpro_search", {"query": "Kafka", "domain": "messaging"}),
-                        ("backendpro_search_all", {"query": "idempotency"}),
-                        ("backendpro_search_stack", {"query": "error handling", "stack": "go"}),
+                        ("search", {"query": "Kafka", "domain": "messaging"}),
+                        ("search_all", {"query": "idempotency"}),
+                        ("search_stack", {"query": "error handling", "stack": "go"}),
                     ]:
                         compact = await session.call_tool(name, {**arguments, "response_format": "compact"})
                         assert not compact.isError
@@ -48,7 +65,7 @@ def test_stdio_transport(tmp_path):
                         assert value["format"] == "compact-v1"
                         assert value["count"] > 0
                     invalid = await session.call_tool(
-                        "backendpro_search", {"query": "Kafka", "response_format": "unsupported"},
+                        "search", {"query": "Kafka", "response_format": "unsupported"},
                     )
                     assert invalid.isError
 
@@ -66,15 +83,15 @@ if mcp_available:
         sys.path.insert(0, str(_scripts))
 
     from mcp_server import (
-        backendpro_adr,
-        backendpro_compare,
-        backendpro_decide,
-        backendpro_design,
-        backendpro_find_stale,
-        backendpro_search,
-        backendpro_search_all,
-        backendpro_search_stack,
+        adr,
+        compare,
+        decide,
+        design,
+        find_stale,
         mcp_server,
+        search,
+        search_all,
+        search_stack,
     )
 
 
@@ -82,91 +99,91 @@ if mcp_available:
 
 class TestBackendproSearch:
     def test_valid_query(self):
-        result = backendpro_search("kafka", domain="messaging")
+        result = search("kafka", domain="messaging")
         assert "results" in result
         assert result["count"] > 0
         assert all("_citation" in r for r in result["results"])
 
     def test_unknown_domain_returns_error(self):
-        result = backendpro_search("test", domain="nonexistent")
+        result = search("test", domain="nonexistent")
         assert "error" in result
 
 
 class TestBackendproSearchAll:
     def test_cross_domain(self):
-        result = backendpro_search_all("circuit breaker")
+        result = search_all("circuit breaker")
         assert "results" in result
         assert "domains" in result
 
     def test_empty_query(self):
-        result = backendpro_search_all("")
+        result = search_all("")
         assert isinstance(result, dict)
 
 
 class TestBackendproSearchStack:
     def test_valid_stack(self):
-        result = backendpro_search_stack("error handling", stack="go")
+        result = search_stack("error handling", stack="go")
         assert "results" in result
         assert result["count"] > 0
 
     def test_unknown_stack_returns_error(self):
-        result = backendpro_search_stack("test", stack="nonexistent")
+        result = search_stack("test", stack="nonexistent")
         assert "error" in result
 
 
 class TestBackendproCompare:
     def test_two_names(self):
-        result = backendpro_compare(["Kafka", "RabbitMQ"], domain="messaging")
+        result = compare(["Kafka", "RabbitMQ"], domain="messaging")
         assert result["mode"] == "compare"
         assert "entries" in result
 
     def test_single_name_returns_error(self):
-        result = backendpro_compare(["Kafka"])
+        result = compare(["Kafka"])
         assert "error" in result
 
 
 class TestBackendproDecide:
     def test_valid_requirement(self):
-        result = backendpro_decide("message broker for 100k msg/s on AWS")
+        result = decide("message broker for 100k msg/s on AWS")
         assert result["mode"] == "decide"
         assert "candidates" in result
 
     def test_empty_requirement(self):
-        result = backendpro_decide("")
+        result = decide("")
         assert isinstance(result, dict)
 
 
 class TestBackendproAdr:
     def test_valid_adr(self):
-        result = backendpro_adr("Adopt circuit breaker", context_domains=["pattern"])
+        result = adr("Adopt circuit breaker", context_domains=["pattern"])
         assert result["mode"] == "adr"
         assert "text" in result
 
     def test_no_domains_returns_error(self):
-        result = backendpro_adr("Test", context_domains=[])
+        result = adr("Test", context_domains=[])
         assert "error" in result
 
 
 class TestBackendproDesign:
     def test_valid_design(self):
-        result = backendpro_design("URL shortener serving 10M reads/day")
+        result = design("URL shortener serving 10M reads/day")
         assert result["mode"] == "design"
         assert "sections" in result
 
     def test_simple_requirement(self):
-        result = backendpro_design("chat application")
+        result = design("chat application")
         assert isinstance(result, dict)
         assert "sections" in result
 
 
 class TestBackendproFindStale:
     def test_valid_domain(self):
-        result = backendpro_find_stale("pattern", months=6)
+        result = find_stale("pattern", months=6)
         assert "results" in result
         assert "count" in result
 
     def test_unknown_domain_returns_error(self):
-        result = backendpro_find_stale("nonexistent", months=6)
+        result = find_stale("nonexistent", months=6)
         assert "error" in result
 
 
@@ -189,9 +206,9 @@ def test_unexpected_failure_is_not_a_success_dictionary(monkeypatch):
     def fail(*args, **kwargs):
         raise OSError("test storage unavailable")
 
-    monkeypatch.setattr(module, "search", fail)
+    monkeypatch.setattr(module.core, "search", fail)
     with pytest.raises(OSError, match="storage unavailable"):
-        backendpro_search("Kafka")
+        search("Kafka")
 
 
 def test_tool_contracts_match_function_signatures():

@@ -26,7 +26,7 @@ from run_swebench_comparison import (
 MODEL = "claude-opus-5-5"
 TOTAL_MICRO_USD = 35_000_000
 ATTEMPT_MICRO_USD = 340_000
-SEARCH_TOOLS = ("backendpro_search", "backendpro_search_stack", "backendpro_search_all")
+SEARCH_TOOLS = ("search", "search_stack", "search_all")
 SYSTEM = (
     "Fix the supplied public Python task and starter file. Submit the entire corrected solution.py "
     "with finish(source). You cannot run code or inspect hidden tests; grading occurs once after submission. "
@@ -155,7 +155,7 @@ def prepare(output: Path, image: str) -> dict:
     validation = m3.self_test(frozen, output / "validation")
     if validation["status"] != "passed":
         raise ValueError("Reference/starter validation failed; no paid execution permitted")
-    known = m3.backendpro_mcp("backendpro_search", {
+    known = m3.backendpro_mcp("search", {
         "query": "graceful shutdown", "domain": "container", "response_format": "compact",
     })
     if describe_payload(known)["status"] != "returned" or not contains_evidence(known, "Kubernetes Pod termination"):

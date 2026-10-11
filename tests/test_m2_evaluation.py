@@ -26,7 +26,7 @@ def observations(evaluation, tmp_path):
         "observations": [
             {
                 "case_id": case["id"], "repeat": repeat, "status": "completed",
-                "tool_calls": [{"name": "backendpro_search", "is_error": False}] if case["retrieve"] else [],
+                "tool_calls": [{"name": "search", "is_error": False}] if case["retrieve"] else [],
             }
             for repeat in range(3) for case in suite["activation"]
         ],
@@ -80,7 +80,7 @@ def test_exact_prospective_activation_thresholds(evaluation, observations):
         if row["repeat"] == 0 and row["case_id"] in ("activate-11", "activate-12"):
             row["tool_calls"] = []
         if row["repeat"] == 0 and row["case_id"] == "control-11":
-            row["tool_calls"] = [{"name": "backendpro_search", "is_error": False}]
+            row["tool_calls"] = [{"name": "search", "is_error": False}]
     path.write_text(json.dumps(value))
     result = evaluation.score_activation(evaluation.SUITE, path)
     assert result["all_evaluation_repeats_meet_targets"]

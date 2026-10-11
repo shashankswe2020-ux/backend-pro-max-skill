@@ -13,6 +13,13 @@ ROOT = Path(__file__).resolve().parent.parent
 TOOLS_JSON = ROOT / "tools.json"
 
 
+def test_public_tool_names_do_not_repeat_the_server_namespace():
+    assert {tool["name"] for tool in TOOLS} == {
+        "search", "search_all", "search_stack", "compare",
+        "decide", "adr", "design", "find_stale",
+    }
+
+
 class TestToolsJsonExists:
     def test_file_exists(self):
         assert TOOLS_JSON.exists(), "tools.json not found at repo root"
@@ -34,9 +41,9 @@ class TestOpenAIFormat:
         tools = self._load()
         names = {t["function"]["name"] for t in tools}
         expected = {
-            "backendpro_search", "backendpro_search_all", "backendpro_search_stack",
-            "backendpro_compare", "backendpro_decide", "backendpro_adr",
-            "backendpro_design", "backendpro_find_stale",
+            "search", "search_all", "search_stack",
+            "compare", "decide", "adr",
+            "design", "find_stale",
         }
         assert names == expected
 

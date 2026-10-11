@@ -26,7 +26,7 @@ except ImportError:
 
 TOOLS = [
     {
-        "name": "backendpro_search",
+        "name": "search",
         "description": "Retrieve cited backend guidance for transaction boundaries, idempotency, retries, schema migrations, and operational failure handling. Use when external engineering guidance can affect correctness; skip typos, link fixes, and self-contained local edits. Domain is auto-detected if omitted. Raw results are the default; compact returns bounded, source-linked evidence with explicit gaps, not a confidence score.",
         "parameters": {
             "type": "object",
@@ -45,7 +45,7 @@ TOOLS = [
         },
     },
     {
-        "name": "backendpro_search_all",
+        "name": "search_all",
         "description": "Retrieve cited guidance across domains when a backend issue spans concerns, such as retry policy plus database consistency. Prefer a focused search when the domain is known; do not call merely because a file is backend code. Use compact for bounded evidence; use raw for complete returned rows.",
         "parameters": {
             "type": "object",
@@ -57,7 +57,7 @@ TOOLS = [
         },
     },
     {
-        "name": "backendpro_search_stack",
+        "name": "search_stack",
         "description": "Retrieve guidelines for a known supported language/framework, such as transaction handling in Spring or async database access in FastAPI. Search the relevant named stack first when retrieval is warranted; never guess a stack. Confirm version-sensitive APIs against pinned official documentation. Skip trivial local edits. Supports raw or compact evidence.",
         "parameters": {
             "type": "object",
@@ -74,7 +74,7 @@ TOOLS = [
         },
     },
     {
-        "name": "backendpro_compare",
+        "name": "compare",
         "description": "Compare two or more named backend technologies or patterns with citations when the user is making a trade-off decision. Not needed for an already-specified local implementation detail.",
         "parameters": {
             "type": "object",
@@ -94,7 +94,7 @@ TOOLS = [
         },
     },
     {
-        "name": "backendpro_decide",
+        "name": "decide",
         "description": "Recommend backend candidates for a requirement with constraints such as consistency, throughput, cloud, and cost. Uses the existing decision engine; check assumptions and trade-offs, not just rank. Use search for a focused fact instead.",
         "parameters": {
             "type": "object",
@@ -108,7 +108,7 @@ TOOLS = [
         },
     },
     {
-        "name": "backendpro_adr",
+        "name": "adr",
         "description": "Draft a cited Architecture Decision Record when a backend decision needs documented context and alternatives. Provide relevant context domains; do not generate an ADR for an ordinary code edit.",
         "parameters": {
             "type": "object",
@@ -125,7 +125,7 @@ TOOLS = [
         },
     },
     {
-        "name": "backendpro_design",
+        "name": "design",
         "description": "Draft a backend system-design scaffold with capacity math when architecture or scale decisions are requested. Verify workload assumptions, consistency, and failure modes; this is not a substitute for repository inspection or measured capacity.",
         "parameters": {
             "type": "object",
@@ -139,7 +139,7 @@ TOOLS = [
         },
     },
     {
-        "name": "backendpro_find_stale",
+        "name": "find_stale",
         "description": "Audit a domain for stale knowledge-base metadata before relying on potentially outdated guidance. Last Updated is row metadata, not proof that an external source was checked today.",
         "parameters": {
             "type": "object",
@@ -154,7 +154,7 @@ TOOLS = [
 
 for _tool in TOOLS:
     _tool["parameters"]["additionalProperties"] = False
-    if _tool["name"] in ("backendpro_search", "backendpro_search_all", "backendpro_search_stack"):
+    if _tool["name"] in ("search", "search_all", "search_stack"):
         _tool["parameters"]["properties"]["response_format"] = {
             "type": "string", "enum": ["raw", "compact"], "default": "raw",
             "description": "raw preserves returned rows; compact bounds JSON text to 6000 characters by omitting whole trailing evidence units.",

@@ -193,7 +193,7 @@ def test_required_retrieval_must_be_delivered_before_finish(live, frozen, client
 def test_both_sources_receive_real_transport_labels(live, frozen, client, monkeypatch):
     fake_model(monkeypatch, client, [
         tool_response("context7", {"query": "Pydantic"}, 1),
-        tool_response("backendpro_search", {"query": "transaction"}, 2),
+        tool_response("search", {"query": "transaction"}, 2),
         tool_response("finish", {"source": "pass\n"}, 3),
     ])
     monkeypatch.setattr(client, "context", lambda *_: {"results": []})

@@ -137,7 +137,7 @@ def test_mcp_returns_all_three_source_linked_results():
                 async with ClientSession(reader, writer) as session:
                     await session.initialize()
                     for case in CASES:
-                        name = "backendpro_search_stack" if case["stack"] else "backendpro_search"
+                        name = "search_stack" if case["stack"] else "search"
                         arguments = {"query": case["query"], "response_format": "compact"}
                         arguments["stack" if case["stack"] else "domain"] = case["stack"] or case["domain"]
                         result = await session.call_tool(name, arguments)
