@@ -2,7 +2,12 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
+
+from backendpro.scripts.core import CSV_CONFIG, STACK_CONFIG
+from backendpro.scripts.gen_tools_schema import TOOLS
 
 ROOT = Path(__file__).resolve().parent.parent
 TOOLS_JSON = ROOT / "tools.json"
@@ -81,3 +86,35 @@ class TestFreshness:
         expected = json.dumps(mod.generate(), indent=2, ensure_ascii=False) + "\n"
         actual = TOOLS_JSON.read_text(encoding="utf-8")
         assert actual == expected, "tools.json is stale — regenerate with gen_tools_schema.py"
+
+
+def test_registry_enums_on_every_domain_and_stack_surface():
+    for tool in TOOLS:
+        properties = tool["parameters"]["properties"]
+        if "domain" in properties:
+            assert set(properties["domain"]["enum"]) - {None} == set(CSV_CONFIG)
+        if "context_domains" in properties:
+            assert set(properties["context_domains"]["items"]["enum"]) == set(CSV_CONFIG)
+        if "stack" in properties:
+            assert set(properties["stack"]["enum"]) == set(STACK_CONFIG)
+
+
+def test_cli_and_documented_catalogues_cover_registries():
+    result = subprocess.run(
+        [sys.executable, "-m", "backendpro.scripts.search", "--list"],
+        check=True, capture_output=True, text=True,
+    )
+    for name in (*CSV_CONFIG, *STACK_CONFIG):
+        assert name in result.stdout
+    base = ROOT / "src/backend-pro-max/templates/base"
+    text = (base / "skill-content.md").read_text()
+    for name in (*CSV_CONFIG, *STACK_CONFIG):
+        assert f"`{name}`" in text
+    assert "`backendpro --list`" in (base / "SKILL.md").read_text()
+
+
+def test_provider_formats_have_identical_contracts():
+    value = json.loads(TOOLS_JSON.read_text())
+    for left, right in zip(value["openai"], value["anthropic"]):
+        assert left["function"]["name"] == right["name"]
+        assert left["function"]["parameters"] == right["input_schema"]

@@ -13,7 +13,9 @@ Run:
 """
 from __future__ import annotations
 
+import json
 import sys
+from functools import wraps
 
 
 def _check_mcp():
@@ -31,61 +33,109 @@ def _check_mcp():
 
 _check_mcp()
 
+from jsonschema import ValidationError, validate  # noqa: E402
 from mcp.server.fastmcp import FastMCP  # noqa: E402
+from mcp.server.fastmcp.exceptions import ToolError  # noqa: E402
+from mcp.types import TextContent  # noqa: E402
 
 # Import core functions — works both as package and standalone.
 try:
     from .core import compare, find_stale, search, search_all, search_stack
     from .decide import adr, decide, design
+    from .gen_tools_schema import TOOLS
+    from .templates import compact_json, format_search_response
 except ImportError:
     from core import compare, find_stale, search, search_all, search_stack  # type: ignore[no-redef]
     from decide import adr, decide, design  # type: ignore[no-redef]
+    from gen_tools_schema import TOOLS  # type: ignore[no-redef]
+    from templates import compact_json, format_search_response  # type: ignore[no-redef]
+
+CONTRACTS = {tool["name"]: tool for tool in TOOLS}
+
+
+class CanonicalFastMCP(FastMCP):
+    async def list_tools(self):
+        tools = await super().list_tools()
+        for tool in tools:
+            contract = CONTRACTS[tool.name]
+            tool.inputSchema = contract["parameters"]
+            tool.description = contract["description"]
+        return tools
+
+    async def call_tool(self, name, arguments):
+        if name not in CONTRACTS:
+            raise ToolError(f"Unknown tool: {name}")
+        try:
+            validate(arguments, CONTRACTS[name]["parameters"])
+        except ValidationError as error:
+            raise ToolError(f"Invalid arguments for {name}: {error.message}") from error
+        result = await super().call_tool(name, arguments)
+        if arguments.get("response_format") == "compact":
+            # FastMCP returns either content or (content, structured output).
+            content = result[0] if isinstance(result, tuple) else result
+            if not isinstance(content, (list, tuple)):
+                raise ToolError("Unsupported MCP compact serialization")
+            for block in content:
+                if isinstance(block, TextContent):
+                    block.text = compact_json(json.loads(block.text))
+        return result
 
 # ── Server setup ──────────────────────────────────────────────────
-mcp_server = FastMCP(
+mcp_server = CanonicalFastMCP(
     "Backend Pro Max",
 )
+
+def expose(function):
+    """Keep direct dict responses compatible; mark failures at the MCP boundary."""
+    @wraps(function)
+    def transport(**kwargs):
+        result = function(**kwargs)
+        if "error" in result:
+            raise ToolError(str(result["error"]))
+        return result
+
+    mcp_server.add_tool(transport, description=CONTRACTS[function.__name__]["description"])
+    return function
 
 
 # ── Tool definitions ─────────────────────────────────────────────
 
-@mcp_server.tool()
+@expose
 def backendpro_search(
     query: str,
     domain: str | None = None,
     max_results: int = 5,
     min_score: float = 0.0,
+    response_format: str = "raw",
 ) -> dict:
     """BM25 search in a backend-engineering knowledge domain.
 
     Returns ranked results with citations. Domain is auto-detected if omitted.
     """
-    try:
-        return search(query, domain=domain, max_results=max_results, min_score=min_score)
-    except Exception as e:
-        return {"error": str(e)}
+    return format_search_response(
+        search(query, domain=domain, max_results=max_results, min_score=min_score), response_format,
+    )
 
 
-@mcp_server.tool()
+@expose
 def backendpro_search_all(
     query: str,
     max_results: int = 2,
+    response_format: str = "raw",
 ) -> dict:
     """Cross-domain search across every backend-engineering knowledge base.
 
     Returns top hits per domain with citations.
     """
-    try:
-        return search_all(query, max_results=max_results)
-    except Exception as e:
-        return {"error": str(e)}
+    return format_search_response(search_all(query, max_results=max_results), response_format)
 
 
-@mcp_server.tool()
+@expose
 def backendpro_search_stack(
     query: str,
     stack: str,
     max_results: int = 5,
+    response_format: str = "raw",
 ) -> dict:
     """Search stack-specific guidelines for a language / framework.
 
@@ -93,13 +143,10 @@ def backendpro_search_stack(
     rust-axum, csharp-aspnet, kotlin-spring, scala-akka, elixir-phoenix,
     ruby-rails, php-laravel, cpp.
     """
-    try:
-        return search_stack(query, stack, max_results=max_results)
-    except Exception as e:
-        return {"error": str(e)}
+    return format_search_response(search_stack(query, stack, max_results=max_results), response_format)
 
 
-@mcp_server.tool()
+@expose
 def backendpro_compare(
     names: list[str],
     domain: str | None = None,
@@ -108,13 +155,10 @@ def backendpro_compare(
 
     Returns a structured table with citations.
     """
-    try:
-        return compare(names, domain=domain)
-    except Exception as e:
-        return {"error": str(e)}
+    return compare(names, domain=domain)
 
 
-@mcp_server.tool()
+@expose
 def backendpro_decide(
     requirement: str,
 ) -> dict:
@@ -122,13 +166,10 @@ def backendpro_decide(
 
     Searches across relevant domains and ranks candidates by constraint fit.
     """
-    try:
-        return decide(requirement)
-    except Exception as e:
-        return {"error": str(e)}
+    return decide(requirement)
 
 
-@mcp_server.tool()
+@expose
 def backendpro_adr(
     title: str,
     context_domains: list[str],
@@ -137,13 +178,10 @@ def backendpro_adr(
 
     Searches the specified domains for context and produces a structured ADR.
     """
-    try:
-        return adr(title, context_domains)
-    except Exception as e:
-        return {"error": str(e)}
+    return adr(title, context_domains)
 
 
-@mcp_server.tool()
+@expose
 def backendpro_design(
     description: str,
 ) -> dict:
@@ -152,13 +190,10 @@ def backendpro_design(
     Extracts scale numbers, searches relevant domains, and produces a
     candidate architecture with capacity math.
     """
-    try:
-        return design(description)
-    except Exception as e:
-        return {"error": str(e)}
+    return design(description)
 
 
-@mcp_server.tool()
+@expose
 def backendpro_find_stale(
     domain: str,
     months: int,
@@ -167,10 +202,7 @@ def backendpro_find_stale(
 
     Useful for freshness audits of the KB data.
     """
-    try:
-        return find_stale(domain, months)
-    except Exception as e:
-        return {"error": str(e)}
+    return find_stale(domain, months)
 
 
 # ── Entry point ───────────────────────────────────────────────────

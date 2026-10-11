@@ -47,7 +47,7 @@ try:
         format_decide,
         format_design,
     )
-    from .templates import format_by_intent
+    from .templates import compact_json, format_by_intent, format_compact
 except ImportError:
     from calc import CALCULATORS, format_calc_result  # type: ignore[no-redef]
     from conflicts import format_tensions, format_tensions_json, scan_conflicts  # type: ignore[no-redef]
@@ -73,7 +73,7 @@ except ImportError:
         format_decide,
         format_design,
     )
-    from templates import format_by_intent  # type: ignore[no-redef]
+    from templates import compact_json, format_by_intent, format_compact  # type: ignore[no-redef]
 
 # Force UTF-8 for stdout/stderr to handle emojis on Windows (cp1252 default).
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
@@ -406,6 +406,8 @@ def _build_parser():
     parser.add_argument("--interactive", "-i", action="store_true",
                         help="Start an interactive REPL")
     parser.add_argument("--json", action="store_true", help="Output as JSON")
+    parser.add_argument("--compact", action="store_true",
+                        help="Opt-in source-linked search JSON, bounded to 6000 characters; raw defaults unchanged")
     parser.add_argument("--jsonl", action="store_true",
                         help="Output as JSON Lines (one JSON object per result line)")
     parser.add_argument("--list", action="store_true",
@@ -575,6 +577,20 @@ def main():
 
     parser = _build_parser()
     args = parser.parse_args()
+    if args.compact and (
+        args.jsonl or args.interactive or args.list or args.stale or args.conflicts or args.decide
+        or args.adr is not None or args.design or args.query in ("compare", "latency")
+    ):
+        parser.error("--compact supports normal, --stack, and --all searches only; not --jsonl")
+
+    def print_compact(result):
+        if args.intent:
+            result = {**result, "intent": args.intent}
+        try:
+            value = format_compact(result)
+        except ValueError as error:
+            parser.error(str(error))
+        print(compact_json(value))
 
     if args.interactive:
         interactive_loop()
@@ -651,7 +667,9 @@ def main():
             args.query, max_results=max(1, args.max_results // 2),
             min_score=args.min_score, expand=expand, engine=args.engine,
         )
-        if args.jsonl:
+        if args.compact:
+            print_compact(result)
+        elif args.jsonl:
             print(format_jsonl_all(result))
         elif args.json:
             print(json.dumps(result, indent=2, ensure_ascii=False))
@@ -692,7 +710,9 @@ def main():
     intent_value = args.intent or classify_intent(args.query).value
     result["intent"] = intent_value
 
-    if args.jsonl:
+    if args.compact:
+        print_compact(result)
+    elif args.jsonl:
         print(format_jsonl(result))
     elif args.json:
         print(json.dumps(result, indent=2, ensure_ascii=False))

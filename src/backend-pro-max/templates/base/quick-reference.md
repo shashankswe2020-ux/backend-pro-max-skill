@@ -18,11 +18,22 @@ python3 src/backend-pro-max/scripts/search.py "idempotency" --all
 # JSON output (for tooling)
 python3 src/backend-pro-max/scripts/search.py "redis cluster" --json
 
+# Opt-in bounded evidence JSON (whole rows omitted when needed)
+python3 src/backend-pro-max/scripts/search.py "retry idempotency" --domain pattern --compact
+
 # List everything
 python3 src/backend-pro-max/scripts/search.py --list
 ```
 
 ## Common queries by topic
+
+Retrieve when external guidance can change a decision or its correctness, not
+for every backend edit. Skip self-contained link, typo, rename, and formatting
+changes. Use a known supported stack first only when retrieval is warranted.
+Compact search JSON is optional and bounded to 6000 characters (excluding the
+CLI's trailing newline and MCP envelope); `truncated` and `omitted_count` expose
+dropped evidence units. Missing facts and freshness metadata are explicit.
+Use raw output for omitted context; citations are not guarantees of correctness.
 
 | Topic                       | Suggested query                                              |
 |----------------------------|---------------------------------------------------------------|

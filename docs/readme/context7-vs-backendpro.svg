@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="850" viewBox="0 0 1120 850" role="img" aria-labelledby="title description">
+  <title id="title">Context7 vs BackendPro: strengths, limits and an all-pass pilot</title>
+  <desc id="description">Context7 offers source-linked library and version documentation through a remote API. BackendPro offers cited backend patterns and offline BM25 search. Across both arms using each provider, Context7 returned evidence on 48 of 48 calls with 22 truncated replies; BackendPro returned evidence on 51 of 72 calls with 21 empty replies. Baseline, Context7, BackendPro and both each passed 24 of 24 tasks. This custom exploratory run does not establish a winner or equivalence.</desc>
+  <rect width="1120" height="850" rx="24" fill="#0d1117"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="40" y="57" fill="#f0f6fc" font-size="32" font-weight="700">Context7 vs BackendPro</text>
+    <text x="40" y="89" fill="#b1bac4" font-size="19">Choose by the evidence you need, not an unsupported winner claim.</text>
+
+    <rect x="40" y="118" width="508" height="362" rx="16" fill="#161b22" stroke="#30363d"/>
+    <rect x="572" y="118" width="508" height="362" rx="16" fill="#161b22" stroke="#30363d"/>
+    <rect x="40" y="118" width="508" height="6" rx="3" fill="#58a6ff"/>
+    <rect x="572" y="118" width="508" height="6" rx="3" fill="#3fb950"/>
+
+    <text x="64" y="165" fill="#58a6ff" font-size="27" font-weight="700">Context7</text>
+    <text x="64" y="194" fill="#b1bac4" font-size="18">Library documentation / remote API</text>
+    <text x="64" y="230" fill="#f0f6fc" font-size="15" font-weight="700" letter-spacing="1.5">STRENGTHS</text>
+    <text x="64" y="260" fill="#e6edf3" font-size="19">+ Library and version lookup</text>
+    <text x="64" y="289" fill="#e6edf3" font-size="19">+ Source-linked API documentation</text>
+    <text x="64" y="328" fill="#f0f6fc" font-size="15" font-weight="700" letter-spacing="1.5">LIMITS</text>
+    <text x="64" y="358" fill="#b1bac4" font-size="19">Remote API availability and quota</text>
+    <text x="64" y="387" fill="#b1bac4" font-size="19">Live index changes; replies can truncate</text>
+    <line x1="64" y1="410" x2="524" y2="410" stroke="#30363d"/>
+    <text x="64" y="440" fill="#e6edf3" font-size="18">This run: 48/48 nonempty; 22 truncated*</text>
+
+    <text x="596" y="165" fill="#3fb950" font-size="27" font-weight="700">BackendPro</text>
+    <text x="596" y="194" fill="#b1bac4" font-size="18">Curated backend guidance / local search</text>
+    <text x="596" y="230" fill="#f0f6fc" font-size="15" font-weight="700" letter-spacing="1.5">STRENGTHS</text>
+    <text x="596" y="260" fill="#e6edf3" font-size="19">+ Cited patterns and engineering trade-offs</text>
+    <text x="596" y="289" fill="#e6edf3" font-size="19">+ Offline, deterministic BM25 search</text>
+    <text x="596" y="328" fill="#f0f6fc" font-size="15" font-weight="700" letter-spacing="1.5">LIMITS</text>
+    <text x="596" y="358" fill="#b1bac4" font-size="19">Coverage and freshness need maintenance</text>
+    <text x="596" y="387" fill="#b1bac4" font-size="19">Not a comprehensive library/API reference</text>
+    <line x1="596" y1="410" x2="1056" y2="410" stroke="#30363d"/>
+    <text x="596" y="440" fill="#e6edf3" font-size="18">This run: 51/72 nonempty; 21 empty*</text>
+
+    <text x="40" y="519" fill="#f0f6fc" font-size="23" font-weight="700">Task passes: a ceiling effect, not a winner</text>
+    <text x="40" y="548" fill="#b1bac4" font-size="17">Opus 5.5 / 24 custom tasks / four arms / one repetition / required retrieval</text>
+    <g fill="#b1bac4" font-size="18">
+      <text x="40" y="586">Baseline (no tools)</text>
+      <text x="40" y="624">Context7</text>
+      <text x="40" y="662">BackendPro</text>
+      <text x="40" y="700">Both</text>
+    </g>
+    <g fill="#8b949e">
+      <rect x="245" y="567" width="734" height="24" rx="4"/>
+      <rect x="245" y="605" width="734" height="24" rx="4"/>
+      <rect x="245" y="643" width="734" height="24" rx="4"/>
+      <rect x="245" y="681" width="734" height="24" rx="4"/>
+    </g>
+    <g fill="#f0f6fc" font-size="19" font-weight="700">
+      <text x="1000" y="586">24 / 24</text>
+      <text x="1000" y="624">24 / 24</text>
+      <text x="1000" y="662">24 / 24</text>
+      <text x="1000" y="700">24 / 24</text>
+    </g>
+    <text x="245" y="730" fill="#b1bac4" font-size="15">0 tasks</text>
+    <text x="979" y="730" fill="#b1bac4" font-size="15" text-anchor="end">24 tasks</text>
+
+    <line x1="40" y1="752" x2="1080" y2="752" stroke="#30363d"/>
+    <text x="40" y="780" fill="#d29922" font-size="18" font-weight="700">All 120 retrieval responses reached the model. Coding benefit remains unproven.</text>
+    <text x="40" y="807" fill="#b1bac4" font-size="16">* Provider totals include the both arm. Nonempty is not relevant. 6000-character delivery bound.</text>
+    <text x="40" y="831" fill="#b1bac4" font-size="16">2026-10-11 / Exploratory, public tasks / Independent review pending / Full method linked in README</text>
+  </g>
+</svg>

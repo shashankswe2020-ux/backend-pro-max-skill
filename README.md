@@ -17,6 +17,7 @@
 **[Your agent](#plug-it-into-your-agent)** ·
 **[Commands](#commands)** ·
 **[MCP](#mcp-server)** ·
+**[Context7 comparison](#context7-vs-backendpro)** ·
 **[Domains](#domains-and-stacks)** ·
 **[backendpro.cc](https://backendpro.cc)**
 
@@ -54,6 +55,39 @@ It works with Claude Code, Cursor, Windsurf, GitHub Copilot, Continue and Gemini
 > **Right:** the same model with `backendpro-mcp`. It searches `reliability` and `python-fastapi` first, then answers with retryable-status gating, full jitter, an `Idempotency-Key`, explicit timeouts, and a link to the AWS Builders' Library article each rule came from.
 
 ---
+
+## Context7 vs BackendPro
+
+**Different sources, different trade-offs—not a proven winner.** Context7 retrieves
+library/API documentation; BackendPro searches curated backend patterns, operational
+guidance and stack-specific rules locally.
+
+![Context7 and BackendPro strengths and limits: library documentation versus offline backend guidance. All four arms, including the no-tool baseline, passed 24 of 24 tasks; no coding-performance winner.](docs/readme/context7-vs-backendpro.svg)
+
+| | Context7 | BackendPro |
+|---|---|---|
+| Useful when | You need library/API usage and version-specific documentation | You need backend patterns, failure modes and engineering trade-offs |
+| Strengths | Library/version lookup; source-linked documentation snippets | Offline, deterministic BM25 search; cited rules and explicit do/don't guidance |
+| Limits | Remote API availability and quota; live index changes; bounded replies can truncate evidence | Curated coverage and freshness need maintenance; not a comprehensive API reference |
+| In this live run, across both arms using each tool | 48/48 calls returned evidence; 22 replies were truncated | 51/72 calls returned evidence; 21 returned no matches |
+
+**What we measured:** on 2026-10-11, Opus 5.5 completed a custom 24-task Python
+suite across baseline, Context7, BackendPro and both, with one repetition and
+required retrieval. Every arm scored **24/24**. All **120 retrieval responses**
+reached the model; the total API cost upper bound was **$2.91**, including probes.
+
+**What we did not prove:** the no-tool baseline also passed everything—a ceiling
+effect. This exploratory, independently unreviewed run demonstrates neither a
+coding benefit nor equivalence. Nonempty evidence is not a relevance score, and
+using both tools has not been shown to improve outcomes.
+
+Use the source that fits the task; verify retrieved guidance against your version
+and deployment. Read the [full report and machine-readable results](benchmarks/m3/results/2026-10-11/README.md)
+for per-arm costs, latency, methodology and limitations. The earlier
+[SWE-bench pilot](benchmarks/swebench-pilot/comparison-results.md) invoked neither
+knowledge tool, so its scores cannot rank retrieval quality.
+Context7's capabilities and quotas are documented in its
+[API guide](https://context7.com/docs/api-guide) and [plans](https://context7.com/plans).
 
 ## Quick start
 
@@ -427,7 +461,10 @@ A rules file has to fit in the prompt every time. Here the agent searches 731 ro
 <details>
 <summary><strong>How is it different from Context7?</strong></summary>
 
-Context7 gives your agent up-to-date *library documentation*. Backend Pro Max gives it *engineering judgement*: which pattern, which trade-off, what goes wrong in production, with a citation. They complement each other.
+Context7 retrieves library/API documentation; BackendPro searches curated backend
+guidance locally. They cover different needs, but improved outcomes from combining
+them remain unproven. See [Context7 vs BackendPro](#context7-vs-backendpro) for the
+visual comparison, measured results and limitations.
 </details>
 
 ---

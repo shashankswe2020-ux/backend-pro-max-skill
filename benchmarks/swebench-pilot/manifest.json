@@ -1,0 +1,658 @@
+{
+  "status": "prepared_not_run",
+  "created_at": "2026-10-10T13:35:13.248834+00:00",
+  "dataset": "princeton-nlp/SWE-bench_Verified",
+  "split": "test",
+  "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+  "population_size": 500,
+  "population_metadata_sha256": "f229be56dfe3e5ed07159fac323ea448ab6dafc93ed0ed4ea0cb4994e174b6d9",
+  "selection": {
+    "seed": "backendpro-context7-pilot-v1",
+    "method": "lowest SHA256(seed:instance_id), tie-break instance_id"
+  },
+  "protocol": {
+    "name": "backendpro-context7-swebench-verified-pilot-v1",
+    "stage": "preregistered preparation; generation and evaluation not implemented",
+    "dataset": "princeton-nlp/SWE-bench_Verified",
+    "tasks": 20,
+    "repeats": 1,
+    "attempts": 80,
+    "model": {
+      "provider": "anthropic",
+      "base_url": "https://api.anthropic.com",
+      "requested_id": "anthropic.claude-opus-5-5",
+      "access_verified": false,
+      "substitution_allowed": false
+    },
+    "budget": {
+      "maximum_total_usd": 25,
+      "scope": "All paid generation, retrieval and evaluation services combined",
+      "pricing_verified": false,
+      "enforcement_implemented": false,
+      "rule": "Before each paid request reserve its worst-case charge from the remaining aggregate budget; stop if unknown or insufficient. Persist reservations before sending requests. Do not blindly retry ambiguous paid requests."
+    },
+    "arms": {
+      "baseline": "Common repository inspection, editing and test tools; no supplemental knowledge tool.",
+      "context7": "Common coding tools plus Context7 library resolution and documentation retrieval.",
+      "backendpro": "Common coding tools plus the frozen BackendPro BM25 knowledge search.",
+      "both": "Common coding tools plus the same Context7 and BackendPro tools."
+    },
+    "controls": [
+      "Use identical model snapshot, parameters, scaffold, base task prompt, context window, output limit, time limit and step limit.",
+      "Select tasks before generating any patches, without inspecting gold patches, test patches or expected outcomes.",
+      "Use the same task set in every arm; rotate arm order in four-task blocks.",
+      "Use fresh isolated containers and conversations for every attempt, without host secrets or Docker socket mounts.",
+      "Do not share solutions, retrieval caches or conversations across arms. Expose credentials only to trusted host-side tool adapters.",
+      "No internet or knowledge access from the baseline shell. Tool-enabled arms use only their explicitly allowed retrieval adapters.",
+      "Do not expose gold patches, grading-only tests, hints or evaluation feedback before submission.",
+      "Pin code commits, dependencies and images; archive permitted tool responses with timestamps because Context7 is a changing service.",
+      "Use one shared retrieval-call and response-size budget for every tool-enabled arm; both does not receive double the allowance.",
+      "Allowlist public benchmark queries sent to Context7; never transmit workspace secrets or private source.",
+      "Do not tune BackendPro data, selection, prompts or budgets after seeing pilot outcomes."
+    ],
+    "grading": {
+      "authority": "Official SWE-bench harness; all required FAIL_TO_PASS and PASS_TO_PASS tests",
+      "primary_metric": "Resolved instances / 20 assigned instances in each arm",
+      "secondary_metrics": [
+        "paired task outcome differences",
+        "95% uncertainty intervals and paired discordant counts",
+        "actual API spend and cost per resolved instance",
+        "input/output tokens and retrieval calls",
+        "end-to-end p50/p95 time, separating setup from task execution",
+        "empty patches, timeouts, model/tool errors and infrastructure failures"
+      ],
+      "completion_rule": "A comparative result requires all 80 attempts accounted for and all evaluable patches graded. Missing or infrastructure-blocked attempts are not fabricated failures or dropped from the assigned denominator.",
+      "incomplete_rule": "If access, infrastructure or budget blocks completion, publish completion counts and reasons, not a winner.",
+      "retry_rule": "Record every attempt and charge; allow only a predeclared equal infrastructure retry policy, never best-of-N.",
+      "evaluation_cache_rule": "Use a unique run ID per arm and patch-set hash; never reuse a grading run ID for changed predictions."
+    },
+    "limitations": [
+      "This is a 20-task pilot on a standard dataset, not a full standard leaderboard run or a statistically conclusive product ranking.",
+      "SWE-bench Verified is Python repository issue fixing, not a benchmark of architecture guidance, current framework API coverage or all backend engineering.",
+      "Public tasks may be present in model training data; task selection does not remove contamination.",
+      "One attempt per task cannot characterize model sampling variability.",
+      "The requested model ID, available pricing and $25 feasibility remain unverified.",
+      "Tool integration, hard spending enforcement, patch generation and grading remain execution prerequisites."
+    ],
+    "sources": [
+      "https://huggingface.co/datasets/princeton-nlp/SWE-bench_Verified",
+      "https://www.swebench.com/SWE-bench/guides/evaluation/",
+      "https://www.swebench.com/SWE-bench/guides/docker_setup/",
+      "https://context7.com/docs/api-guide"
+    ]
+  },
+  "protocol_sha256": "44ebec834dabcb8c3efb7ee7a602f965a573a25a16bac239d4a985af874e7867",
+  "backendpro_csv_sha256": {
+    "src/backend-pro-max/data/anti-patterns.csv": "18460c67859f8c17eaf84a34df2650b4542379c7207d8019a39e41b0d5833922",
+    "src/backend-pro-max/data/api-contract.csv": "f3c6ffdd55e24bbaa591f15ff0063696864d4f081eb3c7f958ce19a71b11b435",
+    "src/backend-pro-max/data/api.csv": "b0e1b4640b231397ff42d35193e5b1d98494f89099e574b2f45d7a56401e59af",
+    "src/backend-pro-max/data/architecture.csv": "39f618103fa0afd987b458e49209fb4bc76af4ff8b9078546affe2b4a277a2a5",
+    "src/backend-pro-max/data/auth.csv": "6541d195370ccb9676dc5303c1b4cb8a93c11013d7d49bdfec0815574f0a17fd",
+    "src/backend-pro-max/data/cache.csv": "5b888317aa271e27569152c78c2fda3ab0625d1701a7efd42e21cc34f88b86b6",
+    "src/backend-pro-max/data/capacity.csv": "a1aad8b32fd0400ab3358951ef7d82be23e825801cc40844dc119faa463e1d84",
+    "src/backend-pro-max/data/cicd.csv": "c14ab36e29ad86f5d89546a3af505600e80357fa47e6a84750d7de05885714da",
+    "src/backend-pro-max/data/cloud.csv": "c97df5fa94286f0bb886654074662df741af1d31a04dffccbb653ad1e17b1309",
+    "src/backend-pro-max/data/compliance.csv": "dd97fc8db585f558ba01ff9f000b4811f6a77fedb1d68e9297e6f1f99767d426",
+    "src/backend-pro-max/data/consistency.csv": "660e30e7d36b3638943122b319111df016602e4e7d4c8f2d3ab4235cbae8144f",
+    "src/backend-pro-max/data/containers.csv": "c6f4f7df590cb319926828faf4ce74f65fd005c6c3b7e5c8182fe929f7c116f9",
+    "src/backend-pro-max/data/cost.csv": "f0981096c8ff4f15aab1e063fae120d821505f4eeea53205073eb7d33649a877",
+    "src/backend-pro-max/data/data-engineering.csv": "fb2520a67afd6616550fa3aa004ae7dc659932cebe3b19e42b5c53f8eeeeebf9",
+    "src/backend-pro-max/data/databases.csv": "8b09fcd71f859b0ecc85655d57dfd47039ec5ebf3554ecff30b455b8a3e5e81b",
+    "src/backend-pro-max/data/edge.csv": "f9eafe8b94fe292ca0e28e2bea1b3cea05fca8bd6c69ead5c4d3a0f5e7f268f7",
+    "src/backend-pro-max/data/iac.csv": "63793b3bf1b15008883e0daca118cbb125bde263ca1c8659237df2a70099c79e",
+    "src/backend-pro-max/data/incident.csv": "61379f4ff2ee913795deb2156c24d4a33c3734f47875fc58ebe5f7396ea6bfe8",
+    "src/backend-pro-max/data/interview.csv": "581e1cd64e9d131621143ad60870a325b60106fc8cdd9b0305185a640355938a",
+    "src/backend-pro-max/data/languages.csv": "75ce186f06e1ec52020f1b143923eafc28465d3ab74d35c5c454f79537e633d0",
+    "src/backend-pro-max/data/latency-numbers.csv": "2207f9b8fb7b299971c22927ba3487a1ec7a81c07b0fdb4525876757c898b255",
+    "src/backend-pro-max/data/messaging.csv": "23a9acd6ca794faa8bb2ab1bbd10ed582329dad7dd40054a8d42014bb4652c90",
+    "src/backend-pro-max/data/migration.csv": "5e952716c3cd219e805e1e6dc601dd70f8b61680ab3ed45c45d428536290f13c",
+    "src/backend-pro-max/data/ml-platform.csv": "7e83d57dc726536ac83da818619a19bc7a4d604461be89f5c115a2f9aabcfaf1",
+    "src/backend-pro-max/data/mobile-backend.csv": "74113c8b21e2327efc0caf4962c76cb093043a76346639f0c427a12d96daad06",
+    "src/backend-pro-max/data/multi-tenant.csv": "c651bb38597594fae6a19ad67c8ad3a754495a4000e81b07a0430d2c70585e4a",
+    "src/backend-pro-max/data/observability.csv": "a0b0f630c3c714650db8ad3af3a39c91bdcbf6780f74bd4e6f8f0e90346854e7",
+    "src/backend-pro-max/data/patterns.csv": "be4920afec3e431f184a559f29070ae9dd66fae691f4efa327f713c97e5509a0",
+    "src/backend-pro-max/data/performance.csv": "284bf4a72ff8d1d8bb9dd120e75899a187832f1171301a5695a007f39e2ad324",
+    "src/backend-pro-max/data/release.csv": "08e9e545575bf3c2097f78fba22fc9951e024f04531202be5f75cad4a69915ff",
+    "src/backend-pro-max/data/reliability.csv": "efcb3b97211d6341e2549a68072e9ee20d60ef47444e84bcbc24ca449e2d8776",
+    "src/backend-pro-max/data/scaling.csv": "cb22927f98a29db32bb774bfe4a05fa80244c390f0d4ebf4289b465f09de4b3c",
+    "src/backend-pro-max/data/security.csv": "154869e98cca6e2a818b04795edbdc74e9344608837624f4974963a9e5a3fe90",
+    "src/backend-pro-max/data/stacks/cpp.csv": "f79bf940ae1a39c46c0d64163e47af21ad7f70ad2446d61151bd49e01356348b",
+    "src/backend-pro-max/data/stacks/csharp-aspnet.csv": "54a5ea38bc160eae39d8b156b1ee97e30037f71691928c0702ce033b9d3c0d20",
+    "src/backend-pro-max/data/stacks/elixir-phoenix.csv": "a1aee9788c2b672cfe0b3c7f9ae017959333f1882518665250198a8024e094b1",
+    "src/backend-pro-max/data/stacks/go.csv": "1166f9432be1ab288e18a70da2f112aa0caa5468fd6ee52d68dc77a3b2f39892",
+    "src/backend-pro-max/data/stacks/java-spring.csv": "0fb183f41258efa2f9416d0bd61355bef7bad6ec90afa68b24415a01c78a08db",
+    "src/backend-pro-max/data/stacks/kotlin-spring.csv": "ecb0e067ab96905c488f92a4ae8b84a995b7fe53f104a03661310aefe652f9bb",
+    "src/backend-pro-max/data/stacks/nodejs-express.csv": "708aef0adbab8b0a84adda0823191ab7f8a8d854b4c8ee9a0cef8a7d6831d5a8",
+    "src/backend-pro-max/data/stacks/php-laravel.csv": "fd19d517b1173a761d41906d49b130ec50f71f60d51098eda4687547c6dcf820",
+    "src/backend-pro-max/data/stacks/python-fastapi.csv": "f23c11b95b4b817e31b98007ccfca43ae971e3f7107a5a4830fd90ffdbfc2d9e",
+    "src/backend-pro-max/data/stacks/ruby-rails.csv": "48c6ac4095dfc517b41a74066b2fb3253de2bf3ba6eb27a858768b53ab39f7b4",
+    "src/backend-pro-max/data/stacks/rust-axum.csv": "d72e645e918f133c659eb3bef0aba6c7d79888815ac7c9e7c09b41d287cdceed",
+    "src/backend-pro-max/data/stacks/scala-akka.csv": "8657b64b864631472cab2f6de623c6b5db2bc51b841f716fe38e6119143c60e2",
+    "src/backend-pro-max/data/testing.csv": "3d0f5826120434a082ae6177dbf2bbab83794688e0bdb2d598a0e2cc10a0635b"
+  },
+  "tasks": [
+    {
+      "instance_id": "sympy__sympy-13757",
+      "repo": "sympy/sympy",
+      "base_commit": "a5e6a101869e027e7930e694f8b1cfb082603453"
+    },
+    {
+      "instance_id": "django__django-14500",
+      "repo": "django/django",
+      "base_commit": "8c3bd0b708b488a1f6e8bd8cc6b96569904605be"
+    },
+    {
+      "instance_id": "django__django-14765",
+      "repo": "django/django",
+      "base_commit": "4e8121e8e42a24acc3565851c9ef50ca8322b15c"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-14629",
+      "repo": "scikit-learn/scikit-learn",
+      "base_commit": "4aded39b5663d943f6a4809abacfa9cae3d7fb6a"
+    },
+    {
+      "instance_id": "django__django-10097",
+      "repo": "django/django",
+      "base_commit": "b9cf764be62e77b4777b3a75ec256f6209a57671"
+    },
+    {
+      "instance_id": "sympy__sympy-16450",
+      "repo": "sympy/sympy",
+      "base_commit": "aefdd023dc4f73c441953ed51f5f05a076f0862f"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5631",
+      "repo": "pytest-dev/pytest",
+      "base_commit": "cb828ebe70b4fa35cd5f9a7ee024272237eab351"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8638",
+      "repo": "sphinx-doc/sphinx",
+      "base_commit": "4b452338f914d4f6b54704222d70ae8a746e3db5"
+    },
+    {
+      "instance_id": "django__django-13195",
+      "repo": "django/django",
+      "base_commit": "156a2138db20abc89933121e4ff2ee2ce56a173a"
+    },
+    {
+      "instance_id": "django__django-12406",
+      "repo": "django/django",
+      "base_commit": "335c9c94acf263901fb023404408880245b0c4b4"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8593",
+      "repo": "sphinx-doc/sphinx",
+      "base_commit": "07983a5a8704ad91ae855218ecbda1c8598200ca"
+    },
+    {
+      "instance_id": "django__django-14140",
+      "repo": "django/django",
+      "base_commit": "45814af6197cfd8f4dc72ee43b90ecde305a1d5a"
+    },
+    {
+      "instance_id": "django__django-15382",
+      "repo": "django/django",
+      "base_commit": "770d3e6a4ce8e0a91a9e27156036c1985e74d4a3"
+    },
+    {
+      "instance_id": "sympy__sympy-18698",
+      "repo": "sympy/sympy",
+      "base_commit": "3dff1b98a78f28c953ae2140b69356b8391e399c"
+    },
+    {
+      "instance_id": "django__django-13297",
+      "repo": "django/django",
+      "base_commit": "8954f255bbf5f4ee997fd6de62cb50fc9b5dd697"
+    },
+    {
+      "instance_id": "astropy__astropy-14369",
+      "repo": "astropy/astropy",
+      "base_commit": "fa4e8d1cd279acf9b24560813c8652494ccd5922"
+    },
+    {
+      "instance_id": "sympy__sympy-24213",
+      "repo": "sympy/sympy",
+      "base_commit": "e8c22f6eac7314be8d92590bfff92ced79ee03e2"
+    },
+    {
+      "instance_id": "sympy__sympy-24562",
+      "repo": "sympy/sympy",
+      "base_commit": "b1cb676cf92dd1a48365b731979833375b188bf2"
+    },
+    {
+      "instance_id": "django__django-12276",
+      "repo": "django/django",
+      "base_commit": "53d8646f799de7f92ab9defe9dc56c6125448102"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10435",
+      "repo": "sphinx-doc/sphinx",
+      "base_commit": "f1061c012e214f16fd8790dec3c283d787e3daa8"
+    }
+  ],
+  "attempt_schedule": [
+    {
+      "instance_id": "sympy__sympy-13757",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-13757",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-13757",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-13757",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-14500",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-14500",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-14500",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-14500",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-14765",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-14765",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-14765",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-14765",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-14629",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-14629",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-14629",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-14629",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-10097",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-10097",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-10097",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-10097",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-16450",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-16450",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-16450",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-16450",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5631",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5631",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5631",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5631",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8638",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8638",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8638",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8638",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-13195",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-13195",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-13195",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-13195",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-12406",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-12406",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-12406",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-12406",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8593",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8593",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8593",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8593",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-14140",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-14140",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-14140",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-14140",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-15382",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-15382",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-15382",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-15382",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-18698",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-18698",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-18698",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-18698",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-13297",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-13297",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-13297",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-13297",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "astropy__astropy-14369",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "astropy__astropy-14369",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "astropy__astropy-14369",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "astropy__astropy-14369",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-24213",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-24213",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-24213",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-24213",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-24562",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-24562",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-24562",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sympy__sympy-24562",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-12276",
+      "arm": "backendpro",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-12276",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-12276",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "django__django-12276",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10435",
+      "arm": "both",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10435",
+      "arm": "baseline",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10435",
+      "arm": "context7",
+      "repeat": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10435",
+      "arm": "backendpro",
+      "repeat": 1
+    }
+  ],
+  "preflight": {
+    "credentials_present": {
+      "ANTHROPIC_API_KEY": false,
+      "CONTEXT7_API_KEY": false
+    },
+    "docker": "timed out after 15 seconds",
+    "platform": "macOS-26.5-arm64-arm-64bit",
+    "python": "3.12.13",
+    "ready_for_generation": false,
+    "remaining_gates": [
+      "Both credentials must be available to the runner, never stored in artifacts.",
+      "Docker must respond and an isolated SWE-bench instance must pass a smoke evaluation.",
+      "Verify exact requested model access using the provider model catalog; never substitute a model.",
+      "Pin agent, harness, container digests, model parameters and equal per-attempt limits.",
+      "Implement and test the four isolated knowledge-tool configurations.",
+      "Verify current provider pricing and enforce the aggregate $25 cap before every paid request.",
+      "Keep gold patches and grading tests out of agent-visible inputs."
+    ]
+  },
+  "completed_attempts": 0,
+  "results": null
+}

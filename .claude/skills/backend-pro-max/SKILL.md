@@ -13,7 +13,29 @@ description: |
 Use this skill whenever the user asks about backend, cloud, or
 distributed-systems engineering — choosing a language / database / broker,
 designing an API, sizing a cache, planning multi-region, debugging tail
-latency, hardening security, defining SLOs, etc.
+latency, hardening security, defining SLOs, etc. Apply the retrieval decision below, not a blanket
+requirement to retrieve for every backend edit.
+
+## Retrieval decision
+
+- Inspect the request and relevant repository code first. Retrieve when decisions
+  depend on transaction boundaries, retries, idempotency, migrations, concurrency,
+  consistency, framework behavior, or operational failure handling.
+- Skip retrieval for typos, link fixes, renames, formatting, or self-contained
+  local edits whose requirements and behavior are already clear. A backend file
+  or a framework name alone is not a reason to call a tool.
+- When retrieval is warranted and a supported stack is known, search that stack
+  first, then the relevant domain. Never guess a stack or query every domain.
+- Use existing compare, decide, ADR, or design tools only when the requested
+  deliverable needs them. Query intent classification happens after invocation;
+  it is not evidence that an agent selected a tool appropriately.
+- Check applicability and version constraints before applying evidence. Use
+  pinned official framework documentation for version-sensitive APIs. Cite only
+  returned sources; acknowledge missing guidance instead of inventing it.
+- `--compact` (MCP: `response_format="compact"`) is optional bounded search JSON.
+  It preserves whole evidence units, reports omissions and missing metadata,
+  and does not convert BM25 ranking into confidence. Use raw output when more
+  context is needed.
 
 ## Search
 
@@ -25,8 +47,8 @@ python3 src/backend-pro-max/scripts/search.py --list
 
 ## Working principles
 
-1. **Run a `--stack <stack>` query first** if the user has named a language /
-   framework. The stack CSV contains the strict guidelines for that
+1. **Run a `--stack <stack>` query first** when retrieval is warranted and a
+   relevant supported language / framework is known. The stack CSV contains guidelines for that
    ecosystem (concurrency, errors, build, testing, …) — follow them.
 2. **Then run a `--domain <domain>` query** to pull the right architectural
    pattern, infra component, or operational practice.

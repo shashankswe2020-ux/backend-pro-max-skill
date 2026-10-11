@@ -1,13 +1,10 @@
 """Tests for Tier 3.1 — MCP Server.
 
-These tests validate the MCP tool functions directly (without the MCP transport
-layer) to ensure each tool returns well-structured responses.
-
-The full MCP protocol integration (stdio handshake, tools/list) is tested via
-MCP Inspector as documented in the plan.
+Validate direct tool functions and real stdio discovery, calls, and errors.
 """
 from __future__ import annotations
 
+import json
 import sys
 
 import pytest
@@ -23,6 +20,7 @@ pytestmark = pytest.mark.skipif(not mcp_available, reason="mcp package not insta
 
 def test_stdio_transport(tmp_path):
     import anyio
+    from backendpro.scripts.check_tools import check_session
     from mcp import ClientSession, StdioServerParameters
     from mcp.client.stdio import stdio_client
 
@@ -35,15 +33,24 @@ def test_stdio_transport(tmp_path):
         with anyio.fail_after(30):
             async with stdio_client(parameters) as (reader, writer):
                 async with ClientSession(reader, writer) as session:
-                    initialized = await session.initialize()
-                    assert initialized.serverInfo.name == "Backend Pro Max"
-                    tools = await session.list_tools()
-                    assert len(tools.tools) == 8
-                    result = await session.call_tool(
-                        "backendpro_search", {"query": "Kafka", "domain": "messaging"}
+                    result = await check_session(session)
+                    assert result["status"] == "passed"
+                    assert result["tools"] == 8
+                    for name, arguments in [
+                        ("backendpro_search", {"query": "Kafka", "domain": "messaging"}),
+                        ("backendpro_search_all", {"query": "idempotency"}),
+                        ("backendpro_search_stack", {"query": "error handling", "stack": "go"}),
+                    ]:
+                        compact = await session.call_tool(name, {**arguments, "response_format": "compact"})
+                        assert not compact.isError
+                        assert len(compact.content[0].text) <= 6000
+                        value = json.loads(compact.content[0].text)
+                        assert value["format"] == "compact-v1"
+                        assert value["count"] > 0
+                    invalid = await session.call_tool(
+                        "backendpro_search", {"query": "Kafka", "response_format": "unsupported"},
                     )
-                    assert not result.isError
-                    assert "Kafka" in result.content[0].text
+                    assert invalid.isError
 
     anyio.run(exercise_server)
 
@@ -174,3 +181,32 @@ class TestServerMetadata:
         # FastMCP stores tools internally; we verify via our definitions
         tools = mcp_server._tool_manager._tools
         assert len(tools) == 8, f"Expected 8 tools, got {len(tools)}: {list(tools.keys())}"
+
+
+def test_unexpected_failure_is_not_a_success_dictionary(monkeypatch):
+    import mcp_server as module
+
+    def fail(*args, **kwargs):
+        raise OSError("test storage unavailable")
+
+    monkeypatch.setattr(module, "search", fail)
+    with pytest.raises(OSError, match="storage unavailable"):
+        backendpro_search("Kafka")
+
+
+def test_tool_contracts_match_function_signatures():
+    import inspect
+
+    from backendpro.scripts.gen_tools_schema import TOOLS
+
+    for tool in TOOLS:
+        signature = inspect.signature(globals()[tool["name"]])
+        schema = tool["parameters"]
+        assert set(signature.parameters) == set(schema["properties"])
+        required = []
+        for name, parameter in signature.parameters.items():
+            if parameter.default is inspect.Parameter.empty:
+                required.append(name)
+            else:
+                assert schema["properties"][name]["default"] == parameter.default
+        assert required == schema["required"]

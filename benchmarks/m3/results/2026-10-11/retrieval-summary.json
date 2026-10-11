@@ -1,0 +1,39 @@
+{
+  "status": "observed_diagnostics_not_relevance_scores",
+  "date": "2026-10-11",
+  "scope": "Assigned attempts only; provider totals include single-source and both arms; probes excluded",
+  "source_comparison_sha256": "e026ff75272e2b17c61ccc8b3dbc4ce587f97317ed9af6886dadf92bdc5631be",
+  "source_observations_sha256": "c675cbde9ea435c651d303d3c1f075c7ade637875d235eb2af1b101e29cfc88c",
+  "protocol_sha256": "1e78a6ebde1dce6febcbb5ecdd91f0a1bb6b00cc5f387621f2f6c703c7164f8c",
+  "delivered_retrieval_calls": 120,
+  "providers": {
+    "context7": {
+      "calls": 48,
+      "nonempty": 48,
+      "empty": 0,
+      "errors": 0,
+      "truncated": 22,
+      "mean_retrieval_seconds": 5.263209199604337
+    },
+    "backendpro": {
+      "calls": 72,
+      "nonempty": 51,
+      "empty": 21,
+      "errors": 0,
+      "truncated": 0,
+      "mean_retrieval_seconds": 0.22477892299977814
+    }
+  },
+  "backendpro_empty_by_track": {
+    "framework": 9,
+    "backend": 5,
+    "mixed": 4,
+    "control": 3
+  },
+  "limitations": [
+    "Queries were model-selected and are not matched between providers.",
+    "Nonempty evidence is not necessarily relevant, source-correct or applied correctly.",
+    "Adapter timings include local MCP startup versus remote API/network time.",
+    "Raw observations remain in the retained local run; this aggregate is not a public full replay."
+  ]
+}

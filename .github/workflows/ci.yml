@@ -55,7 +55,7 @@ jobs:
       - name: Install MCP test dependencies
         run: python -m pip install -e ".[dev,mcp]"
       - name: Verify MCP tools
-        run: python -m pytest tests/test_mcp_server.py
+        run: python -m pytest tests/test_mcp_server.py tests/test_tools_schema.py tests/test_compact.py tests/test_m4_retrieval.py
 
   wheel-smoke:
     runs-on: ubuntu-latest

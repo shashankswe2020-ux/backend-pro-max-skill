@@ -1,0 +1,68 @@
+{
+  "status": "single_task_reference_patch_passed",
+  "date": "2026-10-10",
+  "scope": "Official evaluator infrastructure smoke test only; not a model or tool-comparison result.",
+  "dataset": "princeton-nlp/SWE-bench_Verified",
+  "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+  "instance_id": "sympy__sympy-13757",
+  "selection": "First task in the previously frozen pilot manifest; no task substitution.",
+  "prediction_source": "Official dataset reference patch, isolated from future agent inputs.",
+  "evaluator": "swebench==4.1.0",
+  "datasets": "datasets==4.2.0",
+  "python": "3.12.13",
+  "docker": {
+    "server_version": "29.8.2",
+    "host_architecture": "aarch64",
+    "container_architecture": "amd64",
+    "execution": "x86 emulation on Apple Silicon, not native ARM64",
+    "allocated_cpus": 14,
+    "allocated_memory_bytes": 8318976000,
+    "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-13757",
+    "image_digest": "sha256:82b4764129702dc1e39c5bdda8af519b9535dbe4cd975bcef234789e2711a47f",
+    "image_size_bytes": 3942680873,
+    "image_retained_for_reuse": true,
+    "remaining_smoke_test_containers": 0
+  },
+  "run_id": "infra-gold-sympy13757-20261010-02",
+  "evaluation_arguments": {
+    "dataset_name": "task.json (evaluation-only export of the pinned single task)",
+    "predictions_path": "gold",
+    "max_workers": 1,
+    "timeout_seconds": 600,
+    "cache_level": "instance",
+    "clean": false
+  },
+  "results": {
+    "submitted_instances": 1,
+    "completed_instances": 1,
+    "resolved_instances": 1,
+    "unresolved_instances": 0,
+    "error_instances": 0,
+    "patch_successfully_applied": true,
+    "FAIL_TO_PASS": {"success": 1, "failure": 0},
+    "PASS_TO_PASS": {"success": 166, "failure": 0}
+  },
+  "earlier_failures": [
+    {
+      "stage": "schema compatibility",
+      "evaluator": "swebench==5.0.2",
+      "error": "Frozen dataset lacks the image field required by the v5 evaluator.",
+      "resolution": "Used official swebench==4.1.0, preserving the frozen dataset."
+    },
+    {
+      "stage": "image pull",
+      "run_id": "infra-gold-sympy13757-20261010-01",
+      "error": "Default pull selected linux/arm64/v8; no matching image manifest.",
+      "resolution": "Explicitly pulled the official image with --platform linux/amd64 and retried under a fresh run ID."
+    }
+  ],
+  "paid_api_calls": 0,
+  "benchmark_model_attempts_completed": 0,
+  "limitations": [
+    "Only one of the 20 frozen tasks has passed an infrastructure smoke test.",
+    "This does not validate native ARM64 support, all task images, agent sandbox isolation or the four-arm runner.",
+    "Docker has about 8 GB RAM, below the upstream 16 GB recommendation; broader evaluation capacity is not certified.",
+    "Model access, Context7 authentication, current pricing and hard spending enforcement are not validated by this test.",
+    "The original manifest preflight is a historical snapshot and is intentionally not overwritten."
+  ]
+}
