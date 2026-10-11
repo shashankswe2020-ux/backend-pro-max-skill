@@ -1,0 +1,4 @@
+datasets==4.2.0
+swebench==4.1.0
+mcp==1.30.0
+jsonschema==4.26.0

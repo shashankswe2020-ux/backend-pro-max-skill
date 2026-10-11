@@ -1,0 +1,59 @@
+{
+  "name": "backendpro-context7-swebench-18-task-comparison-v1",
+  "approved_amendments": {
+    "model": "User approved correcting the direct Anthropic API ID to claude-opus-5-5.",
+    "cohort": "User approved using the same 18 infrastructure-validated tasks in all four arms.",
+    "excluded_instances": ["django__django-10097", "sympy__sympy-16450"],
+    "exclusion_reason": "Reference-patch evaluations timed out before model generation; no model outcomes were used for selection."
+  },
+  "model": "claude-opus-5-5",
+  "arms": ["baseline", "context7", "backendpro", "both"],
+  "attempts": 72,
+  "limits": {
+    "total_micro_usd": 25000000,
+    "per_attempt_micro_usd": 340000,
+    "max_turns": 16,
+    "max_output_tokens_per_turn": 2048,
+    "max_retrieval_calls_per_attempt": 3,
+    "tool_response_characters": 6000,
+    "command_timeout_seconds": 60,
+    "attempt_timeout_seconds": 600,
+    "generation_workers": 2,
+    "evaluation_workers": 2,
+    "evaluation_timeout_seconds": 600
+  },
+  "pricing": {
+    "anthropic_input_micro_usd_per_token": 4,
+    "anthropic_output_micro_usd_per_token": 20,
+    "context7_reserved_micro_usd_per_request": 5000,
+    "context7_accounting": "Conservative published Pro overage price, including requests that might be covered by the account allowance. Not a claim about the user's invoice.",
+    "anthropic_reservation": "Reserve input price times serialized UTF-8 request bytes plus 8192 tokens of framing allowance, plus the maximum output charge. Reconcile returned usage; retain the full reservation on ambiguous errors.",
+    "sources": [
+      "https://platform.claude.com/docs/en/about-claude/pricing",
+      "https://context7.com/plans"
+    ]
+  },
+  "controls": [
+    "Same original frozen cohort order, with balanced four-arm rotation over the retained tasks.",
+    "Same author-built native-tool coding scaffold and system instructions, differing only in available knowledge tools.",
+    "No forced retrieval; report actual tool use as well as tool availability.",
+    "Default model sampling, adaptive thinking with low effort, standard service tier, no prompt caching or automatic API retries.",
+    "Only public task statements and public repository contents go to Anthropic; documentation queries go only to Context7's fixed search endpoint.",
+    "Fresh network-disabled containers with no host mounts, no credentials, memory/CPU/PID limits, and repository history removed after validating the base tree.",
+    "No reference patches, grading-only tests, or infrastructure test output in agent inputs.",
+    "Both-tool arm shares the same three-call retrieval allowance; it does not receive a doubled budget.",
+    "Context7 uses its public Search API with automatic library resolution; BackendPro uses local BM25 search and optional domain/stack routing.",
+    "Evaluate each generated patch once with the pinned official evaluator. Empty patches do not resolve tasks.",
+    "Per-attempt budget/time/turn-limit exits are graded using the patch produced so far; provider failures and unstarted attempts are separately reported.",
+    "No selection, model, budget or prompt tuning based on model outcomes."
+  ],
+  "limitations": [
+    "Exploratory 18-task, one-attempt-per-arm comparison, not a full SWE-bench leaderboard run.",
+    "The cohort is conditioned on infrastructure success on this Mac; two exclusions must remain visible.",
+    "A $0.34 per-attempt ceiling is restrictive for multi-step Opus issue fixing; report limit exits.",
+    "Native tool availability is being compared, not editor-specific MCP clients or skill auto-invocation.",
+    "Public benchmark contamination and model sampling variability are not controlled.",
+    "Any incomplete provider/generation/evaluation run must not be presented as a conclusive winner."
+  ],
+  "request_validation_correction": "Before any model responses, the API rejected thinking.type.disabled. The final settings use mandatory adaptive thinking, low effort, and 2048 output tokens consistently across all arms; rejected-request evidence and the shared spending ledger are retained."
+}

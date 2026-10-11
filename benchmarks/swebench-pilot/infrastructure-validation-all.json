@@ -1,0 +1,656 @@
+{
+  "status": "completed_with_failures",
+  "started_at": "2026-10-10T13:57:38.222259+00:00",
+  "run_prefix": "infra-rest-20261010T135735Z",
+  "scope": "Reference-patch infrastructure checks only; not model or tool-comparison scores.",
+  "dataset": "princeton-nlp/SWE-bench_Verified",
+  "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+  "evaluator": "swebench==4.1.0",
+  "datasets": "datasets==4.2.0",
+  "python": "3.12.13",
+  "platform": "linux/amd64 emulated on Apple Silicon",
+  "workers": 1,
+  "test_timeout_seconds": 600,
+  "wrapper_timeout_seconds": 900,
+  "image_pull_timeout_seconds": 900,
+  "paid_api_calls": 0,
+  "model_attempts": 0,
+  "images_retained_for_reuse": true,
+  "image_prefetch_workers": 2,
+  "remaining_validation_containers": 0,
+  "temporary_gold_input_files_remaining": 0,
+  "evidence_verification": "All 20 task outcomes checked against official evaluator reports; successful grading-report hashes verified.",
+  "successful_task_test_totals": {
+    "FAIL_TO_PASS": 31,
+    "PASS_TO_PASS": 2492
+  },
+  "limitations": [
+    "Two reference-patch evaluations timed out at 600 seconds; the full 20-task environment is not certified ready.",
+    "Does not validate native ARM64 support or certify high-concurrency capacity.",
+    "Does not validate model/Context7 credentials, agent isolation, pricing or spending enforcement.",
+    "Gold patches and grading inputs must never be exposed to benchmark agents."
+  ],
+  "tasks": [
+    {
+      "instance_id": "sympy__sympy-13757",
+      "repo": "sympy/sympy",
+      "base_commit": "a5e6a101869e027e7930e694f8b1cfb082603453",
+      "status": "passed",
+      "run_id": "infra-gold-sympy13757-20261010-02",
+      "evidence": "infrastructure-validation.json",
+      "image_digest": "sha256:82b4764129702dc1e39c5bdda8af519b9535dbe4cd975bcef234789e2711a47f",
+      "results": {
+        "submitted_instances": 1,
+        "completed_instances": 1,
+        "resolved_instances": 1,
+        "unresolved_instances": 0,
+        "error_instances": 0,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 166,
+          "failure": 0
+        }
+      },
+      "reused_prior_infrastructure_result": true
+    },
+    {
+      "instance_id": "django__django-14500",
+      "repo": "django/django",
+      "base_commit": "8c3bd0b708b488a1f6e8bd8cc6b96569904605be",
+      "status": "passed",
+      "started_at": "2026-10-10T13:57:38.546760+00:00",
+      "run_id": "infra-rest-20261010T135735Z-01",
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-14500:latest",
+      "pull_seconds": 194.66,
+      "pull_exit_code": 0,
+      "image_id": "sha256:32c70ff1b0518c134f1bfcd9bec5de3293220e874c472deadd2288bdfc2f11a8",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.django_1776_django-14500@sha256:32c70ff1b0518c134f1bfcd9bec5de3293220e874c472deadd2288bdfc2f11a8"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 60.56,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 21,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "70a1902daf929761ecdb6cb9a0f0ee58aa9ebbfa9e5059cb6fe885bf48f3c085",
+      "finished_at": "2026-10-10T14:01:53.792470+00:00"
+    },
+    {
+      "instance_id": "django__django-14765",
+      "repo": "django/django",
+      "base_commit": "4e8121e8e42a24acc3565851c9ef50ca8322b15c",
+      "status": "passed",
+      "started_at": "2026-10-10T14:01:53.793816+00:00",
+      "run_id": "infra-rest-20261010T135735Z-02",
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-14765:latest",
+      "pull_seconds": 50.44,
+      "pull_exit_code": 0,
+      "image_id": "sha256:a87d9a378eecbeda4a4c80ff2fd8a52b28230e08e19dc73bad71dfaef6908b76",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.django_1776_django-14765@sha256:a87d9a378eecbeda4a4c80ff2fd8a52b28230e08e19dc73bad71dfaef6908b76"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 55.81,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 64,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "83e1c86dd883613a0a853d42af41869519b3d86bc5b0db763d433b243786b178",
+      "finished_at": "2026-10-10T14:03:40.091901+00:00"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-14629",
+      "repo": "scikit-learn/scikit-learn",
+      "base_commit": "4aded39b5663d943f6a4809abacfa9cae3d7fb6a",
+      "status": "passed",
+      "started_at": "2026-10-10T14:03:40.092970+00:00",
+      "run_id": "infra-rest-20261010T135735Z-03",
+      "image": "swebench/sweb.eval.x86_64.scikit-learn_1776_scikit-learn-14629:latest",
+      "pull_seconds": 369.75,
+      "pull_exit_code": 0,
+      "image_id": "sha256:66bce6f57afd4d7633046f74364ffc3c2c6944da953e013db667af550f54adc9",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.scikit-learn_1776_scikit-learn-14629@sha256:66bce6f57afd4d7633046f74364ffc3c2c6944da953e013db667af550f54adc9"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 75.09,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 26,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "682f4528edfc819fc7574fe6f50fdfd0f33834c7b8d8b653207383abfe7cb562",
+      "finished_at": "2026-10-10T14:11:04.949418+00:00"
+    },
+    {
+      "instance_id": "django__django-10097",
+      "repo": "django/django",
+      "base_commit": "b9cf764be62e77b4777b3a75ec256f6209a57671",
+      "status": "evaluation_error",
+      "started_at": "2026-10-10T14:11:05.661123+00:00",
+      "run_id": "infra-rest-20261010T135735Z-04",
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-10097:latest",
+      "pull_seconds": 298.85,
+      "pull_exit_code": 0,
+      "image_id": "sha256:faf07f1d70370e9a4f76dac2cab0758300018f0eb4346b28aa55ac13630b873a",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.django_1776_django-10097@sha256:faf07f1d70370e9a4f76dac2cab0758300018f0eb4346b28aa55ac13630b873a"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 623.41,
+      "evaluation_exit_code": 0,
+      "error": "Official evaluator test execution exceeded 600 seconds; no completed grading report. Test output also contained repeated ERROR statuses before timeout; their cause is not established.",
+      "failure_type": "test_timeout",
+      "finished_at": "2026-10-10T14:26:27.902890+00:00"
+    },
+    {
+      "instance_id": "sympy__sympy-16450",
+      "repo": "sympy/sympy",
+      "base_commit": "aefdd023dc4f73c441953ed51f5f05a076f0862f",
+      "status": "evaluation_error",
+      "started_at": "2026-10-10T14:26:27.906877+00:00",
+      "run_id": "infra-rest-20261010T135735Z-05",
+      "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-16450:latest",
+      "pull_seconds": 10.89,
+      "pull_exit_code": 0,
+      "image_id": "sha256:3dc2ba041aadc8d34042c89d09d1570f804665c60413b111ceaf50a58dc982a4",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.sympy_1776_sympy-16450@sha256:3dc2ba041aadc8d34042c89d09d1570f804665c60413b111ceaf50a58dc982a4"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 624.74,
+      "evaluation_exit_code": 0,
+      "error": "Official evaluator test execution exceeded 600 seconds; no completed grading report.",
+      "failure_type": "test_timeout",
+      "finished_at": "2026-10-10T14:37:03.886545+00:00"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5631",
+      "repo": "pytest-dev/pytest",
+      "base_commit": "cb828ebe70b4fa35cd5f9a7ee024272237eab351",
+      "status": "passed",
+      "started_at": "2026-10-10T14:37:03.887894+00:00",
+      "run_id": "infra-rest-20261010T135735Z-06",
+      "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5631:latest",
+      "pull_seconds": 5.09,
+      "pull_exit_code": 0,
+      "image_id": "sha256:c76510e12a1765211e064f6e8de09e51ac0f7839f60d72305b374e004308b6a1",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5631@sha256:c76510e12a1765211e064f6e8de09e51ac0f7839f60d72305b374e004308b6a1"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 47.11,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 15,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "5cc72041a56577528cda7976d74d499ca2179ba6650803b891fd7150dab85a81",
+      "finished_at": "2026-10-10T14:37:56.120951+00:00"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8638",
+      "repo": "sphinx-doc/sphinx",
+      "base_commit": "4b452338f914d4f6b54704222d70ae8a746e3db5",
+      "status": "passed",
+      "started_at": "2026-10-10T14:37:56.121828+00:00",
+      "run_id": "infra-rest-20261010T135735Z-07",
+      "image": "swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-8638:latest",
+      "pull_seconds": 2.48,
+      "pull_exit_code": 0,
+      "image_id": "sha256:704547bd5fff87b0485309ce562e5df09edb84525569d72e5786c14c6c8a772c",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-8638@sha256:704547bd5fff87b0485309ce562e5df09edb84525569d72e5786c14c6c8a772c"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 39.51,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 34,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "9f1e986b940cd27368bdaa5a61ef9a8b7dedab72d68a4f5770f82af0215f81ce",
+      "finished_at": "2026-10-10T14:38:38.141642+00:00"
+    },
+    {
+      "instance_id": "django__django-13195",
+      "repo": "django/django",
+      "base_commit": "156a2138db20abc89933121e4ff2ee2ce56a173a",
+      "status": "passed",
+      "started_at": "2026-10-10T14:38:38.865345+00:00",
+      "run_id": "infra-rest-20261010T135735Z-08",
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-13195:latest",
+      "pull_seconds": 2.95,
+      "pull_exit_code": 0,
+      "image_id": "sha256:b42fb9c9d19e0f503e0353b77195524e6dff1997ce7cf2e53e38950af3f1cc11",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.django_1776_django-13195@sha256:b42fb9c9d19e0f503e0353b77195524e6dff1997ce7cf2e53e38950af3f1cc11"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 50.69,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 5,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 382,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "c2fc583e56e8f9c45fe9470ab655058ab1d746910596d6f8c820552d37f2aef3",
+      "finished_at": "2026-10-10T14:39:32.533962+00:00"
+    },
+    {
+      "instance_id": "django__django-12406",
+      "repo": "django/django",
+      "base_commit": "335c9c94acf263901fb023404408880245b0c4b4",
+      "status": "passed",
+      "started_at": "2026-10-10T14:39:33.076627+00:00",
+      "run_id": "infra-rest-20261010T135735Z-09",
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12406:latest",
+      "pull_seconds": 3.01,
+      "pull_exit_code": 0,
+      "image_id": "sha256:7d3be89e5d04229df52612992c678659e25a38908edbb465f9b83549a54d9294",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.django_1776_django-12406@sha256:7d3be89e5d04229df52612992c678659e25a38908edbb465f9b83549a54d9294"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 49.28,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 3,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 165,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "89553365ca40e6eb03e9da7d63c5e15cb16edb9e4035b4cc67d2bb0819b7ccfe",
+      "finished_at": "2026-10-10T14:40:25.401513+00:00"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8593",
+      "repo": "sphinx-doc/sphinx",
+      "base_commit": "07983a5a8704ad91ae855218ecbda1c8598200ca",
+      "status": "passed",
+      "started_at": "2026-10-10T14:40:25.402345+00:00",
+      "run_id": "infra-rest-20261010T135735Z-10",
+      "image": "swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-8593:latest",
+      "pull_seconds": 4.03,
+      "pull_exit_code": 0,
+      "image_id": "sha256:815b32905af211560f2ccece18e672fb3660569d3f00b3b6c663fe55efe8e6a8",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-8593@sha256:815b32905af211560f2ccece18e672fb3660569d3f00b3b6c663fe55efe8e6a8"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 35.76,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 2,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "b1c08116b74fcd2bfac0c0430892fc2d4898cc69d8f3f227bb0bcc748d38f6fa",
+      "finished_at": "2026-10-10T14:41:05.208215+00:00"
+    },
+    {
+      "instance_id": "django__django-14140",
+      "repo": "django/django",
+      "base_commit": "45814af6197cfd8f4dc72ee43b90ecde305a1d5a",
+      "status": "passed",
+      "started_at": "2026-10-10T14:41:05.209124+00:00",
+      "run_id": "infra-rest-20261010T135735Z-11",
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-14140:latest",
+      "pull_seconds": 3.36,
+      "pull_exit_code": 0,
+      "image_id": "sha256:240a043512ae9cd079c4de5ff3a488d992265d3f4bc7ab51c81861dbb30c07a7",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.django_1776_django-14140@sha256:240a043512ae9cd079c4de5ff3a488d992265d3f4bc7ab51c81861dbb30c07a7"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 47.91,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 4,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 199,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "f1d44a53bfe90dba0d2b8baf57d492beab0adb29275f27b48cd8dddf79234ad9",
+      "finished_at": "2026-10-10T14:41:56.498319+00:00"
+    },
+    {
+      "instance_id": "django__django-15382",
+      "repo": "django/django",
+      "base_commit": "770d3e6a4ce8e0a91a9e27156036c1985e74d4a3",
+      "status": "passed",
+      "started_at": "2026-10-10T14:41:56.836064+00:00",
+      "run_id": "infra-rest-20261010T135735Z-12",
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-15382:latest",
+      "pull_seconds": 2.05,
+      "pull_exit_code": 0,
+      "image_id": "sha256:b5dde6a96a4040e43e85485e01ec34e0db155adab642ca318f8ef04be1e00459",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.django_1776_django-15382@sha256:b5dde6a96a4040e43e85485e01ec34e0db155adab642ca318f8ef04be1e00459"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 43.46,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 161,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "6c4b59ce12e57d2fe5ceb942b7bb07f9f32871d1050d6c5a4f45168a5b93ac94",
+      "finished_at": "2026-10-10T14:42:42.370573+00:00"
+    },
+    {
+      "instance_id": "sympy__sympy-18698",
+      "repo": "sympy/sympy",
+      "base_commit": "3dff1b98a78f28c953ae2140b69356b8391e399c",
+      "status": "passed",
+      "started_at": "2026-10-10T14:42:42.371380+00:00",
+      "run_id": "infra-rest-20261010T135735Z-13",
+      "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-18698:latest",
+      "pull_seconds": 1.93,
+      "pull_exit_code": 0,
+      "image_id": "sha256:9b8ce19f9470ecbe3390699d06db56a5bf92b49cd41e687a468156fd5d3e947f",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.sympy_1776_sympy-18698@sha256:9b8ce19f9470ecbe3390699d06db56a5bf92b49cd41e687a468156fd5d3e947f"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 93.67,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 147,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "04bfd3474b54ca8a14ecdadecdf144d1df5512befda2d6d8c900ecf16b82636d",
+      "finished_at": "2026-10-10T14:44:18.011785+00:00"
+    },
+    {
+      "instance_id": "django__django-13297",
+      "repo": "django/django",
+      "base_commit": "8954f255bbf5f4ee997fd6de62cb50fc9b5dd697",
+      "status": "passed",
+      "started_at": "2026-10-10T14:44:18.012811+00:00",
+      "run_id": "infra-rest-20261010T135735Z-14",
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-13297:latest",
+      "pull_seconds": 2.13,
+      "pull_exit_code": 0,
+      "image_id": "sha256:1dca304a4ccd9f39df8794fb807c04a4076b5f35aff7d192dc5e0a14f8bf6f43",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.django_1776_django-13297@sha256:1dca304a4ccd9f39df8794fb807c04a4076b5f35aff7d192dc5e0a14f8bf6f43"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 51.83,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 52,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "36053d145d504a800648f6a1e981a586d27c5927bc794617a9d0515158a58a25",
+      "finished_at": "2026-10-10T14:45:12.010373+00:00"
+    },
+    {
+      "instance_id": "astropy__astropy-14369",
+      "repo": "astropy/astropy",
+      "base_commit": "fa4e8d1cd279acf9b24560813c8652494ccd5922",
+      "status": "passed",
+      "started_at": "2026-10-10T14:45:12.011846+00:00",
+      "run_id": "infra-rest-20261010T135735Z-15",
+      "image": "swebench/sweb.eval.x86_64.astropy_1776_astropy-14369:latest",
+      "pull_seconds": 2.17,
+      "pull_exit_code": 0,
+      "image_id": "sha256:ba6a17ac704562c63d361457c25320d5dcf60b0d1592568e9264bbd148025140",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.astropy_1776_astropy-14369@sha256:ba6a17ac704562c63d361457c25320d5dcf60b0d1592568e9264bbd148025140"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 294.77,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 3,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 732,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "ce689746c2e631ae103d247fccace6fa2e6c2915c7a47d5187f6ddee1829ade9",
+      "finished_at": "2026-10-10T14:50:09.062311+00:00"
+    },
+    {
+      "instance_id": "sympy__sympy-24213",
+      "repo": "sympy/sympy",
+      "base_commit": "e8c22f6eac7314be8d92590bfff92ced79ee03e2",
+      "status": "passed",
+      "started_at": "2026-10-10T14:50:09.063373+00:00",
+      "run_id": "infra-rest-20261010T135735Z-16",
+      "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-24213:latest",
+      "pull_seconds": 2.12,
+      "pull_exit_code": 0,
+      "image_id": "sha256:a458bae7d95f469fa8e438da0a39a2d168e93f70239155dbd833934948f2b296",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.sympy_1776_sympy-24213@sha256:a458bae7d95f469fa8e438da0a39a2d168e93f70239155dbd833934948f2b296"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 41.54,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 31,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "b8a2c8477c4f442cbd5d8ecf0449e458f3c5efca7d4e2175ab9ca18ca2dbf814",
+      "finished_at": "2026-10-10T14:50:52.768000+00:00"
+    },
+    {
+      "instance_id": "sympy__sympy-24562",
+      "repo": "sympy/sympy",
+      "base_commit": "b1cb676cf92dd1a48365b731979833375b188bf2",
+      "status": "passed",
+      "started_at": "2026-10-10T14:50:52.768813+00:00",
+      "run_id": "infra-rest-20261010T135735Z-17",
+      "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-24562:latest",
+      "pull_seconds": 2.32,
+      "pull_exit_code": 0,
+      "image_id": "sha256:776086d668f184408eb410669894ed1721bd813aa01af4ffd2884e3312a843da",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.sympy_1776_sympy-24562@sha256:776086d668f184408eb410669894ed1721bd813aa01af4ffd2884e3312a843da"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 57.88,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 105,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "de50f2ce098c37ec8658a9459e967fe5fedbaa2c7060823c060537eec2b14996",
+      "finished_at": "2026-10-10T14:51:53.009344+00:00"
+    },
+    {
+      "instance_id": "django__django-12276",
+      "repo": "django/django",
+      "base_commit": "53d8646f799de7f92ab9defe9dc56c6125448102",
+      "status": "passed",
+      "started_at": "2026-10-10T14:51:53.010530+00:00",
+      "run_id": "infra-rest-20261010T135735Z-18",
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12276:latest",
+      "pull_seconds": 2.14,
+      "pull_exit_code": 0,
+      "image_id": "sha256:903942f778dbcf0b61c62031697c4a5f3655569c11c84204bdfa307b844ec2ae",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.django_1776_django-12276@sha256:903942f778dbcf0b61c62031697c4a5f3655569c11c84204bdfa307b844ec2ae"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 44.99,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 2,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 117,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "7ec9c85c09b56d1d223262beb5ca8563ed9c542289fb0b2ee3143251c5979b4a",
+      "finished_at": "2026-10-10T14:52:40.163275+00:00"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10435",
+      "repo": "sphinx-doc/sphinx",
+      "base_commit": "f1061c012e214f16fd8790dec3c283d787e3daa8",
+      "status": "passed",
+      "started_at": "2026-10-10T14:52:40.164141+00:00",
+      "run_id": "infra-rest-20261010T135735Z-19",
+      "image": "swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-10435:latest",
+      "pull_seconds": 2.31,
+      "pull_exit_code": 0,
+      "image_id": "sha256:30d33734839d5f49cb85de2ef78d99a2c8869693b72c9abeb4d999bf1ffc830f",
+      "image_repo_digests": [
+        "swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-10435@sha256:30d33734839d5f49cb85de2ef78d99a2c8869693b72c9abeb4d999bf1ffc830f"
+      ],
+      "container_cleanup": "already removed by evaluator",
+      "evaluation_seconds": 65.33,
+      "evaluation_exit_code": 0,
+      "results": {
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 74,
+          "failure": 0
+        }
+      },
+      "grading_report_sha256": "11e15d963c434449d26289df34abc0026a48ebbef316c72caedeba8204007ec9",
+      "finished_at": "2026-10-10T14:53:47.823228+00:00"
+    }
+  ],
+  "counts": {
+    "assigned": 20,
+    "passed": 18,
+    "failed": 2,
+    "pending": 0,
+    "running": 0,
+    "blocked": 0
+  },
+  "updated_at": "2026-10-10T14:53:47.823842+00:00"
+}

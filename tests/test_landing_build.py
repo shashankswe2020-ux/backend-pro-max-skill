@@ -126,9 +126,8 @@ def test_landing_mcp_setup_matches_package():
         for node in module.body
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
         and any(
-            isinstance(decorator, ast.Call)
-            and isinstance(decorator.func, ast.Attribute)
-            and decorator.func.attr == "tool"
+            isinstance(decorator, ast.Name)
+            and decorator.id == "expose"
             for decorator in node.decorator_list
         )
     }

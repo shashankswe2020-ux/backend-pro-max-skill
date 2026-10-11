@@ -5,12 +5,111 @@ Each intent gets a formatter that reshapes raw search results into a
 structure optimised for that query type (e.g. troubleshoot → Symptom →
 Root Cause → Fix → Verify).
 
-All formatters accept the same signature:
+The legacy Markdown formatters accept:
     format_<intent>(result: dict, show_scores: bool) -> str
 
 The ``result`` dict is the standard search result from ``core.search()``.
+Opt-in compact formatting also supports stack/cross-domain results and returns
+a dictionary serialized with ``compact_json``.
 """
 from __future__ import annotations
+
+import json
+
+try:
+    from .core import classify_intent
+except ImportError:
+    from core import classify_intent
+
+
+COMPACT_MAX_CHARS = 6000
+_COMPACT_FIELDS = {
+    "guidance": ("Solution", "Description", "Do", "Fix", "Mitigation", "Strengths", "Rule of Thumb"),
+    "applicability": ("When to Use", "Use Case", "Workload", "From", "To"),
+    "constraints": (
+        "When NOT to Use", "Trade-offs", "Consistency", "Consistency Model", "Delivery", "Ordering",
+        "Guarantees", "Isolation Level", "Throughput Tier", "Latency Tier", "Consistency Tier",
+        "Cost Tier", "Cloud Native", "Engineering Requirement",
+    ),
+    "failure_modes": (
+        "Problem", "Symptom", "Root Cause", "Failure Mode", "Don't", "Weaknesses", "Pitfalls",
+        "Common Pitfalls", "Common Mistakes", "Gotcha", "Risk", "Threat", "Rollback Plan",
+    ),
+    "verification": ("Verification Method", "Evaluation Criteria", "Key Signals", "Postmortem Checklist"),
+    "notes": ("Notes", "Severity", "Code Good", "Code Bad"),
+}
+
+def compact_json(value: dict) -> str:
+    """Canonical compact JSON text; the limit excludes transport envelopes."""
+    return json.dumps(value, separators=(",", ":"), ensure_ascii=False)
+
+
+def format_compact(result: dict, max_chars: int = COMPACT_MAX_CHARS) -> dict:
+    """Bound JSON by dropping whole trailing evidence units, never slicing facts."""
+    if not isinstance(max_chars, int) or isinstance(max_chars, bool) or max_chars <= 0:
+        raise ValueError("Compact response limit must be a positive integer")
+    if "error" in result:
+        raise ValueError(str(result["error"]))
+    raw = result.get("results")
+    if isinstance(raw, dict):
+        rows = [(domain, row) for domain, group in raw.items() for row in group]
+    elif isinstance(raw, list):
+        rows = [(result.get("stack") or result.get("domain"), row) for row in raw]
+    else:
+        raise ValueError("Compact formatting requires search results")
+    units = []
+    for domain, row in rows:
+        title_fields = ("Name", "Guideline", "Service", "Topic", "Pattern", "Style", "Operation", "Tool", "Technique")
+        title_key = next((key for key in title_fields if row.get(key)), None)
+        groups = {
+            group: {key: row[key] for key in keys if row.get(key) not in (None, "")}
+            for group, keys in _COMPACT_FIELDS.items()
+        }
+        facts = {key: value for key, value in groups.items() if value}
+        sources = {key: row[key] for key in ("Source URL", "Docs URL") if row.get(key)}
+        used = {key for group in facts.values() for key in group} | set(sources)
+        used.update(("_citation", "_score", "Last Updated", title_key))
+        missing = [key for key in _COMPACT_FIELDS if not groups[key]]
+        if not sources:
+            missing.append("sources")
+        if not row.get("_citation"):
+            missing.append("citation")
+        if not row.get("Last Updated"):
+            missing.append("last_updated")
+        units.append({
+            "domain": domain, "title": row[title_key] if title_key else None,
+            "citation": row.get("_citation") or None,
+            "sources": sources, "last_updated": row.get("Last Updated") or None,
+            "facts": {key: value for group in facts.values() for key, value in group.items()},
+            "missing": missing,
+            "omitted_fields": [key for key in row if key not in used and row[key] not in (None, "")],
+        })
+    output = {
+        "format": "compact-v1",
+        "query": result.get("query", ""),
+        "intent": result.get("intent") or classify_intent(result.get("query", "")).value,
+        "matched_count": len(units), "count": len(units), "omitted_count": 0, "truncated": False,
+        "status": "results" if units else "no_matches",
+        "evidence_note": "Quoted KB fields, not verified advice. Missing fields are not inferred. Ranking is not confidence.",
+        "results": units,
+    }
+    while len(compact_json(output)) > max_chars:
+        if not units:
+            raise ValueError("Compact response metadata exceeds the character limit; shorten the query")
+        units.pop()
+        output.update(
+            count=len(units), omitted_count=output["matched_count"] - len(units), truncated=True,
+            status="results" if units else "budget_exhausted",
+        )
+    return output
+
+
+def format_search_response(result: dict, response_format: str = "raw") -> dict:
+    if response_format == "raw":
+        return result
+    if response_format == "compact":
+        return format_compact(result)
+    raise ValueError("response_format must be 'raw' or 'compact'")
 
 
 def _head(row: dict) -> str:

@@ -5,7 +5,8 @@
 
 ## When to use this skill
 
-Use Backend Pro Max whenever the user asks anything about:
+Use Backend Pro Max when external engineering guidance can affect a backend
+decision or its correctness, including:
 
 - Choosing a programming language, framework, or runtime for a backend service
 - Selecting a database, message broker, cache, search engine, or warehouse
@@ -17,6 +18,27 @@ Use Backend Pro Max whenever the user asks anything about:
 - CI/CD, testing strategy, security & compliance
 - Performance debugging or capacity planning
 - Migrating a monolith to microservices, or vice versa
+
+## Retrieval decision
+
+- Inspect the request and relevant repository code first. Retrieve when decisions
+  depend on transaction boundaries, retries, idempotency, migrations, concurrency,
+  consistency, framework behavior, or operational failure handling.
+- Skip retrieval for typos, link fixes, renames, formatting, or self-contained
+  local edits whose requirements and behavior are already clear. A backend file
+  or a framework name alone is not a reason to call a tool.
+- When retrieval is warranted and a supported stack is known, search that stack
+  first, then the relevant domain. Never guess a stack or query every domain.
+- Use existing compare, decide, ADR, or design tools only when the requested
+  deliverable needs them. Query intent classification happens after invocation;
+  it is not evidence that an agent selected a tool appropriately.
+- Check applicability and version constraints before applying evidence. Use
+  pinned official framework documentation for version-sensitive APIs. Cite only
+  returned sources; acknowledge missing guidance instead of inventing it.
+- `--compact` (MCP: `response_format="compact"`) is optional bounded search JSON.
+  It preserves whole evidence units, reports omissions and missing metadata,
+  and does not convert BM25 ranking into confidence. Use raw output when more
+  context is needed.
 
 ## How it works
 
@@ -51,8 +73,9 @@ When generating backend code or designs, the assistant should:
    result, include the `[BPM:…]` citation token verbatim (e.g.
    `[BPM:messaging.kafka]`). This lets reviewers `grep -r '\[BPM:' .` in PRs
    to verify grounding.
-2. **Anchor to the user's stack.** Always run a `--stack <stack>` query first
-   to load the language-specific guidelines and follow them strictly.
+2. **Anchor to the user's stack.** When retrieval is warranted and a relevant
+   supported stack is known, run a `--stack <stack>` query first. Do not invent
+   a stack or retrieve for every edit.
 3. **Apply the right pattern, not the trendiest.** Use `--domain pattern` /
    `--domain architecture` to pick patterns that fit the team size, traffic,
    and consistency requirements — not the patterns from a conference talk.

@@ -2,7 +2,8 @@
 """Generate tools.json — function-calling manifest for Backend Pro Max.
 
 Dual-format: OpenAI ``functions`` and Anthropic ``tools``.
-Auto-generated from public function signatures so the schema never drifts.
+Tool contracts are maintained here; domain/stack enums use the core registries.
+The MCP server publishes and validates these same contracts.
 
 Usage:
     python scripts/gen_tools_schema.py            # write tools.json
@@ -14,6 +15,11 @@ import json
 import sys
 from pathlib import Path
 
+try:
+    from .core import CSV_CONFIG, STACK_CONFIG
+except ImportError:
+    from core import CSV_CONFIG, STACK_CONFIG
+
 # ── Tool definitions ──────────────────────────────────────────────
 # Each entry describes one public function.  The schema is maintained here
 # (single source of truth) and serialised to both OpenAI and Anthropic formats.
@@ -21,20 +27,16 @@ from pathlib import Path
 TOOLS = [
     {
         "name": "backendpro_search",
-        "description": "BM25 search in a specific backend-engineering knowledge domain. Returns ranked results with citations.",
+        "description": "Retrieve cited backend guidance for transaction boundaries, idempotency, retries, schema migrations, and operational failure handling. Use when external engineering guidance can affect correctness; skip typos, link fixes, and self-contained local edits. Domain is auto-detected if omitted. Raw results are the default; compact returns bounded, source-linked evidence with explicit gaps, not a confidence score.",
         "parameters": {
             "type": "object",
             "properties": {
                 "query": {"type": "string", "description": "Search query (e.g. 'circuit breaker', 'exactly once delivery')."},
                 "domain": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "description": "Knowledge domain. Auto-detected if omitted.",
-                    "enum": [
-                        "language", "pattern", "database", "messaging", "cache", "cloud",
-                        "iac", "container", "observability", "api", "auth", "security",
-                        "cicd", "testing", "architecture", "scaling", "consistency",
-                        "performance", "reliability", "data",
-                    ],
+                    "enum": [*CSV_CONFIG, None],
+                    "default": None,
                 },
                 "max_results": {"type": "integer", "description": "Cap on returned rows (default 5).", "default": 5},
                 "min_score": {"type": "number", "description": "Drop results with BM25 score ≤ this (default 0.0).", "default": 0.0},
@@ -44,7 +46,7 @@ TOOLS = [
     },
     {
         "name": "backendpro_search_all",
-        "description": "Cross-domain search across every backend-engineering knowledge base. Returns top hits per domain.",
+        "description": "Retrieve cited guidance across domains when a backend issue spans concerns, such as retry policy plus database consistency. Prefer a focused search when the domain is known; do not call merely because a file is backend code. Use compact for bounded evidence; use raw for complete returned rows.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -56,7 +58,7 @@ TOOLS = [
     },
     {
         "name": "backendpro_search_stack",
-        "description": "Search stack-specific guidelines for a programming language / framework.",
+        "description": "Retrieve guidelines for a known supported language/framework, such as transaction handling in Spring or async database access in FastAPI. Search the relevant named stack first when retrieval is warranted; never guess a stack. Confirm version-sensitive APIs against pinned official documentation. Skip trivial local edits. Supports raw or compact evidence.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -64,11 +66,7 @@ TOOLS = [
                 "stack": {
                     "type": "string",
                     "description": "Stack name.",
-                    "enum": [
-                        "go", "java-spring", "python-fastapi", "nodejs-express",
-                        "rust-axum", "csharp-aspnet", "kotlin-spring", "scala-akka",
-                        "elixir-phoenix", "ruby-rails", "php-laravel", "cpp",
-                    ],
+                    "enum": list(STACK_CONFIG),
                 },
                 "max_results": {"type": "integer", "description": "Cap on returned rows (default 5).", "default": 5},
             },
@@ -77,7 +75,7 @@ TOOLS = [
     },
     {
         "name": "backendpro_compare",
-        "description": "Side-by-side comparison of two or more named technologies / patterns.",
+        "description": "Compare two or more named backend technologies or patterns with citations when the user is making a trade-off decision. Not needed for an already-specified local implementation detail.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -87,14 +85,17 @@ TOOLS = [
                     "minItems": 2,
                     "description": "Names to compare (e.g. ['Kafka', 'RabbitMQ']).",
                 },
-                "domain": {"type": "string", "description": "Force a domain (auto-detected if omitted)."},
+                "domain": {
+                    "type": ["string", "null"], "enum": [*CSV_CONFIG, None], "default": None,
+                    "description": "Force a domain (auto-detected if omitted).",
+                },
             },
             "required": ["names"],
         },
     },
     {
         "name": "backendpro_decide",
-        "description": "Opinionated, constraint-scored recommendation for a backend requirement. Searches across relevant domains and ranks candidates.",
+        "description": "Recommend backend candidates for a requirement with constraints such as consistency, throughput, cloud, and cost. Uses the existing decision engine; check assumptions and trade-offs, not just rank. Use search for a focused fact instead.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -108,14 +109,15 @@ TOOLS = [
     },
     {
         "name": "backendpro_adr",
-        "description": "Generate a Michael Nygard-format Architecture Decision Record from KB data.",
+        "description": "Draft a cited Architecture Decision Record when a backend decision needs documented context and alternatives. Provide relevant context domains; do not generate an ADR for an ordinary code edit.",
         "parameters": {
             "type": "object",
             "properties": {
                 "title": {"type": "string", "description": "ADR title (e.g. 'Adopt outbox pattern')."},
                 "context_domains": {
                     "type": "array",
-                    "items": {"type": "string"},
+                    "items": {"type": "string", "enum": list(CSV_CONFIG)},
+                    "minItems": 1,
                     "description": "Domains to search for context.",
                 },
             },
@@ -124,7 +126,7 @@ TOOLS = [
     },
     {
         "name": "backendpro_design",
-        "description": "Generate a system-design scaffold from a one-liner requirement with capacity math.",
+        "description": "Draft a backend system-design scaffold with capacity math when architecture or scale decisions are requested. Verify workload assumptions, consistency, and failure modes; this is not a substitute for repository inspection or measured capacity.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -138,17 +140,28 @@ TOOLS = [
     },
     {
         "name": "backendpro_find_stale",
-        "description": "Find knowledge-base entries whose Last Updated date is older than a threshold.",
+        "description": "Audit a domain for stale knowledge-base metadata before relying on potentially outdated guidance. Last Updated is row metadata, not proof that an external source was checked today.",
         "parameters": {
             "type": "object",
             "properties": {
-                "domain": {"type": "string", "description": "Domain to audit."},
-                "months": {"type": "integer", "description": "Age threshold in months."},
+                "domain": {"type": "string", "enum": list(CSV_CONFIG), "description": "Domain to audit."},
+                "months": {"type": "integer", "minimum": 0, "description": "Age threshold in months."},
             },
             "required": ["domain", "months"],
         },
     },
 ]
+
+for _tool in TOOLS:
+    _tool["parameters"]["additionalProperties"] = False
+    if _tool["name"] in ("backendpro_search", "backendpro_search_all", "backendpro_search_stack"):
+        _tool["parameters"]["properties"]["response_format"] = {
+            "type": "string", "enum": ["raw", "compact"], "default": "raw",
+            "description": "raw preserves returned rows; compact bounds JSON text to 6000 characters by omitting whole trailing evidence units.",
+        }
+    for _name, _property in _tool["parameters"]["properties"].items():
+        if _name == "max_results":
+            _property["minimum"] = 1
 
 
 def _to_openai(tools):

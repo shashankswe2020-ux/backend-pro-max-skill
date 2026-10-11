@@ -6,7 +6,7 @@
       "type": "function",
       "function": {
         "name": "backendpro_search",
-        "description": "BM25 search in a specific backend-engineering knowledge domain. Returns ranked results with citations.",
+        "description": "Retrieve cited backend guidance for transaction boundaries, idempotency, retries, schema migrations, and operational failure handling. Use when external engineering guidance can affect correctness; skip typos, link fixes, and self-contained local edits. Domain is auto-detected if omitted. Raw results are the default; compact returns bounded, source-linked evidence with explicit gaps, not a confidence score.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -15,7 +15,10 @@
               "description": "Search query (e.g. 'circuit breaker', 'exactly once delivery')."
             },
             "domain": {
-              "type": "string",
+              "type": [
+                "string",
+                "null"
+              ],
               "description": "Knowledge domain. Auto-detected if omitted.",
               "enum": [
                 "language",
@@ -37,23 +40,50 @@
                 "consistency",
                 "performance",
                 "reliability",
-                "data"
-              ]
+                "data",
+                "antipattern",
+                "cost",
+                "migration",
+                "incident",
+                "capacity",
+                "compliance",
+                "multi-tenant",
+                "release",
+                "ml-platform",
+                "edge",
+                "mobile-backend",
+                "api-contract",
+                "interview",
+                "latency",
+                null
+              ],
+              "default": null
             },
             "max_results": {
               "type": "integer",
               "description": "Cap on returned rows (default 5).",
-              "default": 5
+              "default": 5,
+              "minimum": 1
             },
             "min_score": {
               "type": "number",
               "description": "Drop results with BM25 score ≤ this (default 0.0).",
               "default": 0.0
+            },
+            "response_format": {
+              "type": "string",
+              "enum": [
+                "raw",
+                "compact"
+              ],
+              "default": "raw",
+              "description": "raw preserves returned rows; compact bounds JSON text to 6000 characters by omitting whole trailing evidence units."
             }
           },
           "required": [
             "query"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     },
@@ -61,7 +91,7 @@
       "type": "function",
       "function": {
         "name": "backendpro_search_all",
-        "description": "Cross-domain search across every backend-engineering knowledge base. Returns top hits per domain.",
+        "description": "Retrieve cited guidance across domains when a backend issue spans concerns, such as retry policy plus database consistency. Prefer a focused search when the domain is known; do not call merely because a file is backend code. Use compact for bounded evidence; use raw for complete returned rows.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -72,12 +102,23 @@
             "max_results": {
               "type": "integer",
               "description": "Max results per domain (default 2).",
-              "default": 2
+              "default": 2,
+              "minimum": 1
+            },
+            "response_format": {
+              "type": "string",
+              "enum": [
+                "raw",
+                "compact"
+              ],
+              "default": "raw",
+              "description": "raw preserves returned rows; compact bounds JSON text to 6000 characters by omitting whole trailing evidence units."
             }
           },
           "required": [
             "query"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     },
@@ -85,7 +126,7 @@
       "type": "function",
       "function": {
         "name": "backendpro_search_stack",
-        "description": "Search stack-specific guidelines for a programming language / framework.",
+        "description": "Retrieve guidelines for a known supported language/framework, such as transaction handling in Spring or async database access in FastAPI. Search the relevant named stack first when retrieval is warranted; never guess a stack. Confirm version-sensitive APIs against pinned official documentation. Skip trivial local edits. Supports raw or compact evidence.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -114,13 +155,24 @@
             "max_results": {
               "type": "integer",
               "description": "Cap on returned rows (default 5).",
-              "default": 5
+              "default": 5,
+              "minimum": 1
+            },
+            "response_format": {
+              "type": "string",
+              "enum": [
+                "raw",
+                "compact"
+              ],
+              "default": "raw",
+              "description": "raw preserves returned rows; compact bounds JSON text to 6000 characters by omitting whole trailing evidence units."
             }
           },
           "required": [
             "query",
             "stack"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     },
@@ -128,7 +180,7 @@
       "type": "function",
       "function": {
         "name": "backendpro_compare",
-        "description": "Side-by-side comparison of two or more named technologies / patterns.",
+        "description": "Compare two or more named backend technologies or patterns with citations when the user is making a trade-off decision. Not needed for an already-specified local implementation detail.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -141,13 +193,55 @@
               "description": "Names to compare (e.g. ['Kafka', 'RabbitMQ'])."
             },
             "domain": {
-              "type": "string",
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "language",
+                "pattern",
+                "database",
+                "messaging",
+                "cache",
+                "cloud",
+                "iac",
+                "container",
+                "observability",
+                "api",
+                "auth",
+                "security",
+                "cicd",
+                "testing",
+                "architecture",
+                "scaling",
+                "consistency",
+                "performance",
+                "reliability",
+                "data",
+                "antipattern",
+                "cost",
+                "migration",
+                "incident",
+                "capacity",
+                "compliance",
+                "multi-tenant",
+                "release",
+                "ml-platform",
+                "edge",
+                "mobile-backend",
+                "api-contract",
+                "interview",
+                "latency",
+                null
+              ],
+              "default": null,
               "description": "Force a domain (auto-detected if omitted)."
             }
           },
           "required": [
             "names"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     },
@@ -155,7 +249,7 @@
       "type": "function",
       "function": {
         "name": "backendpro_decide",
-        "description": "Opinionated, constraint-scored recommendation for a backend requirement. Searches across relevant domains and ranks candidates.",
+        "description": "Recommend backend candidates for a requirement with constraints such as consistency, throughput, cloud, and cost. Uses the existing decision engine; check assumptions and trade-offs, not just rank. Use search for a focused fact instead.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -166,7 +260,8 @@
           },
           "required": [
             "requirement"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     },
@@ -174,7 +269,7 @@
       "type": "function",
       "function": {
         "name": "backendpro_adr",
-        "description": "Generate a Michael Nygard-format Architecture Decision Record from KB data.",
+        "description": "Draft a cited Architecture Decision Record when a backend decision needs documented context and alternatives. Provide relevant context domains; do not generate an ADR for an ordinary code edit.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -185,15 +280,53 @@
             "context_domains": {
               "type": "array",
               "items": {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "language",
+                  "pattern",
+                  "database",
+                  "messaging",
+                  "cache",
+                  "cloud",
+                  "iac",
+                  "container",
+                  "observability",
+                  "api",
+                  "auth",
+                  "security",
+                  "cicd",
+                  "testing",
+                  "architecture",
+                  "scaling",
+                  "consistency",
+                  "performance",
+                  "reliability",
+                  "data",
+                  "antipattern",
+                  "cost",
+                  "migration",
+                  "incident",
+                  "capacity",
+                  "compliance",
+                  "multi-tenant",
+                  "release",
+                  "ml-platform",
+                  "edge",
+                  "mobile-backend",
+                  "api-contract",
+                  "interview",
+                  "latency"
+                ]
               },
+              "minItems": 1,
               "description": "Domains to search for context."
             }
           },
           "required": [
             "title",
             "context_domains"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     },
@@ -201,7 +334,7 @@
       "type": "function",
       "function": {
         "name": "backendpro_design",
-        "description": "Generate a system-design scaffold from a one-liner requirement with capacity math.",
+        "description": "Draft a backend system-design scaffold with capacity math when architecture or scale decisions are requested. Verify workload assumptions, consistency, and failure modes; this is not a substitute for repository inspection or measured capacity.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -212,7 +345,8 @@
           },
           "required": [
             "description"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     },
@@ -220,23 +354,61 @@
       "type": "function",
       "function": {
         "name": "backendpro_find_stale",
-        "description": "Find knowledge-base entries whose Last Updated date is older than a threshold.",
+        "description": "Audit a domain for stale knowledge-base metadata before relying on potentially outdated guidance. Last Updated is row metadata, not proof that an external source was checked today.",
         "parameters": {
           "type": "object",
           "properties": {
             "domain": {
               "type": "string",
+              "enum": [
+                "language",
+                "pattern",
+                "database",
+                "messaging",
+                "cache",
+                "cloud",
+                "iac",
+                "container",
+                "observability",
+                "api",
+                "auth",
+                "security",
+                "cicd",
+                "testing",
+                "architecture",
+                "scaling",
+                "consistency",
+                "performance",
+                "reliability",
+                "data",
+                "antipattern",
+                "cost",
+                "migration",
+                "incident",
+                "capacity",
+                "compliance",
+                "multi-tenant",
+                "release",
+                "ml-platform",
+                "edge",
+                "mobile-backend",
+                "api-contract",
+                "interview",
+                "latency"
+              ],
               "description": "Domain to audit."
             },
             "months": {
               "type": "integer",
+              "minimum": 0,
               "description": "Age threshold in months."
             }
           },
           "required": [
             "domain",
             "months"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     }
@@ -244,7 +416,7 @@
   "anthropic": [
     {
       "name": "backendpro_search",
-      "description": "BM25 search in a specific backend-engineering knowledge domain. Returns ranked results with citations.",
+      "description": "Retrieve cited backend guidance for transaction boundaries, idempotency, retries, schema migrations, and operational failure handling. Use when external engineering guidance can affect correctness; skip typos, link fixes, and self-contained local edits. Domain is auto-detected if omitted. Raw results are the default; compact returns bounded, source-linked evidence with explicit gaps, not a confidence score.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -253,7 +425,10 @@
             "description": "Search query (e.g. 'circuit breaker', 'exactly once delivery')."
           },
           "domain": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Knowledge domain. Auto-detected if omitted.",
             "enum": [
               "language",
@@ -275,28 +450,55 @@
               "consistency",
               "performance",
               "reliability",
-              "data"
-            ]
+              "data",
+              "antipattern",
+              "cost",
+              "migration",
+              "incident",
+              "capacity",
+              "compliance",
+              "multi-tenant",
+              "release",
+              "ml-platform",
+              "edge",
+              "mobile-backend",
+              "api-contract",
+              "interview",
+              "latency",
+              null
+            ],
+            "default": null
           },
           "max_results": {
             "type": "integer",
             "description": "Cap on returned rows (default 5).",
-            "default": 5
+            "default": 5,
+            "minimum": 1
           },
           "min_score": {
             "type": "number",
             "description": "Drop results with BM25 score ≤ this (default 0.0).",
             "default": 0.0
+          },
+          "response_format": {
+            "type": "string",
+            "enum": [
+              "raw",
+              "compact"
+            ],
+            "default": "raw",
+            "description": "raw preserves returned rows; compact bounds JSON text to 6000 characters by omitting whole trailing evidence units."
           }
         },
         "required": [
           "query"
-        ]
+        ],
+        "additionalProperties": false
       }
     },
     {
       "name": "backendpro_search_all",
-      "description": "Cross-domain search across every backend-engineering knowledge base. Returns top hits per domain.",
+      "description": "Retrieve cited guidance across domains when a backend issue spans concerns, such as retry policy plus database consistency. Prefer a focused search when the domain is known; do not call merely because a file is backend code. Use compact for bounded evidence; use raw for complete returned rows.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -307,17 +509,28 @@
           "max_results": {
             "type": "integer",
             "description": "Max results per domain (default 2).",
-            "default": 2
+            "default": 2,
+            "minimum": 1
+          },
+          "response_format": {
+            "type": "string",
+            "enum": [
+              "raw",
+              "compact"
+            ],
+            "default": "raw",
+            "description": "raw preserves returned rows; compact bounds JSON text to 6000 characters by omitting whole trailing evidence units."
           }
         },
         "required": [
           "query"
-        ]
+        ],
+        "additionalProperties": false
       }
     },
     {
       "name": "backendpro_search_stack",
-      "description": "Search stack-specific guidelines for a programming language / framework.",
+      "description": "Retrieve guidelines for a known supported language/framework, such as transaction handling in Spring or async database access in FastAPI. Search the relevant named stack first when retrieval is warranted; never guess a stack. Confirm version-sensitive APIs against pinned official documentation. Skip trivial local edits. Supports raw or compact evidence.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -346,18 +559,29 @@
           "max_results": {
             "type": "integer",
             "description": "Cap on returned rows (default 5).",
-            "default": 5
+            "default": 5,
+            "minimum": 1
+          },
+          "response_format": {
+            "type": "string",
+            "enum": [
+              "raw",
+              "compact"
+            ],
+            "default": "raw",
+            "description": "raw preserves returned rows; compact bounds JSON text to 6000 characters by omitting whole trailing evidence units."
           }
         },
         "required": [
           "query",
           "stack"
-        ]
+        ],
+        "additionalProperties": false
       }
     },
     {
       "name": "backendpro_compare",
-      "description": "Side-by-side comparison of two or more named technologies / patterns.",
+      "description": "Compare two or more named backend technologies or patterns with citations when the user is making a trade-off decision. Not needed for an already-specified local implementation detail.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -370,18 +594,60 @@
             "description": "Names to compare (e.g. ['Kafka', 'RabbitMQ'])."
           },
           "domain": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "language",
+              "pattern",
+              "database",
+              "messaging",
+              "cache",
+              "cloud",
+              "iac",
+              "container",
+              "observability",
+              "api",
+              "auth",
+              "security",
+              "cicd",
+              "testing",
+              "architecture",
+              "scaling",
+              "consistency",
+              "performance",
+              "reliability",
+              "data",
+              "antipattern",
+              "cost",
+              "migration",
+              "incident",
+              "capacity",
+              "compliance",
+              "multi-tenant",
+              "release",
+              "ml-platform",
+              "edge",
+              "mobile-backend",
+              "api-contract",
+              "interview",
+              "latency",
+              null
+            ],
+            "default": null,
             "description": "Force a domain (auto-detected if omitted)."
           }
         },
         "required": [
           "names"
-        ]
+        ],
+        "additionalProperties": false
       }
     },
     {
       "name": "backendpro_decide",
-      "description": "Opinionated, constraint-scored recommendation for a backend requirement. Searches across relevant domains and ranks candidates.",
+      "description": "Recommend backend candidates for a requirement with constraints such as consistency, throughput, cloud, and cost. Uses the existing decision engine; check assumptions and trade-offs, not just rank. Use search for a focused fact instead.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -392,12 +658,13 @@
         },
         "required": [
           "requirement"
-        ]
+        ],
+        "additionalProperties": false
       }
     },
     {
       "name": "backendpro_adr",
-      "description": "Generate a Michael Nygard-format Architecture Decision Record from KB data.",
+      "description": "Draft a cited Architecture Decision Record when a backend decision needs documented context and alternatives. Provide relevant context domains; do not generate an ADR for an ordinary code edit.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -408,20 +675,58 @@
           "context_domains": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "language",
+                "pattern",
+                "database",
+                "messaging",
+                "cache",
+                "cloud",
+                "iac",
+                "container",
+                "observability",
+                "api",
+                "auth",
+                "security",
+                "cicd",
+                "testing",
+                "architecture",
+                "scaling",
+                "consistency",
+                "performance",
+                "reliability",
+                "data",
+                "antipattern",
+                "cost",
+                "migration",
+                "incident",
+                "capacity",
+                "compliance",
+                "multi-tenant",
+                "release",
+                "ml-platform",
+                "edge",
+                "mobile-backend",
+                "api-contract",
+                "interview",
+                "latency"
+              ]
             },
+            "minItems": 1,
             "description": "Domains to search for context."
           }
         },
         "required": [
           "title",
           "context_domains"
-        ]
+        ],
+        "additionalProperties": false
       }
     },
     {
       "name": "backendpro_design",
-      "description": "Generate a system-design scaffold from a one-liner requirement with capacity math.",
+      "description": "Draft a backend system-design scaffold with capacity math when architecture or scale decisions are requested. Verify workload assumptions, consistency, and failure modes; this is not a substitute for repository inspection or measured capacity.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -432,28 +737,67 @@
         },
         "required": [
           "description"
-        ]
+        ],
+        "additionalProperties": false
       }
     },
     {
       "name": "backendpro_find_stale",
-      "description": "Find knowledge-base entries whose Last Updated date is older than a threshold.",
+      "description": "Audit a domain for stale knowledge-base metadata before relying on potentially outdated guidance. Last Updated is row metadata, not proof that an external source was checked today.",
       "input_schema": {
         "type": "object",
         "properties": {
           "domain": {
             "type": "string",
+            "enum": [
+              "language",
+              "pattern",
+              "database",
+              "messaging",
+              "cache",
+              "cloud",
+              "iac",
+              "container",
+              "observability",
+              "api",
+              "auth",
+              "security",
+              "cicd",
+              "testing",
+              "architecture",
+              "scaling",
+              "consistency",
+              "performance",
+              "reliability",
+              "data",
+              "antipattern",
+              "cost",
+              "migration",
+              "incident",
+              "capacity",
+              "compliance",
+              "multi-tenant",
+              "release",
+              "ml-platform",
+              "edge",
+              "mobile-backend",
+              "api-contract",
+              "interview",
+              "latency"
+            ],
             "description": "Domain to audit."
           },
           "months": {
             "type": "integer",
+            "minimum": 0,
             "description": "Age threshold in months."
           }
         },
         "required": [
           "domain",
           "months"
-        ]
+        ],
+        "additionalProperties": false
       }
     }
   ]
