@@ -239,6 +239,20 @@ No model attempt invoked a knowledge tool. Do not present the numerical
 differences as a retrieval-quality ranking or a product superiority claim.
 The aggregate API cost upper bound was $3.575932, including startup checks.
 
+### P0 harder-cohort readiness
+
+The [P0 workflow](benchmarks/p0/README.md) extends the existing M3 Docker grader
+with 40 multi-file development cases, separate held-out intake, baseline
+headroom checks, hash-bound retrieval diagnosis, and external benchmark
+access/usage gates. It makes no provider calls. Independent review, paid-model
+calibration and independently authored evaluation tasks remain explicit
+prerequisites, not results implied by a successful local self-test.
+
+Use `python scripts/run_p0.py --help` and follow the workflow's freeze,
+self-test and readiness steps. Keep private evaluation exports outside the
+checkout. Preserve the existing 24 public M3 tasks as smoke/regression coverage
+and never rewrite historical benchmark artifacts.
+
 ### M1 integration and evaluation gates
 
 The [enhancement plan](docs/plans/benchmark-informed-enhancements.md) separates
