@@ -135,15 +135,7 @@ def grader_source(checks: str) -> str:
     )
 
 
-def freeze(output: Path, image: str, model: str | None = None, repetitions: int = 3) -> dict:
-    if output.exists():
-        raise ValueError("Frozen output already exists")
-    protocol("required", [], model, repetitions)
-    tasks = runpy.run_path(str(SOURCE / "tasks.py"))["TASKS"]
-    if len(tasks) != 24 or len({task["id"] for task in tasks}) != 24:
-        raise ValueError("Expected 24 unique tasks")
-    if Counter(task["track"] for task in tasks) != dict.fromkeys(TRACKS, 6):
-        raise ValueError("Expected six tasks in each track")
+def image_environment(image: str) -> tuple[dict, dict]:
     info = json.loads(docker("image", "inspect", image))[0]
     if info["Os"] != "linux" or info["Architecture"] not in ("arm64", "amd64"):
         raise ValueError("Expected a supported Linux grading image")
@@ -155,6 +147,19 @@ def freeze(output: Path, image: str, model: str | None = None, repetitions: int 
     required = {"pydantic": "2.14.0", "starlette": "1.7.0", "httpx": "0.28.1"}
     if versions["python"] != "3.12.13" or any(versions["packages"].get(k) != v for k, v in required.items()):
         raise ValueError("Grading image does not match the pinned framework/Python versions")
+    return info, versions
+
+
+def freeze(output: Path, image: str, model: str | None = None, repetitions: int = 3) -> dict:
+    if output.exists():
+        raise ValueError("Frozen output already exists")
+    protocol("required", [], model, repetitions)
+    tasks = runpy.run_path(str(SOURCE / "tasks.py"))["TASKS"]
+    if len(tasks) != 24 or len({task["id"] for task in tasks}) != 24:
+        raise ValueError("Expected 24 unique tasks")
+    if Counter(task["track"] for task in tasks) != dict.fromkeys(TRACKS, 6):
+        raise ValueError("Expected six tasks in each track")
+    info, versions = image_environment(image)
     output.mkdir(parents=True)
     metadata = []
     for task in tasks:

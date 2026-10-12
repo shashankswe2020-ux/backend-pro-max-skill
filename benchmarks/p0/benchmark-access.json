@@ -1,0 +1,41 @@
+[
+  {
+    "id": "swe-bench-verified",
+    "source_url": "https://huggingface.co/datasets/princeton-nlp/SWE-bench_Verified",
+    "availability": "pending_verification",
+    "license": null,
+    "license_url": null,
+    "revision": null,
+    "usage_authorized": false,
+    "reviewer": null,
+    "verified_at": null,
+    "permitted_use": null,
+    "note": "Verify dataset, harness and per-repository licensing and tool-access policy for the new study; earlier pilot access is not a new authorization."
+  },
+  {
+    "id": "contextbench",
+    "source_url": "https://arxiv.org/abs/2602.05892",
+    "availability": "pending_verification",
+    "license": null,
+    "license_url": null,
+    "revision": null,
+    "usage_authorized": false,
+    "reviewer": null,
+    "verified_at": null,
+    "permitted_use": null,
+    "note": "Verify official dataset/harness access, licenses, immutable revisions and permitted evidence retention before scheduling."
+  },
+  {
+    "id": "swe-context-bench",
+    "source_url": "https://arxiv.org/abs/2602.08316",
+    "availability": "pending_verification",
+    "license": null,
+    "license_url": null,
+    "revision": null,
+    "usage_authorized": false,
+    "reviewer": null,
+    "verified_at": null,
+    "permitted_use": null,
+    "note": "Verify dataset/harness licenses, task chronology and allowed prior-context access before scheduling."
+  }
+]

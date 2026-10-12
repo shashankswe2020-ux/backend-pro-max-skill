@@ -44,6 +44,33 @@ jobs:
           backendpro compare "Kafka" "RabbitMQ" --domain messaging
           backendpro "idempotency" --all
 
+  p0-task-infrastructure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install evaluation dependencies
+        run: python -m pip install -e ".[dev]"
+      - name: Lint P0 evaluation tooling
+        run: python -m ruff check scripts/run_p0.py scripts/run_m3.py benchmarks/p0/tasks.py tests/test_p0.py
+      - name: Build pinned grading image
+        run: docker build -t backendpro-m3:p0-ci benchmarks/m3/environment
+      - name: Freeze development cohort
+        run: python scripts/run_p0.py freeze --image backendpro-m3:p0-ci --output "${{ runner.temp }}/p0-frozen"
+      - name: Verify all references and seeded faulty starters
+        run: python scripts/run_p0.py self-test --frozen "${{ runner.temp }}/p0-frozen" --output "${{ runner.temp }}/p0-self-test"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p0-infrastructure-validation
+          path: |
+            ${{ runner.temp }}/p0-frozen/manifest.json
+            ${{ runner.temp }}/p0-self-test/
+
   mcp-integration:
     runs-on: ubuntu-latest
     steps:

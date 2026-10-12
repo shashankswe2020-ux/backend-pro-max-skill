@@ -5,6 +5,17 @@ are implemented and validated. A separately approved 96-attempt, required-retrie
 live exploratory run completed on 2026-10-11. The planned larger optional/required
 study, independent review, and held-out validation remain pending.
 
+### P0 harder-cohort follow-up (2026-10-12)
+
+The [P0 evaluation-readiness workflow](../../benchmarks/p0/README.md) adds 40
+public multi-file development cases across eight correlated task families,
+reuses the M3 isolated grader, and gates baseline calibration, independent
+review and separate evaluation intake. It also adds hash-bound failure
+diagnosis and explicit unknown causes for historical aggregate-only data.
+External benchmark licenses/access remain fail-closed pending verification.
+This is offline infrastructure, not measured model headroom or a completed
+independently reviewed held-out study. The original M3 suite/results are unchanged.
+
 ### M1 delivery
 
 - Canonical domain/stack schemas shared by the manifest and actual MCP discovery/validation.
