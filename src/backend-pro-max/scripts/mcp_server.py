@@ -107,13 +107,24 @@ def search(
     max_results: int = 5,
     min_score: float = 0.0,
     response_format: str = "raw",
+    engine: str = "bm25",
+    rerank: bool = False,
+    candidate_pool: int | None = None,
+    diagnostics: bool = False,
+    expand: bool = True,
+    max_age_months: int | None = None,
+    constraints: str | None = None,
 ) -> dict:
     """BM25 search in a backend-engineering knowledge domain.
 
     Returns ranked results with citations. Domain is auto-detected if omitted.
     """
     return format_search_response(
-        core.search(query, domain=domain, max_results=max_results, min_score=min_score), response_format,
+        core.search(
+            query, domain=domain, max_results=max_results, min_score=min_score, engine=engine,
+            rerank=rerank, candidate_pool=candidate_pool, diagnostics=diagnostics, expand=expand,
+            max_age_months=max_age_months, constraints=constraints,
+        ), response_format,
     )
 
 
@@ -122,12 +133,24 @@ def search_all(
     query: str,
     max_results: int = 2,
     response_format: str = "raw",
+    engine: str = "bm25",
+    rerank: bool = False,
+    candidate_pool: int | None = None,
+    diagnostics: bool = False,
+    expand: bool = True,
+    min_score: float = 0.0,
+    max_age_months: int | None = None,
+    constraints: str | None = None,
 ) -> dict:
     """Cross-domain search across every backend-engineering knowledge base.
 
     Returns top hits per domain with citations.
     """
-    return format_search_response(core.search_all(query, max_results=max_results), response_format)
+    return format_search_response(core.search_all(
+        query, max_results=max_results, min_score=min_score, engine=engine, rerank=rerank,
+        candidate_pool=candidate_pool, diagnostics=diagnostics, expand=expand,
+        max_age_months=max_age_months, constraints=constraints,
+    ), response_format)
 
 
 @expose
@@ -136,6 +159,14 @@ def search_stack(
     stack: str,
     max_results: int = 5,
     response_format: str = "raw",
+    engine: str = "bm25",
+    rerank: bool = False,
+    candidate_pool: int | None = None,
+    diagnostics: bool = False,
+    expand: bool = True,
+    min_score: float = 0.0,
+    max_age_months: int | None = None,
+    constraints: str | None = None,
 ) -> dict:
     """Search stack-specific guidelines for a language / framework.
 
@@ -143,7 +174,11 @@ def search_stack(
     rust-axum, csharp-aspnet, kotlin-spring, scala-akka, elixir-phoenix,
     ruby-rails, php-laravel, cpp.
     """
-    return format_search_response(core.search_stack(query, stack, max_results=max_results), response_format)
+    return format_search_response(core.search_stack(
+        query, stack, max_results=max_results, min_score=min_score, engine=engine, rerank=rerank,
+        candidate_pool=candidate_pool, diagnostics=diagnostics, expand=expand,
+        max_age_months=max_age_months, constraints=constraints,
+    ), response_format)
 
 
 @expose

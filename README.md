@@ -103,7 +103,7 @@ backendpro --list                         # 34 domains, 12 stacks
 That first query returns a real, ranked, sourced row:
 
 ```text
-### Result 1  [BPM:reliability.resilience]  _(score: 14.89, confidence: high)_
+### Result 1  [BPM:reliability.resilience]  _(rank score: 14.89)_
 - Topic:        Retries with backoff + budget
 - Failure Mode: Naive retries cause thundering herd; non-idempotent retries cause duplicates
 - Mitigation:   Exponential backoff + jitter; cap attempts; total retry budget per call
@@ -160,16 +160,26 @@ cp "$(python3 -c "import backendpro as b; print(b.__path__[0])")/templates/base/
 
 | Flag | Effect |
 |---|---|
-| `-n N` | Max results per domain (default 5) |
+| `-n N` | Max results per scope (default 5; `--all` defaults to 2 per domain) |
 | `--min-score F` | Drop weak matches |
 | `--no-expand` | Turn off synonym expansion (`partial failure` → saga, compensation…) |
 | `--intent troubleshoot` | Force the answer template (`definition`, `comparison`, `troubleshoot`, `design`, `migration`, `incident`) |
 | `--max-age-months N` | Drop rows older than N months |
 | `--show-provenance` | Show the `Added By` and `Version` columns |
 | `--engine hybrid` | BM25 + embeddings (`pip install 'backendpro[semantic]'`) |
-| `--rerank` | Cross-encoder re-ranking (`pip install 'backendpro[rerank]'`) |
+| `--rerank` | Cross-encoder ranking before final top-N selection (`pip install 'backendpro[rerank]'`) |
+| `--candidate-pool 20` | Candidates per scope before final selection; at least `-n` |
+| `--diagnostics` | Requested/effective engine, fallbacks, candidate counts, and auto-scope hints |
 
 </details>
+
+CLI and MCP searches share the same optional retrieval pipeline. BM25 remains
+the offline, zero-dependency default. Reranking defaults to at least 20 candidates;
+`--all -n N` now means exactly N per domain, matching MCP `max_results`.
+Explicit domains/stacks are never widened. Missing optional dependencies are
+reported as fallbacks; model execution errors are surfaced, not hidden.
+Rank scores are not confidence or correctness probabilities.
+See [retrieval options and compatibility notes](docs/USAGE.md#retrieval-pipeline-and-diagnostics).
 
 ### Decisions, not just search
 

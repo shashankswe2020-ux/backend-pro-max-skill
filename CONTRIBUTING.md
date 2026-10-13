@@ -103,19 +103,40 @@ or a successful HTTP response does not establish factual correctness.
 
 ```bash
 python -m pip install -e ".[dev,mcp,semantic,rerank]"
-python -m pytest tests/test_mcp_server.py tests/test_semantic.py tests/test_rerank.py
-python -m backendpro.scripts.benchmark tests/retrieval-benchmark.json --output benchmark.json
+python -m pytest tests/test_mcp_server.py tests/test_semantic.py tests/test_rerank.py tests/test_p1_retrieval.py tests/test_benchmark.py
+python -m backendpro.scripts.benchmark tests/retrieval-benchmark.json --candidate-pools 20 50 --output benchmark.json
 python -m pip wheel --no-deps --wheel-dir dist .
 python scripts/smoke_wheel.py dist/backendpro-0.9.0-py3-none-any.whl
 ```
 
-The benchmark reports binary Recall@K, MRR@K, nDCG@K, and warm-query p50/p95
-latency for BM25, hybrid, and hybrid-plus-reranking. Downloads, model loading,
+The benchmark exercises the shared production pipeline and reports labeled
+Recall@K, Precision@K, MRR@K, nDCG@K, false no-match rate on answerable cases,
+abstention on explicitly unanswerable cases, and warm-query p50/p95 latency.
+Modes are `bm25-no-expand`, `bm25` (existing synonym expansion), `hybrid`, and
+`hybrid-rerank`. Candidate pools of 20/50 keep a fixed final top five.
+Downloads, model loading,
 and index creation are excluded from latency. Use `--modes bm25` without ML
 dependencies, or `--max-p95-ms N` to enforce your environment's latency budget.
 The supplied eight-query set is an author-labeled diagnostic, not a held-out
-evaluation; review broader relevance labels independently before making
-retrieval-quality claims. CI retains the model benchmark as an artifact.
+evaluation; it has one positive label per query and no unanswerable cases.
+Its incomplete labels cannot establish reviewer-rated Precision@5 >= 80%;
+a missing unanswerable track is reported as null, not zero errors.
+Review broader relevance/applicability labels independently before making
+retrieval-quality claims. Proposed P1 development gates are Recall@5 >= 90%,
+reviewed Precision@5 >= 80%, and answerable false no-match <= 5%.
+The report deliberately keeps `quality_gates_demonstrated=false`.
+Do not alter the dataset or corpus to improve these reported scores.
+CI retains the model benchmark as an artifact, including corpus hashes and
+immutable model revisions. Model/dependency fallback invalidates a benchmark.
+
+P1 preserves BM25 defaults and exposes engine/pool/filter controls consistently
+through CLI/MCP. See [usage and compatibility](docs/USAGE.md#retrieval-pipeline-and-diagnostics).
+Raw JSON gains `retrieval` metadata only for opt-in settings; compact keeps it
+within its bound; JSONL prepends a metadata record when present.
+Historical traces must still be validated against their frozen schemas, not
+the new tool catalogue. No corpus expansion is included without reviewed
+development failures; P0's independent labels and model calibration remain
+external prerequisites for quality claims.
 
 ### Context7 comparison: SWE-bench Verified pilot
 

@@ -68,8 +68,61 @@ def test_stdio_transport(tmp_path):
                         "search", {"query": "Kafka", "response_format": "unsupported"},
                     )
                     assert invalid.isError
+                    for name, scope in [
+                        ("search", {"domain": "pattern"}),
+                        ("search_stack", {"stack": "go"}),
+                        ("search_all", {}),
+                    ]:
+                        arguments = {
+                            "query": "retry", **scope, "max_results": 2, "candidate_pool": 20,
+                            "diagnostics": True, "expand": False, "min_score": 0,
+                            "max_age_months": 240, "constraints": "cloud=aws",
+                        }
+                        response = await session.call_tool(name, arguments)
+                        assert not response.isError
+                        actual = json.loads(response.content[0].text)
+                        import core
+                        assert actual == getattr(core, name)(**arguments)
+                        compact = await session.call_tool(name, {**arguments, "response_format": "compact"})
+                        assert not compact.isError
+                        assert len(compact.content[0].text) <= 6000
+                        assert json.loads(compact.content[0].text)["retrieval"] == actual["retrieval"]
+                    for options in [
+                        {"engine": "bogus"}, {"candidate_pool": 1, "max_results": 5},
+                        {"max_age_months": -1}, {"rerank": "yes"}, {"constraints": "bogus"},
+                    ]:
+                        response = await session.call_tool("search", {"query": "saga", **options})
+                        assert response.isError
 
     anyio.run(exercise_server)
+
+
+def test_real_model_pipeline_over_mcp():
+    pytest.importorskip("sentence_transformers")
+    import anyio
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+
+    async def exercise():
+        parameters = StdioServerParameters(command=sys.executable, args=[str(_scripts / "mcp_server.py")])
+        with anyio.fail_after(180):
+            async with stdio_client(parameters) as (reader, writer):
+                async with ClientSession(reader, writer) as session:
+                    await session.initialize()
+                    response = await session.call_tool("search", {
+                        "query": "saga", "domain": "pattern", "engine": "hybrid",
+                        "rerank": True, "candidate_pool": 20, "max_results": 5,
+                        "response_format": "compact",
+                    })
+                    assert not response.isError
+                    result = json.loads(response.content[0].text)
+                    assert result["retrieval"]["effective_engine"] == "hybrid"
+                    assert result["retrieval"]["rerank_applied"]
+                    assert not result["retrieval"]["fallbacks"]
+                    assert result["retrieval"]["candidate_count"] > 5
+                    assert result["count"] > 0
+                    assert len(response.content[0].text) <= 6000
+    anyio.run(exercise)
 
 # ── We test the underlying tool functions directly ──────────────
 

@@ -38,6 +38,11 @@ requirement to retrieve for every backend edit.
   It preserves whole evidence units, reports omissions and missing metadata,
   and does not convert BM25 ranking into confidence. Use raw output when more
   context is needed.
+- BM25 stays the offline default. Optional `--engine hybrid`, `--rerank`, and
+  `--candidate-pool N` also exist on MCP as `engine`, `rerank`, and `candidate_pool`.
+  Check `retrieval` metadata for effective execution and fallbacks. Use
+  `--diagnostics` (MCP: `diagnostics=true`) for auto-scope hints; explicit
+  domains/stacks are never widened. Rank scores are not correctness probabilities.
 
 ## Search
 

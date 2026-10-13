@@ -2,7 +2,7 @@
 Optional cross-encoder re-ranking for Backend Pro Max.
 
 Takes BM25 top-K results and re-scores them using a cross-encoder model
-for dramatically improved precision on ambiguous queries.
+to evaluate precision on ambiguous queries.
 
 Requires `sentence-transformers` (install via `pip install backendpro[rerank]`).
 Falls back gracefully when not installed.
@@ -10,9 +10,17 @@ Falls back gracefully when not installed.
 from __future__ import annotations
 
 import sys
+from math import isfinite
+
+try:
+    from .semantic import model_snapshot
+except ImportError:
+    from semantic import model_snapshot
 
 _cross_encoder = None
+_model_identity = None
 _MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+_MODEL_REVISION = "233902d25c440f23af6f7d6e94d2946bac0bee0a"
 
 
 def is_available() -> bool:
@@ -26,19 +34,21 @@ def is_available() -> bool:
 
 def _get_model():
     """Lazy-load the cross-encoder model."""
-    global _cross_encoder
-    if _cross_encoder is not None:
+    global _cross_encoder, _model_identity
+    identity = (_MODEL_NAME, _MODEL_REVISION)
+    if _cross_encoder is not None and _model_identity == identity:
         return _cross_encoder
     try:
         from sentence_transformers import CrossEncoder
-        _cross_encoder = CrossEncoder(_MODEL_NAME)
-        return _cross_encoder
     except ImportError:
         return None
+    _cross_encoder = CrossEncoder(model_snapshot(_MODEL_NAME, _MODEL_REVISION))
+    _model_identity = identity
+    return _cross_encoder
 
 
 def rerank(query: str, rows: list[dict], top_k: int = 5,
-           text_key: str | None = None) -> list[dict]:
+           text_key: str | None = None, *, strict: bool = False) -> list[dict]:
     """Re-rank rows using a cross-encoder.
 
     Args:
@@ -53,17 +63,18 @@ def rerank(query: str, rows: list[dict], top_k: int = 5,
         If the cross-encoder is not available, returns rows unchanged
         with a warning printed to stderr.
     """
+    if not rows:
+        return []
     model = _get_model()
     if model is None:
+        if strict:
+            raise RuntimeError("Reranker unavailable after capability check")
         print(
             "ℹ️  Cross-encoder not installed — returning BM25 results. "
             "Install with: pip install backendpro[rerank]",
             file=sys.stderr,
         )
         return rows[:top_k]
-
-    if not rows:
-        return []
 
     # Build text pairs for cross-encoder
     pairs = []
@@ -73,11 +84,13 @@ def rerank(query: str, rows: list[dict], top_k: int = 5,
         else:
             text = " ".join(
                 str(v).strip() for k, v in row.items()
-                if k not in ("_score", "_constraints", "_rerank_score") and str(v).strip()
+                if not k.startswith("_") and str(v).strip()
             )
         pairs.append((query, text))
 
     scores = model.predict(pairs)
+    if len(scores) != len(rows) or any(not isfinite(float(score)) for score in scores):
+        raise ValueError("Reranker returned an invalid number of finite scores")
 
     # Attach scores and sort
     scored_rows = []

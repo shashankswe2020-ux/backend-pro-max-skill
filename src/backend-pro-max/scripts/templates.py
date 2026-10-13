@@ -93,6 +93,8 @@ def format_compact(result: dict, max_chars: int = COMPACT_MAX_CHARS) -> dict:
         "evidence_note": "Quoted KB fields, not verified advice. Missing fields are not inferred. Ranking is not confidence.",
         "results": units,
     }
+    if "retrieval" in result:
+        output["retrieval"] = result["retrieval"]
     while len(compact_json(output)) > max_chars:
         if not units:
             raise ValueError("Compact response metadata exceeds the character limit; shorten the query")
@@ -123,20 +125,10 @@ def _head(row: dict) -> str:
     return "?"
 
 
-def _confidence_label(score: float) -> str:
-    if score >= 4.0:
-        return "high"
-    if score >= 1.5:
-        return "medium"
-    if score > 0:
-        return "low"
-    return "none"
-
-
 def _score_tag(row: dict, show_scores: bool) -> str:
     score = row.get("_score")
     if show_scores and score is not None:
-        return f"  _(score: {score:.2f}, confidence: {_confidence_label(score)})_"
+        return f"  _(rank score: {score:.2f})_"
     return ""
 
 

@@ -19,9 +19,11 @@ from typing import Any
 _sentence_transformers = None
 _np = None
 _model = None
+_model_identity = None
 
 _CACHE_DIR = Path(os.environ.get("BACKENDPRO_CACHE_DIR") or (Path.home() / ".backendpro_cache"))
 _MODEL_NAME = "all-MiniLM-L6-v2"
+_MODEL_REVISION = "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
 
 # Embedding index cache: {cache_key: {"embeddings": ndarray, "texts": list}}
 _EMBED_CACHE: dict[str, Any] = {}
@@ -53,23 +55,37 @@ def _load_deps():
 
 def _get_model():
     """Lazy-load the sentence-transformer model."""
-    global _model
-    if _model is not None:
+    global _model, _model_identity
+    identity = (_MODEL_NAME, _MODEL_REVISION)
+    if _model is not None and _model_identity == identity:
         return _model
     if not _load_deps():
         return None
-    _model = _sentence_transformers.SentenceTransformer(_MODEL_NAME)
+    _model = _sentence_transformers.SentenceTransformer(
+        model_snapshot(f"sentence-transformers/{_MODEL_NAME}", _MODEL_REVISION),
+    )
+    _model_identity = identity
     return _model
 
 
+def model_snapshot(name: str, revision: str) -> str:
+    """Resolve pinned data files without relying on version-specific model constructors."""
+    from huggingface_hub import snapshot_download
+
+    return snapshot_download(
+        repo_id=name, revision=revision,
+        allow_patterns=["*.json", "*.txt", "*.safetensors", "pytorch_model.bin", "*.model"],
+        ignore_patterns=["onnx/*", "openvino/*"],
+    )
+
+
 def _cache_key(filepath: Path, search_cols: list[str]) -> str:
-    """Generate a cache key from filepath + mtime + column list."""
-    try:
-        mtime = str(filepath.stat().st_mtime)
-    except OSError:
-        mtime = "0"
-    raw = f"{filepath}:{mtime}:{','.join(search_cols)}"
-    return hashlib.md5(raw.encode()).hexdigest()
+    """Bind row order and searchable fields to corpus content and the pinned model."""
+    identity = {
+        "format": "embeddings-v2", "corpus_sha256": hashlib.sha256(filepath.read_bytes()).hexdigest(),
+        "columns": search_cols, "model": _MODEL_NAME, "revision": _MODEL_REVISION,
+    }
+    return hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
 
 
 def _disk_cache_path(key: str, ext: str = ".json") -> Path:
@@ -87,8 +103,8 @@ def _save_to_disk(key: str, embeddings, texts: list[str]):
         json_path = _disk_cache_path(key, ".json")
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(texts, f)
-    except OSError:
-        pass  # Non-critical — we can rebuild next time
+    except OSError as error:
+        print(f"Warning: cannot persist embedding cache: {error}", file=sys.stderr)
 
 
 def _load_from_disk(key: str):
@@ -103,8 +119,15 @@ def _load_from_disk(key: str):
         embeddings = _np.load(str(npy_path), allow_pickle=False)
         with open(json_path, encoding="utf-8") as f:
             texts = json.load(f)
+        if (
+            not isinstance(texts, list) or not all(isinstance(text, str) for text in texts)
+            or embeddings.ndim != 2 or embeddings.shape[0] != len(texts)
+            or embeddings.dtype.kind != "f" or not _np.isfinite(embeddings).all()
+        ):
+            raise ValueError("Embedding cache shape or content is invalid")
         return {"embeddings": embeddings, "texts": texts}
-    except (OSError, ValueError, json.JSONDecodeError):
+    except (OSError, ValueError, EOFError) as error:
+        print(f"Warning: invalid embedding cache; rebuilding: {error}", file=sys.stderr)
         return None
 
 
@@ -118,6 +141,7 @@ def build_index(data: list[dict], search_cols: list[str], filepath: Path) -> str
         return None
 
     key = _cache_key(filepath, search_cols)
+    texts = [" ".join(str(row.get(col, "")) for col in search_cols) for row in data]
 
     # Check memory cache
     if key in _EMBED_CACHE:
@@ -125,13 +149,14 @@ def build_index(data: list[dict], search_cols: list[str], filepath: Path) -> str
 
     # Check disk cache
     cached = _load_from_disk(key)
-    if cached is not None:
+    if cached is not None and cached["texts"] == texts:
         _EMBED_CACHE[key] = cached
         return key
+    if cached is not None:
+        print("Warning: embedding cache text mismatch; rebuilding.", file=sys.stderr)
 
     # Build from scratch
     print("Building semantic index…", file=sys.stderr)
-    texts = [" ".join(str(row.get(col, "")) for col in search_cols) for row in data]
     embeddings = model.encode(texts, show_progress_bar=False, convert_to_numpy=True)
     _EMBED_CACHE[key] = {"embeddings": embeddings, "texts": texts}
     _save_to_disk(key, embeddings, texts)
@@ -145,7 +170,7 @@ def semantic_search(query: str, cache_key: str, top_k: int = 20) -> list[tuple[i
     """
     model = _get_model()
     if model is None or cache_key not in _EMBED_CACHE:
-        return []
+        raise RuntimeError("Semantic search requires a loaded model and valid index")
 
     cached = _EMBED_CACHE[cache_key]
     embeddings = cached["embeddings"]

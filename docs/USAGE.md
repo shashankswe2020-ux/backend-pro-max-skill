@@ -124,30 +124,34 @@ backendpro compare "Kafka" "RabbitMQ" --json
 
 | Flag                       | Effect                                                                |
 | -------------------------- | --------------------------------------------------------------------- |
-| `-n, --max-results N`      | Cap returned rows (default 5)                                         |
-| `--min-score F`            | Drop weak matches (BM25 score ≤ F)                                    |
+| `-n, --max-results N`      | Cap rows per scope (default 5; `--all` defaults to 2 per domain) |
+| `--min-score F`            | Drop pre-rerank scores <= F; scale depends on effective engine |
 | `--max-age-months N`       | Drop rows whose `Last Updated` is older than N months                 |
 | `--no-expand`              | Disable synonym expansion (`partial failure → compensation, saga, …`) |
-| `--no-scores`              | Hide BM25 confidence scores in markdown output                        |
+| `--no-scores`              | Hide rank scores in markdown output |
 | `--json`                   | Machine-readable JSON output                                          |
 | `--interactive` / `-i`     | Start the REPL                                                        |
 | `--stale`                  | Audit mode (with `--domain` and `--max-age-months`)                   |
 | `--list`                   | List domains and stacks                                               |
 | `--intent <type>`          | Override auto-detected intent (`comparison`, `troubleshoot`, `migration`, `incident`, `definition`, `best-practice`, `checklist`) |
 | `--engine <engine>`        | Retrieval engine: `bm25` (default), `hybrid`, or `semantic`. Hybrid/semantic require `pip install backendpro[semantic]` |
-| `--rerank`                 | Re-rank results with a cross-encoder model. Requires `pip install backendpro[rerank]` |
+| `--rerank`                 | Re-rank candidates before final selection. Requires `pip install backendpro[rerank]` |
+| `--candidate-pool N`       | Candidate rows per scope, >= `-n`; default max(20, `-n`) with reranking, otherwise `-n` |
+| `--diagnostics`            | Include requested/effective retrieval, fallbacks, counts and scope hints |
 
-### Confidence scores
+### Rank scores
 
-Markdown results carry a per-result confidence label so an AI agent can
-gate its trust:
+Markdown results show ranking signals, not calibrated confidence:
 
 ```
-### Result 1  _(score: 7.69, confidence: high)_
+### Result 1  _(rank score: 7.69)_
 ```
 
-Buckets: `score ≥ 4.0` = **high**, `≥ 1.5` = **medium**, `> 0` = **low**.
-Use `--no-scores` to suppress them in human-only output.
+`_score` is BM25, cosine similarity, or reciprocal-rank fusion (RRF), depending
+on the effective engine. `_rerank_score` is a cross-encoder ranking signal.
+Neither is a correctness probability; independent domain scores are not
+globally calibrated. The former high/medium/low confidence labels were removed.
+Use `--no-scores` to suppress ranking scores in Markdown.
 
 ### Synonym / hybrid search
 
@@ -211,6 +215,74 @@ pip install backendpro[rerank]
 
 backendpro "saga pattern" --rerank
 ```
+
+### Retrieval pipeline and diagnostics
+
+```bash
+backendpro "message loss after failover" --domain messaging \
+  --engine hybrid --rerank --candidate-pool 50 -n 5 --compact
+backendpro "transaction rollback" --stack java-spring \
+  --candidate-pool 20 --diagnostics --json
+backendpro "idempotency" --all --rerank --candidate-pool 20 -n 5
+```
+
+All three search surfaces use the same candidate generation, score/freshness
+filtering, optional cross-encoder ranking, constraint preferences and final
+top-N selection. Pool size is per domain/stack, not a global evidence budget.
+In cross-domain search, reranking happens inside each domain; this does not
+implement global evidence selection or version-aware documentation retrieval.
+
+Filters run before candidate truncation. `--constraints` accepts unique
+`key=value` preferences using `cloud`, `throughput`, `latency`, `consistency`,
+and `cost`. Satisfied preferences sort first, followed by cross-encoder score
+if present, otherwise the retrieval score. Unknown metadata is annotated, not
+silently excluded. Malformed or unknown constraint keys are errors.
+
+MCP `search`, `search_stack`, and `search_all` expose `engine`, `rerank`,
+`candidate_pool`, `diagnostics`, `expand`, `min_score`, `max_age_months`,
+`constraints` and `response_format`. Restart clients after updating tool schemas.
+`expand=false` corresponds to CLI `--no-expand`.
+
+Default BM25 raw result shapes and result ordering remain unchanged.
+Non-default engines, reranking, explicit candidate pools, or `diagnostics=true`
+add a `retrieval` object:
+
+- Requested/effective engine and its score kind.
+- Whether reranking was requested and actually applied to any candidates.
+- Installed dependency capabilities when checked; `not_checked` does not
+  mean unavailable. Capability checks do not prove weights can be loaded.
+- Pinned model names/revisions, explicit missing-dependency fallbacks, candidate
+  and pre-packing returned counts. Cross-domain counts sum all domains.
+- Selected scope and up to three keyword-based auto-routing suggestions.
+  Suggestions are not retrieval results or confidence estimates.
+
+Compact JSON retains these diagnostics inside its existing 6000-character
+bound and continues omitting whole evidence units. A metadata-only response
+is explicitly `budget_exhausted`, not useful evidence. JSONL adds a leading
+`_type: "retrieval_metadata"` record only when diagnostics exist, including
+empty searches. Markdown CLI output prints the same metadata before evidence.
+
+Explicit scopes are never widened. CLI `--domain`, `--stack`, and `--all` are
+mutually exclusive. `--all` without `-n` still returns up to two rows per domain;
+an explicit `--all -n N` now uses N rather than the old undocumented N/2
+conversion, matching the core and MCP APIs.
+
+Optional models keep their existing identities, pinned to immutable revisions:
+
+- `all-MiniLM-L6-v2`: `1110a243fdf4706b3f48f1d95db1a4f5529b4d41`
+- `cross-encoder/ms-marco-MiniLM-L-6-v2`: `233902d25c440f23af6f7d6e94d2946bac0bee0a`
+
+First use may download model data from Hugging Face; queries are evaluated
+locally. BM25 never downloads models. Set `HF_HUB_OFFLINE=1` after caching
+weights when optional-model execution must also stay offline. Missing optional
+packages fall back with a warning and structured metadata; model download,
+load or inference errors fail explicitly instead of claiming successful
+semantic execution. Benchmarks reject fallback results.
+
+Embedding cache identity includes corpus bytes, searchable columns and pinned
+model identity. BM25 checks timestamps and content; copied files with unchanged
+timestamps cannot silently retain an old index. Invalid embedding caches are
+reported and rebuilt. Existing old cache entries are not reused.
 
 ## Recipes
 
@@ -373,7 +445,7 @@ print(compare(["Kafka", "RabbitMQ"], domain="messaging"))
 # Audit: list rows older than 18 months
 print(find_stale("pattern", months=18))
 
-# Long-running process? Indexes are mtime-cached automatically.
+# Long-running process? Indexes invalidate on timestamp or content changes.
 # Force a refresh after manual edits:
 clear_cache()
 ```

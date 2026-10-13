@@ -106,11 +106,11 @@ jobs:
           python-version: "3.11"
           cache: pip
       - name: Install retrieval test dependencies
-        run: python -m pip install -e ".[dev,semantic,rerank]"
+        run: python -m pip install -e ".[dev,semantic,rerank,mcp]"
       - name: Verify real retrieval models and fallback behavior
-        run: python -m pytest tests/test_semantic.py tests/test_rerank.py
+        run: python -m pytest tests/test_semantic.py tests/test_rerank.py tests/test_p1_retrieval.py tests/test_mcp_server.py
       - name: Measure retrieval quality and warm latency
-        run: python -m backendpro.scripts.benchmark tests/retrieval-benchmark.json --output retrieval-benchmark.json
+        run: python -m backendpro.scripts.benchmark tests/retrieval-benchmark.json --candidate-pools 20 50 --output retrieval-benchmark.json
       - uses: actions/upload-artifact@v4
         with:
           name: retrieval-benchmark

@@ -155,6 +155,26 @@ TOOLS = [
 for _tool in TOOLS:
     _tool["parameters"]["additionalProperties"] = False
     if _tool["name"] in ("search", "search_all", "search_stack"):
+        _tool["description"] += " BM25 stays the offline default. Optional hybrid/semantic engines and reranking report requested/effective execution and fallbacks. Explicit scopes are never widened; diagnostics exposes routing hints only."
+        _tool["parameters"]["properties"].update({
+            "engine": {
+                "type": "string", "enum": ["bm25", "hybrid", "semantic"], "default": "bm25",
+                "description": "Optional model engines require backendpro[semantic]; missing dependencies fall back explicitly.",
+            },
+            "rerank": {
+                "type": "boolean", "default": False,
+                "description": "Cross-encoder candidate reranking, requiring backendpro[rerank].",
+            },
+            "candidate_pool": {
+                "type": ["integer", "null"], "minimum": 1, "default": None,
+                "description": "Candidates per scope before final selection; >= max_results. Defaults to max(20,max_results) with reranking, otherwise max_results.",
+            },
+            "diagnostics": {"type": "boolean", "default": False, "description": "Include engine, scope and candidate diagnostics even for default BM25."},
+            "expand": {"type": "boolean", "default": True, "description": "Apply existing synonym expansion to lexical retrieval."},
+            "min_score": {"type": "number", "default": 0.0, "description": "Exclude pre-rerank scores <= this: BM25, cosine similarity or RRF, depending on effective engine. Not confidence."},
+            "max_age_months": {"type": ["integer", "null"], "minimum": 0, "default": None, "description": "Exclude stale rows before candidate selection; rows with missing dates are kept."},
+            "constraints": {"type": ["string", "null"], "default": None, "description": "Existing constraint preferences, e.g. cloud=gcp,cost=low. Prioritize satisfied preferences within the candidate pool; unknown metadata is not a hard exclusion."},
+        })
         _tool["parameters"]["properties"]["response_format"] = {
             "type": "string", "enum": ["raw", "compact"], "default": "raw",
             "description": "raw preserves returned rows; compact bounds JSON text to 6000 characters by omitting whole trailing evidence units.",

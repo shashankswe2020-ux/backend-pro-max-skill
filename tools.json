@@ -6,7 +6,7 @@
       "type": "function",
       "function": {
         "name": "search",
-        "description": "Retrieve cited backend guidance for transaction boundaries, idempotency, retries, schema migrations, and operational failure handling. Use when external engineering guidance can affect correctness; skip typos, link fixes, and self-contained local edits. Domain is auto-detected if omitted. Raw results are the default; compact returns bounded, source-linked evidence with explicit gaps, not a confidence score.",
+        "description": "Retrieve cited backend guidance for transaction boundaries, idempotency, retries, schema migrations, and operational failure handling. Use when external engineering guidance can affect correctness; skip typos, link fixes, and self-contained local edits. Domain is auto-detected if omitted. Raw results are the default; compact returns bounded, source-linked evidence with explicit gaps, not a confidence score. BM25 stays the offline default. Optional hybrid/semantic engines and reranking report requested/effective execution and fallbacks. Explicit scopes are never widened; diagnostics exposes routing hints only.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -67,8 +67,59 @@
             },
             "min_score": {
               "type": "number",
-              "description": "Drop results with BM25 score ≤ this (default 0.0).",
-              "default": 0.0
+              "default": 0.0,
+              "description": "Exclude pre-rerank scores <= this: BM25, cosine similarity or RRF, depending on effective engine. Not confidence."
+            },
+            "engine": {
+              "type": "string",
+              "enum": [
+                "bm25",
+                "hybrid",
+                "semantic"
+              ],
+              "default": "bm25",
+              "description": "Optional model engines require backendpro[semantic]; missing dependencies fall back explicitly."
+            },
+            "rerank": {
+              "type": "boolean",
+              "default": false,
+              "description": "Cross-encoder candidate reranking, requiring backendpro[rerank]."
+            },
+            "candidate_pool": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1,
+              "default": null,
+              "description": "Candidates per scope before final selection; >= max_results. Defaults to max(20,max_results) with reranking, otherwise max_results."
+            },
+            "diagnostics": {
+              "type": "boolean",
+              "default": false,
+              "description": "Include engine, scope and candidate diagnostics even for default BM25."
+            },
+            "expand": {
+              "type": "boolean",
+              "default": true,
+              "description": "Apply existing synonym expansion to lexical retrieval."
+            },
+            "max_age_months": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": null,
+              "description": "Exclude stale rows before candidate selection; rows with missing dates are kept."
+            },
+            "constraints": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null,
+              "description": "Existing constraint preferences, e.g. cloud=gcp,cost=low. Prioritize satisfied preferences within the candidate pool; unknown metadata is not a hard exclusion."
             },
             "response_format": {
               "type": "string",
@@ -91,7 +142,7 @@
       "type": "function",
       "function": {
         "name": "search_all",
-        "description": "Retrieve cited guidance across domains when a backend issue spans concerns, such as retry policy plus database consistency. Prefer a focused search when the domain is known; do not call merely because a file is backend code. Use compact for bounded evidence; use raw for complete returned rows.",
+        "description": "Retrieve cited guidance across domains when a backend issue spans concerns, such as retry policy plus database consistency. Prefer a focused search when the domain is known; do not call merely because a file is backend code. Use compact for bounded evidence; use raw for complete returned rows. BM25 stays the offline default. Optional hybrid/semantic engines and reranking report requested/effective execution and fallbacks. Explicit scopes are never widened; diagnostics exposes routing hints only.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -104,6 +155,62 @@
               "description": "Max results per domain (default 2).",
               "default": 2,
               "minimum": 1
+            },
+            "engine": {
+              "type": "string",
+              "enum": [
+                "bm25",
+                "hybrid",
+                "semantic"
+              ],
+              "default": "bm25",
+              "description": "Optional model engines require backendpro[semantic]; missing dependencies fall back explicitly."
+            },
+            "rerank": {
+              "type": "boolean",
+              "default": false,
+              "description": "Cross-encoder candidate reranking, requiring backendpro[rerank]."
+            },
+            "candidate_pool": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1,
+              "default": null,
+              "description": "Candidates per scope before final selection; >= max_results. Defaults to max(20,max_results) with reranking, otherwise max_results."
+            },
+            "diagnostics": {
+              "type": "boolean",
+              "default": false,
+              "description": "Include engine, scope and candidate diagnostics even for default BM25."
+            },
+            "expand": {
+              "type": "boolean",
+              "default": true,
+              "description": "Apply existing synonym expansion to lexical retrieval."
+            },
+            "min_score": {
+              "type": "number",
+              "default": 0.0,
+              "description": "Exclude pre-rerank scores <= this: BM25, cosine similarity or RRF, depending on effective engine. Not confidence."
+            },
+            "max_age_months": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": null,
+              "description": "Exclude stale rows before candidate selection; rows with missing dates are kept."
+            },
+            "constraints": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null,
+              "description": "Existing constraint preferences, e.g. cloud=gcp,cost=low. Prioritize satisfied preferences within the candidate pool; unknown metadata is not a hard exclusion."
             },
             "response_format": {
               "type": "string",
@@ -126,7 +233,7 @@
       "type": "function",
       "function": {
         "name": "search_stack",
-        "description": "Retrieve guidelines for a known supported language/framework, such as transaction handling in Spring or async database access in FastAPI. Search the relevant named stack first when retrieval is warranted; never guess a stack. Confirm version-sensitive APIs against pinned official documentation. Skip trivial local edits. Supports raw or compact evidence.",
+        "description": "Retrieve guidelines for a known supported language/framework, such as transaction handling in Spring or async database access in FastAPI. Search the relevant named stack first when retrieval is warranted; never guess a stack. Confirm version-sensitive APIs against pinned official documentation. Skip trivial local edits. Supports raw or compact evidence. BM25 stays the offline default. Optional hybrid/semantic engines and reranking report requested/effective execution and fallbacks. Explicit scopes are never widened; diagnostics exposes routing hints only.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -157,6 +264,62 @@
               "description": "Cap on returned rows (default 5).",
               "default": 5,
               "minimum": 1
+            },
+            "engine": {
+              "type": "string",
+              "enum": [
+                "bm25",
+                "hybrid",
+                "semantic"
+              ],
+              "default": "bm25",
+              "description": "Optional model engines require backendpro[semantic]; missing dependencies fall back explicitly."
+            },
+            "rerank": {
+              "type": "boolean",
+              "default": false,
+              "description": "Cross-encoder candidate reranking, requiring backendpro[rerank]."
+            },
+            "candidate_pool": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1,
+              "default": null,
+              "description": "Candidates per scope before final selection; >= max_results. Defaults to max(20,max_results) with reranking, otherwise max_results."
+            },
+            "diagnostics": {
+              "type": "boolean",
+              "default": false,
+              "description": "Include engine, scope and candidate diagnostics even for default BM25."
+            },
+            "expand": {
+              "type": "boolean",
+              "default": true,
+              "description": "Apply existing synonym expansion to lexical retrieval."
+            },
+            "min_score": {
+              "type": "number",
+              "default": 0.0,
+              "description": "Exclude pre-rerank scores <= this: BM25, cosine similarity or RRF, depending on effective engine. Not confidence."
+            },
+            "max_age_months": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": null,
+              "description": "Exclude stale rows before candidate selection; rows with missing dates are kept."
+            },
+            "constraints": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null,
+              "description": "Existing constraint preferences, e.g. cloud=gcp,cost=low. Prioritize satisfied preferences within the candidate pool; unknown metadata is not a hard exclusion."
             },
             "response_format": {
               "type": "string",
@@ -416,7 +579,7 @@
   "anthropic": [
     {
       "name": "search",
-      "description": "Retrieve cited backend guidance for transaction boundaries, idempotency, retries, schema migrations, and operational failure handling. Use when external engineering guidance can affect correctness; skip typos, link fixes, and self-contained local edits. Domain is auto-detected if omitted. Raw results are the default; compact returns bounded, source-linked evidence with explicit gaps, not a confidence score.",
+      "description": "Retrieve cited backend guidance for transaction boundaries, idempotency, retries, schema migrations, and operational failure handling. Use when external engineering guidance can affect correctness; skip typos, link fixes, and self-contained local edits. Domain is auto-detected if omitted. Raw results are the default; compact returns bounded, source-linked evidence with explicit gaps, not a confidence score. BM25 stays the offline default. Optional hybrid/semantic engines and reranking report requested/effective execution and fallbacks. Explicit scopes are never widened; diagnostics exposes routing hints only.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -477,8 +640,59 @@
           },
           "min_score": {
             "type": "number",
-            "description": "Drop results with BM25 score ≤ this (default 0.0).",
-            "default": 0.0
+            "default": 0.0,
+            "description": "Exclude pre-rerank scores <= this: BM25, cosine similarity or RRF, depending on effective engine. Not confidence."
+          },
+          "engine": {
+            "type": "string",
+            "enum": [
+              "bm25",
+              "hybrid",
+              "semantic"
+            ],
+            "default": "bm25",
+            "description": "Optional model engines require backendpro[semantic]; missing dependencies fall back explicitly."
+          },
+          "rerank": {
+            "type": "boolean",
+            "default": false,
+            "description": "Cross-encoder candidate reranking, requiring backendpro[rerank]."
+          },
+          "candidate_pool": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "default": null,
+            "description": "Candidates per scope before final selection; >= max_results. Defaults to max(20,max_results) with reranking, otherwise max_results."
+          },
+          "diagnostics": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include engine, scope and candidate diagnostics even for default BM25."
+          },
+          "expand": {
+            "type": "boolean",
+            "default": true,
+            "description": "Apply existing synonym expansion to lexical retrieval."
+          },
+          "max_age_months": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "default": null,
+            "description": "Exclude stale rows before candidate selection; rows with missing dates are kept."
+          },
+          "constraints": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null,
+            "description": "Existing constraint preferences, e.g. cloud=gcp,cost=low. Prioritize satisfied preferences within the candidate pool; unknown metadata is not a hard exclusion."
           },
           "response_format": {
             "type": "string",
@@ -498,7 +712,7 @@
     },
     {
       "name": "search_all",
-      "description": "Retrieve cited guidance across domains when a backend issue spans concerns, such as retry policy plus database consistency. Prefer a focused search when the domain is known; do not call merely because a file is backend code. Use compact for bounded evidence; use raw for complete returned rows.",
+      "description": "Retrieve cited guidance across domains when a backend issue spans concerns, such as retry policy plus database consistency. Prefer a focused search when the domain is known; do not call merely because a file is backend code. Use compact for bounded evidence; use raw for complete returned rows. BM25 stays the offline default. Optional hybrid/semantic engines and reranking report requested/effective execution and fallbacks. Explicit scopes are never widened; diagnostics exposes routing hints only.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -511,6 +725,62 @@
             "description": "Max results per domain (default 2).",
             "default": 2,
             "minimum": 1
+          },
+          "engine": {
+            "type": "string",
+            "enum": [
+              "bm25",
+              "hybrid",
+              "semantic"
+            ],
+            "default": "bm25",
+            "description": "Optional model engines require backendpro[semantic]; missing dependencies fall back explicitly."
+          },
+          "rerank": {
+            "type": "boolean",
+            "default": false,
+            "description": "Cross-encoder candidate reranking, requiring backendpro[rerank]."
+          },
+          "candidate_pool": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "default": null,
+            "description": "Candidates per scope before final selection; >= max_results. Defaults to max(20,max_results) with reranking, otherwise max_results."
+          },
+          "diagnostics": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include engine, scope and candidate diagnostics even for default BM25."
+          },
+          "expand": {
+            "type": "boolean",
+            "default": true,
+            "description": "Apply existing synonym expansion to lexical retrieval."
+          },
+          "min_score": {
+            "type": "number",
+            "default": 0.0,
+            "description": "Exclude pre-rerank scores <= this: BM25, cosine similarity or RRF, depending on effective engine. Not confidence."
+          },
+          "max_age_months": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "default": null,
+            "description": "Exclude stale rows before candidate selection; rows with missing dates are kept."
+          },
+          "constraints": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null,
+            "description": "Existing constraint preferences, e.g. cloud=gcp,cost=low. Prioritize satisfied preferences within the candidate pool; unknown metadata is not a hard exclusion."
           },
           "response_format": {
             "type": "string",
@@ -530,7 +800,7 @@
     },
     {
       "name": "search_stack",
-      "description": "Retrieve guidelines for a known supported language/framework, such as transaction handling in Spring or async database access in FastAPI. Search the relevant named stack first when retrieval is warranted; never guess a stack. Confirm version-sensitive APIs against pinned official documentation. Skip trivial local edits. Supports raw or compact evidence.",
+      "description": "Retrieve guidelines for a known supported language/framework, such as transaction handling in Spring or async database access in FastAPI. Search the relevant named stack first when retrieval is warranted; never guess a stack. Confirm version-sensitive APIs against pinned official documentation. Skip trivial local edits. Supports raw or compact evidence. BM25 stays the offline default. Optional hybrid/semantic engines and reranking report requested/effective execution and fallbacks. Explicit scopes are never widened; diagnostics exposes routing hints only.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -561,6 +831,62 @@
             "description": "Cap on returned rows (default 5).",
             "default": 5,
             "minimum": 1
+          },
+          "engine": {
+            "type": "string",
+            "enum": [
+              "bm25",
+              "hybrid",
+              "semantic"
+            ],
+            "default": "bm25",
+            "description": "Optional model engines require backendpro[semantic]; missing dependencies fall back explicitly."
+          },
+          "rerank": {
+            "type": "boolean",
+            "default": false,
+            "description": "Cross-encoder candidate reranking, requiring backendpro[rerank]."
+          },
+          "candidate_pool": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "default": null,
+            "description": "Candidates per scope before final selection; >= max_results. Defaults to max(20,max_results) with reranking, otherwise max_results."
+          },
+          "diagnostics": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include engine, scope and candidate diagnostics even for default BM25."
+          },
+          "expand": {
+            "type": "boolean",
+            "default": true,
+            "description": "Apply existing synonym expansion to lexical retrieval."
+          },
+          "min_score": {
+            "type": "number",
+            "default": 0.0,
+            "description": "Exclude pre-rerank scores <= this: BM25, cosine similarity or RRF, depending on effective engine. Not confidence."
+          },
+          "max_age_months": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "default": null,
+            "description": "Exclude stale rows before candidate selection; rows with missing dates are kept."
+          },
+          "constraints": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null,
+            "description": "Existing constraint preferences, e.g. cloud=gcp,cost=low. Prioritize satisfied preferences within the candidate pool; unknown metadata is not a hard exclusion."
           },
           "response_format": {
             "type": "string",
