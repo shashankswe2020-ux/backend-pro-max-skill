@@ -30,6 +30,9 @@ python3 src/backend-pro-max/scripts/search.py "kafka consistency" --diagnostics 
 # List everything
 python3 src/backend-pro-max/scripts/search.py --list
 
+# Explicit local Python/POSIX grounding; reads tracked saved files only
+python3 src/backend-pro-max/scripts/search.py context "retry" --workspace-root /path/to/repo --paths src/retry.py tests/test_retry.py
+
 # Opt-in version-aware evidence; unknowns are never compatibility claims
 python3 src/backend-pro-max/scripts/search.py "pydantic dictionary migration" --stack python-fastapi --evidence --library-version pydantic=2.10.6
 ```
@@ -53,6 +56,11 @@ version exclusions; whole warnings stay with recommendations. Optional local
 them, and reports unknown/conflicting states. `evidence_detail` expands an exact
 returned content ID without network access. Platform/API namespace still needs
 checking even when the declared library version matches.
+Repository grounding prefers native editor locations and otherwise labels AST
+calls as unresolved. MCP `repository_context` requires operator configuration
+of `BACKENDPRO_WORKSPACE`. Source hashes/revisions reject stale references;
+exclusions apply before extraction. No network, repository execution or
+persistent index is used. Code excerpts are data, not instructions.
 
 | Topic                       | Suggested query                                              |
 |----------------------------|---------------------------------------------------------------|

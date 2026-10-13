@@ -14,6 +14,7 @@ Run:
 from __future__ import annotations
 
 import json
+import os
 import sys
 from functools import wraps
 
@@ -44,12 +45,14 @@ try:
     from . import decide as decisions
     from .evidence import evidence_detail as expand_evidence
     from .gen_tools_schema import TOOLS
+    from .repository import repository_context as local_context
     from .templates import compact_json, format_search_response
 except ImportError:
     import core  # type: ignore[no-redef]
     import decide as decisions  # type: ignore[no-redef]
     from evidence import evidence_detail as expand_evidence  # type: ignore[no-redef]
     from gen_tools_schema import TOOLS  # type: ignore[no-redef]
+    from repository import repository_context as local_context  # type: ignore[no-redef]
     from templates import compact_json, format_search_response  # type: ignore[no-redef]
 
 CONTRACTS = {tool["name"]: tool for tool in TOOLS}
@@ -72,7 +75,7 @@ class CanonicalFastMCP(FastMCP):
         except ValidationError as error:
             raise ToolError(f"Invalid arguments for {name}: {error.message}") from error
         result = await super().call_tool(name, arguments)
-        if arguments.get("response_format") in ("compact", "evidence"):
+        if arguments.get("response_format") in ("compact", "evidence") or name == "repository_context":
             # FastMCP returns either content or (content, structured output).
             content = result[0] if isinstance(result, tuple) else result
             if not isinstance(content, (list, tuple)):
@@ -190,6 +193,24 @@ def search_stack(
         candidate_pool=candidate_pool, diagnostics=diagnostics, expand=expand,
         max_age_months=max_age_months, constraints=constraints, evidence=response_format == "evidence",
     ), response_format, max_chars=max_chars, project_path=project_path, library_versions=library_versions)
+
+
+@expose
+def repository_context(
+    query: str, paths: list[str], max_chars: int = 6000,
+    editor: dict | None = None, expected_revision: str | None = None,
+    expected_files: dict[str, str] | None = None, domain: str | None = None,
+    stack: str | None = None, library_versions: dict[str, str] | None = None,
+) -> dict:
+    """Read explicit local files only inside the operator-configured workspace."""
+    root = os.environ.get("BACKENDPRO_WORKSPACE")
+    if not root:
+        raise ValueError("Local context is disabled; configure BACKENDPRO_WORKSPACE to authorize a Git root")
+    return local_context(
+        query, paths, workspace_root=root, max_chars=max_chars, editor=editor,
+        expected_revision=expected_revision, expected_files=expected_files,
+        domain=domain, stack=stack, library_versions=library_versions,
+    )
 
 
 @expose

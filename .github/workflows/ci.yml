@@ -82,7 +82,13 @@ jobs:
       - name: Install MCP test dependencies
         run: python -m pip install -e ".[dev,mcp]"
       - name: Verify MCP tools
-        run: python -m pytest tests/test_mcp_server.py tests/test_tools_schema.py tests/test_compact.py tests/test_p2_evidence.py tests/test_m4_retrieval.py
+        run: python -m pytest tests/test_mcp_server.py tests/test_tools_schema.py tests/test_compact.py tests/test_p2_evidence.py tests/test_repository.py tests/test_m4_retrieval.py
+      - name: Measure explicit-scope repository evidence retention
+        run: python -m backendpro.scripts.benchmark tests/repository-benchmark.json --repository-root . --repository-budgets 2500 4000 6000 --output repository-benchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: repository-context-diagnostic
+          path: repository-benchmark.json
 
   wheel-smoke:
     runs-on: ubuntu-latest

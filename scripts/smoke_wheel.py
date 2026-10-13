@@ -63,6 +63,23 @@ def main():
             "-m", "backendpro.scripts.search", "--evidence-id", versioned["results"][0]["id"],
         ))
         assert detail["id"] == versioned["results"][0]["id"]
+        project = root / "project"
+        project.mkdir()
+        (project / "sample.py").write_text("def retry(attempts):\n    return attempts\n", encoding="utf-8")
+        for arguments in (
+            ["init", "-q"], ["add", "sample.py"],
+            ["-c", "user.name=Wheel Test", "-c", "user.email=test@example.invalid",
+             "-c", "commit.gpgsign=false", "-c", "core.hooksPath=/dev/null", "commit", "-qm", "Fixture",
+             "-m", "Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"],
+        ):
+            subprocess.run(["git", "-C", str(project), *arguments], check=True, capture_output=True, timeout=30)
+        local_text = run(
+            "-m", "backendpro.scripts.search", "context", "retry",
+            "--workspace-root", str(project), "--paths", "sample.py",
+        )
+        local = json.loads(local_text)
+        assert local["count"] == 1 and local["results"][0]["kind"] == "local"
+        assert len(local_text.rstrip("\n")) <= 6000
         report = json.loads(run("-m", "backendpro.scripts.coverage", "--json"))
         assert report["summary"]["domain_count"] == 34
         assert report["summary"]["total_rows"] > 0
@@ -71,7 +88,7 @@ def main():
             "from backendpro.scripts.coverage import _load_targets; "
             "assert _load_targets().get('database'), 'Missing bundled coverage targets'",
         )
-        print("Wheel smoke passed: isolated install, BM25 defaults, explicit fallback, P2 evidence/detail, source validation, coverage targets")
+        print("Wheel smoke passed: isolated install, BM25 defaults, explicit fallback, P2 evidence/detail, P3 local context, source validation, coverage targets")
 
 
 if __name__ == "__main__":

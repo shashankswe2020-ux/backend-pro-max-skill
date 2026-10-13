@@ -16,7 +16,7 @@ TOOLS_JSON = ROOT / "tools.json"
 def test_public_tool_names_do_not_repeat_the_server_namespace():
     assert {tool["name"] for tool in TOOLS} == {
         "search", "search_all", "search_stack", "compare",
-        "decide", "adr", "design", "find_stale", "evidence_detail",
+        "decide", "adr", "design", "find_stale", "evidence_detail", "repository_context",
     }
 
 
@@ -43,7 +43,7 @@ class TestOpenAIFormat:
         expected = {
             "search", "search_all", "search_stack",
             "compare", "decide", "adr",
-            "design", "find_stale", "evidence_detail",
+            "design", "find_stale", "evidence_detail", "repository_context",
         }
         assert names == expected
 
@@ -70,7 +70,7 @@ class TestAnthropicFormat:
     def test_all_tools_present(self):
         tools = self._load()
         names = {t["name"] for t in tools}
-        assert len(names) == 9
+        assert len(names) == 10
 
     def test_each_tool_has_input_schema(self):
         for tool in self._load():
@@ -103,7 +103,7 @@ def test_registry_enums_on_every_domain_and_stack_surface():
         if "context_domains" in properties:
             assert set(properties["context_domains"]["items"]["enum"]) == set(CSV_CONFIG)
         if "stack" in properties:
-            assert set(properties["stack"]["enum"]) == set(STACK_CONFIG)
+            assert set(properties["stack"]["enum"]) - {None} == set(STACK_CONFIG)
 
 
 def test_cli_and_documented_catalogues_cover_registries():

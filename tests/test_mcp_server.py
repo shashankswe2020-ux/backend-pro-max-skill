@@ -35,7 +35,7 @@ def test_stdio_transport(tmp_path):
                 async with ClientSession(reader, writer) as session:
                     result = await check_session(session)
                     assert result["status"] == "passed"
-                    assert result["tools"] == 9
+                    assert result["tools"] == 10
                     cases = {
                         "search": {"query": "Kafka", "domain": "messaging"},
                         "search_all": {"query": "idempotency"},
@@ -46,7 +46,7 @@ def test_stdio_transport(tmp_path):
                         "design": {"description": "URL shortener serving 10M reads/day"},
                         "find_stale": {"domain": "pattern", "months": 0},
                     }
-                    assert {tool.name for tool in (await session.list_tools()).tools} == set(cases) | {"evidence_detail"}
+                    assert {tool.name for tool in (await session.list_tools()).tools} == set(cases) | {"evidence_detail", "repository_context"}
                     versioned = await session.call_tool("search_stack", {
                         "query": "pydantic dictionary", "stack": "python-fastapi",
                         "response_format": "evidence", "library_versions": {"pydantic": "2.10.6"},
@@ -185,6 +185,7 @@ if mcp_available:
         evidence_detail,
         find_stale,
         mcp_server,
+        repository_context,
         search,
         search_all,
         search_stack,
@@ -290,10 +291,10 @@ class TestServerMetadata:
         assert mcp_server.name == "Backend Pro Max"
 
     def test_tool_count(self):
-        """Server should expose the nine canonical tools."""
+        """Server should expose the ten canonical tools."""
         # FastMCP stores tools internally; we verify via our definitions
         tools = mcp_server._tool_manager._tools
-        assert len(tools) == 9, f"Expected 9 tools, got {len(tools)}: {list(tools.keys())}"
+        assert len(tools) == 10, f"Expected 10 tools, got {len(tools)}: {list(tools.keys())}"
 
 
 def test_unexpected_failure_is_not_a_success_dictionary(monkeypatch):
@@ -310,6 +311,12 @@ def test_unexpected_failure_is_not_a_success_dictionary(monkeypatch):
 def test_unknown_evidence_id_fails_directly():
     with pytest.raises(ValueError, match="not found"):
         evidence_detail("bpme:" + "0" * 64)
+
+
+def test_local_context_is_disabled_without_operator_authorization(monkeypatch):
+    monkeypatch.delenv("BACKENDPRO_WORKSPACE", raising=False)
+    with pytest.raises(ValueError, match="disabled"):
+        repository_context("retry", ["ops.py"])
 
 
 def test_tool_contracts_match_function_signatures():

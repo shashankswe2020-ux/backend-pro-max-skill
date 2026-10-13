@@ -206,9 +206,17 @@ def format_evidence(result: dict, max_chars: int = 6000, *, project_path: str | 
         seen.add(fingerprint)
         pending.append((rank, unit))
     omissions["budget"] = len(pending)
+    return pack_units(output, pending, max_chars, token_counter=token_counter, max_tokens=max_tokens)
+
+
+def pack_units(output: dict, pending: list, max_chars: int, *, token_counter=None, max_tokens=None,
+               balance_sources: bool = False) -> dict:
+    """Pack complete source-bound units; callers prepare eligibility and omission counts."""
+    omissions = output["omissions"]
     covered = set()
     scope_counts = Counter()
-    terms = set(re.findall(r"\w+", result.get("query", "").lower()))
+    terms = set(re.findall(r"\w+", output.get("query", "").lower()))
+    source_counts = Counter()
 
     def words(unit):
         return set(re.findall(r"\w+", (str(unit["title"]) + " " + _json(unit["facts"])).lower())) & terms
@@ -216,7 +224,7 @@ def format_evidence(result: dict, max_chars: int = 6000, *, project_path: str | 
     def update():
         output["count"] = len(output["results"])
         output["omitted_count"] = sum(omissions.values())
-        output["status"] = "results" if output["count"] else ("no_eligible_evidence" if units else "no_matches")
+        output["status"] = "results" if output["count"] else ("no_eligible_evidence" if output["matched_count"] else "no_matches")
         if not output["count"] and omissions["budget"]:
             output["status"] = "budget_exhausted"
 
@@ -229,7 +237,8 @@ def format_evidence(result: dict, max_chars: int = 6000, *, project_path: str | 
         raise ValueError("Evidence metadata exceeds the budget; increase the limit or narrow the query/scope")
     while pending:
         pending.sort(key=lambda pair: (
-            pair[1]["version_match"] != "match", -len(words(pair[1]) - covered),
+            source_counts[pair[1].get("kind")] if balance_sources else pair[1]["version_match"] != "match",
+            -len(words(pair[1]) - covered),
             scope_counts[pair[1]["domain"]], pair[0], str(pair[1]["domain"]), pair[1]["id"],
         ))
         _, unit = pending.pop(0)
@@ -239,6 +248,7 @@ def format_evidence(result: dict, max_chars: int = 6000, *, project_path: str | 
         if fits():
             covered.update(words(unit))
             scope_counts[unit["domain"]] += 1
+            source_counts[unit.get("kind")] += 1
         else:
             output["results"].pop()
             omissions["budget"] += 1

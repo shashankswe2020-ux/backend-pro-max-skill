@@ -520,6 +520,13 @@ def _handle_calc(argv):
 def main():
     # Intercept subcommands before argparse.
     raw_args = sys.argv[1:]
+    if raw_args and raw_args[0] == "context":
+        try:
+            from .repository import main as context_main
+        except ImportError:
+            from repository import main as context_main
+        context_main(raw_args[1:])
+        return
     if raw_args and raw_args[0] == "--load":
         _handle_load(raw_args[1] if len(raw_args) > 1 else "")
         return

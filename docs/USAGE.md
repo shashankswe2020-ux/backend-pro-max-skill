@@ -272,6 +272,96 @@ Optional models keep their existing identities, pinned to immutable revisions:
 - `all-MiniLM-L6-v2`: `1110a243fdf4706b3f48f1d95db1a4f5529b4d41`
 - `cross-encoder/ms-marco-MiniLM-L-6-v2`: `233902d25c440f23af6f7d6e94d2946bac0bee0a`
 
+### Repository grounding (P3, opt-in)
+
+```bash
+backendpro context "retry" --workspace-root /path/to/git/repo \
+  --paths src/retry.py tests/test_retry.py AGENTS.md --max-chars 6000
+backendpro context "pydantic dictionary migration" --workspace-root /path/to/git/repo \
+  --paths src/models.py --stack python-fastapi --library-version pydantic=2.10.6
+```
+
+This is a **saved-file Python/POSIX pilot**, not a whole-repository index.
+Select 1-24 explicit tracked files. There is no directory crawling, import
+execution, test execution, package-manager invocation, network access or
+persistent index. A Git repository with a HEAD commit is required. Files may
+have saved uncommitted changes; `workspace.revision` identifies HEAD while
+`workspace.files` hashes the actual saved bytes. `snapshot_id` and `bpml:` IDs
+bind that content, line ranges and workspace identity. Reuse the previous
+`workspace.revision` and `workspace.files` as `expected_revision` and
+`expected_files` to reject stale references. CLI equivalents are
+`--expected-revision` and `--expected-files <JSON-map-file>`.
+
+**MCP authorization:** the tenth tool, `repository_context`, is disabled unless
+the operator sets `BACKENDPRO_WORKSPACE` to an authorized Git root:
+
+```json
+{
+  "mcpServers": {
+    "backendpro": {
+      "command": "backendpro-mcp",
+      "env": {"BACKENDPRO_WORKSPACE": "/absolute/path/to/git/repo"}
+    }
+  }
+}
+```
+
+Its inputs mirror the command: `query`, relative `paths`, `max_chars`, optional
+`editor`, `expected_revision`, `expected_files`, and one curated `domain` or
+`stack` with optional `library_versions`. Clients cannot supply a different
+root per call. No curated search occurs unless a scope is explicitly selected;
+it uses offline BM25 only. P3 never reads manifests outside `paths`; version
+observations for curated guidance are explicit inputs, or can be obtained with
+P2 separately when authorized.
+
+**Prefer editor facts:** a client can supply an `editor-context-v1` packet via
+MCP `editor` or CLI `--editor-context <JSON-file>`. Use the Python
+`repository.editor_context` adapter on actual standard LSP Locations. Capture
+a `Snapshot(root, paths).binding()` **before** requesting references, then pass
+its revision and file hashes to the adapter. It validates file URIs, UTF-16
+positions, saved-file ranges and content, normalizes one-based inclusive line
+references, and adds up to three context lines on each side by default.
+`editor_anchor` preserves the original location. Save dirty editor buffers
+first; buffer overlays, client identity and semantic correctness are not
+authenticated by hashes. Filter to authorized paths or explicitly expand the
+scope and recapture; never fabricate locations to make a packet pass.
+
+Without an editor packet, bounded Python AST extraction returns matching
+definitions, syntactic call sites and imports. Calls are **unresolved names**:
+aliases, dispatch and dynamic imports require native editor inspection.
+Selected configuration/convention files use literal line neighborhoods.
+If this Python interpreter cannot parse a saved file, AST fallback fails
+explicitly. Native locations can still be used, with `analysis_gaps` reporting
+that AST-dependent tension/verification checks were unavailable.
+Excerpts are not necessarily complete symbols. Extraction is capped at
+128 candidates, 80 lines/8000 excerpt characters per unit and 200 KB per file;
+oversized/capped units are counted, not silently clipped. Non-Python source
+languages are not implemented by this pilot.
+
+**Policy:** untracked/Git-ignored files (even force-tracked ignored files),
+hidden/private/generated directories, disallowed extensions, symlinks, binary
+files and generated headers are excluded or rejected before extraction.
+Common credential/private-key patterns cause the entire file to be withheld.
+This conservative filter can have false positives and is **not a complete
+secret detector**: select only authorized non-sensitive files and maintain Git
+exclusions. Reads use POSIX descriptor-relative no-follow access; other
+platforms fail explicitly rather than weakening that boundary.
+
+Local and curated units have distinct `kind` values. Selection balances source
+kinds within one character budget and preserves whole units. `omissions`
+accounts for extraction, duplication, eligibility and packing; file-policy
+exclusions are reported separately without exposing withheld contents.
+Local conventions never silently override curated guidance. `tensions`
+currently flags observed `pydantic.v1` imports alongside native-API guidance;
+this is not a general semantic contradiction detector. Reconciliation remains
+explicitly unresolved. Verification commands are suggestions for selected,
+recognizable pytest files, run from the authorized root only after review;
+BackendPro does not execute them.
+
+Prefer native navigation for substantive code tasks and skip retrieval for
+self-contained trivial edits. See [P3 validation and client scope](../CONTRIBUTING.md#p3-local-grounding-validation)
+for what was actually measured.
+
 ### Version-aware, budget-aware evidence (P2, opt-in)
 
 ```bash
@@ -284,7 +374,7 @@ backendpro --evidence-id 'bpme:<64-hex-content-hash>'
 ```
 
 MCP searches accept `response_format="evidence"`, `max_chars`, `project_path`
-and `library_versions` (an object, e.g. `{"pydantic":"2.10.6"}`). The ninth tool,
+and `library_versions` (an object, e.g. `{"pydantic":"2.10.6"}`). The
 `evidence_detail(evidence_id)`, expands a returned ID to the full local source
 row. Restart clients for the updated schema. Version/budget options on other
 formats fail rather than being ignored. Core callers use `evidence=True` and
