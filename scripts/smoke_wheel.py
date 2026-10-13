@@ -43,6 +43,15 @@ def main():
             "-m", "backendpro.scripts.search", "circuit breaker", "--domain", "pattern", "--json"
         ))
         assert result["count"] > 0, "Installed search returned no results"
+        assert "retrieval" not in result, "Default BM25 result shape changed"
+        fallback = json.loads(run(
+            "-m", "backendpro.scripts.search", "circuit breaker", "--domain", "pattern",
+            "--engine", "hybrid", "--rerank", "--candidate-pool", "20", "--compact",
+        ))
+        assert fallback["count"] > 0
+        assert fallback["retrieval"]["effective_engine"] == "bm25"
+        assert fallback["retrieval"]["rerank_requested"] and not fallback["retrieval"]["rerank_applied"]
+        assert len(fallback["retrieval"]["fallbacks"]) == 2
         report = json.loads(run("-m", "backendpro.scripts.coverage", "--json"))
         assert report["summary"]["domain_count"] == 34
         assert report["summary"]["total_rows"] > 0
@@ -51,7 +60,7 @@ def main():
             "from backendpro.scripts.coverage import _load_targets; "
             "assert _load_targets().get('database'), 'Missing bundled coverage targets'",
         )
-        print("Wheel smoke passed: isolated install, search, CSV validation, coverage targets")
+        print("Wheel smoke passed: isolated install, BM25/default contracts, explicit model fallback, CSV validation, coverage targets")
 
 
 if __name__ == "__main__":

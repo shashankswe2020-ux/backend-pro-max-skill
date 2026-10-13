@@ -21,6 +21,12 @@ python3 src/backend-pro-max/scripts/search.py "redis cluster" --json
 # Opt-in bounded evidence JSON (whole rows omitted when needed)
 python3 src/backend-pro-max/scripts/search.py "retry idempotency" --domain pattern --compact
 
+# Optional reranking of 20 candidates, delivering at most five rows
+python3 src/backend-pro-max/scripts/search.py "retry idempotency" --domain pattern --rerank --candidate-pool 20 -n 5 --compact
+
+# Explain automatic routing without widening explicit scopes
+python3 src/backend-pro-max/scripts/search.py "kafka consistency" --diagnostics --json
+
 # List everything
 python3 src/backend-pro-max/scripts/search.py --list
 ```
@@ -34,6 +40,9 @@ Compact search JSON is optional and bounded to 6000 characters (excluding the
 CLI's trailing newline and MCP envelope); `truncated` and `omitted_count` expose
 dropped evidence units. Missing facts and freshness metadata are explicit.
 Use raw output for omitted context; citations are not guarantees of correctness.
+CLI and MCP share optional engines, reranking, candidate pools and filtering.
+Missing optional packages are explicit fallbacks in `retrieval` metadata;
+model execution failures are errors. Rank scores are not confidence.
 
 | Topic                       | Suggested query                                              |
 |----------------------------|---------------------------------------------------------------|

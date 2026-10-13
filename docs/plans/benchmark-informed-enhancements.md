@@ -16,6 +16,24 @@ External benchmark licenses/access remain fail-closed pending verification.
 This is offline infrastructure, not measured model headroom or a completed
 independently reviewed held-out study. The original M3 suite/results are unchanged.
 
+### P1 retrieval parity follow-up (2026-10-13)
+
+The shared CLI/MCP pipeline now supports candidate pools before optional
+reranking, score/freshness filters, constraint preferences, and explicit
+requested/effective engine diagnostics. Explicit scopes are preserved;
+auto-routing hints are opt-in. Existing optional models are pinned, embedding
+caches are content/model-bound, and rank scores are no longer labeled confidence.
+
+The existing eight-query diagnostic was run with no-expansion BM25, expanded
+BM25, hybrid and hybrid-reranking at candidate pools 20 and 50, final top five.
+Every mode had Recall@5/MRR/nDCG of 1.0 and no empty responses. This saturated,
+incompletely labeled set establishes no retrieval-quality improvement.
+Labeled Precision@5 was 0.2 (one supplied positive per query), not a reviewed
+applicability judgment. BM25 remains the default. No corpus rows, synonyms,
+held-out cases or historical results were changed. Independent P0 labels,
+broader answerable/unanswerable coverage and end-to-end coding benefit remain
+pending. See [reproduction instructions](../../CONTRIBUTING.md#coverage-targets-and-retrieval-diagnostics).
+
 ### M1 delivery
 
 - Canonical domain/stack schemas shared by the manifest and actual MCP discovery/validation.
