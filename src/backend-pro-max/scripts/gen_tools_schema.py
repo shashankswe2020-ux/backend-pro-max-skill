@@ -26,6 +26,25 @@ except ImportError:
 
 TOOLS = [
     {
+        "name": "repository_context",
+        "description": "Opt-in local repository grounding for a substantive code task. Requires operator-configured BACKENDPRO_WORKSPACE; never guesses a root or crawls directories. Select explicit tracked files or supply saved-file editor locations with revision/hashes. Skip trivial edits. Local AST calls are unresolved syntax, not semantic call-graph proof. Optional curated scope stays separate; no network, repository execution or persistent index. Excluded/generated/sensitive-looking files are withheld; this is not a complete secret detector. Output is bounded JSON with source bindings, omissions, unresolved tensions and unexecuted verification suggestions.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "minLength": 1, "maxLength": 1000},
+                "paths": {"type": "array", "items": {"type": "string"}, "minItems": 1, "maxItems": 24, "uniqueItems": True},
+                "max_chars": {"type": "integer", "minimum": 1, "maximum": 100000, "default": 6000},
+                "editor": {"type": ["object", "null"], "default": None, "description": "editor-context-v1 packet from the local LSP adapter. Saved-file references only; hash/revision validation does not authenticate a client or resolve relationships."},
+                "expected_revision": {"type": ["string", "null"], "default": None},
+                "expected_files": {"type": ["object", "null"], "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "default": None},
+                "domain": {"type": ["string", "null"], "enum": [*CSV_CONFIG, None], "default": None},
+                "stack": {"type": ["string", "null"], "enum": [*STACK_CONFIG, None], "default": None},
+                "library_versions": {"type": ["object", "null"], "additionalProperties": {"type": "string"}, "default": None},
+            },
+            "required": ["query", "paths"],
+        },
+    },
+    {
         "name": "evidence_detail",
         "description": "Expand a bpme evidence ID returned by evidence-format search into its complete local source row and immutable content binding. No network access. An edited or removed record fails explicitly; repeat the search. This opt-in detail response is not character-packed.",
         "parameters": {

@@ -189,6 +189,62 @@ gate, unsupported-claim review, held-out success or evidence-application proof.
 `quality_gates_demonstrated` remains false. Raw/compact defaults and historical
 benchmark artifacts remain unchanged.
 
+### P3 local grounding validation
+
+```bash
+pytest tests/test_repository.py tests/test_mcp_server.py tests/test_tools_schema.py \
+  tests/test_p2_evidence.py tests/test_compact.py tests/test_retrieval_evidence.py
+python -m backendpro.scripts.benchmark tests/repository-benchmark.json \
+  --repository-root . --repository-budgets 2500 4000 6000 \
+  --output repository-benchmark.json
+```
+
+The repository fixture must be tracked (it is included in this branch).
+The diagnostic compares literal line windows and bounded AST units over the
+same explicit files, labels and **character**, not token, budgets. It measures
+line recall/precision, retained critical lines, omissions and a no-match
+control. The tiny authored fixture retained its critical lines with AST at
+2500 characters where literal windows did not; both retained them at larger
+budgets. That is a mechanical diagnostic, not independently reviewed relevance,
+agent activation or hidden multi-file patch correctness.
+
+For a native editor handoff, save selected buffers, capture source hashes
+before the native call, and use real Locations returned by the editor:
+
+```python
+from backendpro.scripts.repository import Snapshot, editor_context, repository_context
+
+capture = Snapshot(root, paths).binding()
+# Obtain `locations` with the editor's native textDocument/references call now.
+packet = editor_context(
+    root, locations, client="VS Code/Pylance", method="textDocument/references",
+    expected_revision=capture["revision"], expected_files=capture["files"],
+)
+result = repository_context(query, paths, workspace_root=root, editor=packet)
+```
+
+Record native-provider results separately from MCP transport checks. The local
+pilot used four references from the **live VS Code/Pylance LSP tool**, then
+validated the saved-file packet through the CLI and an **actual Python MCP SDK
+stdio client**. Both returned the same bounded evidence; all four units fit at
+the default 6000 characters. This is one native editor plus a second protocol
+client, **not two commercial IDEs**. It does not authenticate unsaved buffers
+or prove that a model correctly applies the evidence.
+
+Tests cover stale revisions, same-mtime edits, concurrent changes, changed
+ignore policy, root/path boundaries, tracked ignored files, common secret
+patterns, symlinks, missing root authorization, output bounds, native range
+validation and P2 compatibility. Secret screening is conservative, not
+comprehensive DLP. Test code does not execute the inspected repository.
+Verification commands remain suggestions, and local/curated tensions remain
+unresolved rather than guessed away. CI runs the fixture diagnostic, real MCP
+checks and a no-dependency installed-wheel context smoke check.
+
+The P3 outcome gate remains pending: independent code-context labels, actual
+agent negative-control activation and hidden multi-file correctness have not
+been measured. `quality_gates_demonstrated` stays false. No paid coding-model
+calls, held-out solution ingestion or persistent task memory is introduced.
+
 ### Context7 comparison: SWE-bench Verified pilot
 
 The [pilot protocol](benchmarks/swebench-pilot/protocol.json) preregisters

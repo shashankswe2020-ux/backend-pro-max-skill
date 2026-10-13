@@ -1,0 +1,18 @@
+{
+  "name": "P3 authored local line-retention diagnostic",
+  "limitations": "One tiny public Python fixture and a no-match control. No independent labels, no agent activation measurement, no hidden multi-file coding outcomes. Literal windows and bounded AST extraction are compared at equal character budgets; editor integration is exercised separately.",
+  "queries": [
+    {
+      "query": "retry attempts",
+      "paths": ["tests/fixtures/repository_context/engine.py"],
+      "relevant": [{"path": "tests/fixtures/repository_context/engine.py", "start_line": 1, "end_line": 8}],
+      "critical": [{"path": "tests/fixtures/repository_context/engine.py", "start_line": 5, "end_line": 8}]
+    },
+    {
+      "query": "zzqxvzzqxv",
+      "paths": ["tests/fixtures/repository_context/engine.py"],
+      "relevant": [],
+      "critical": []
+    }
+  ]
+}

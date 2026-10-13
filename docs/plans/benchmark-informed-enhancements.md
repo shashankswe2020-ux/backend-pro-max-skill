@@ -52,6 +52,24 @@ evidence. P2's >=95% reviewed applicability gate and unsupported-claim review
 remain pending; no quality/default promotion is claimed.
 See [reproduction and limitations](../../CONTRIBUTING.md#p2-evidence-and-token-budget-evaluation).
 
+### P3 local-grounding follow-up (2026-10-13)
+
+The Python/POSIX pilot adds an explicit-scope `context` CLI command and
+operator-authorized MCP `repository_context` tool. Saved local bytes, file/line
+references and Git revisions are bound together; editor packets are checked
+for staleness, and an unresolved AST/text fallback is available without a
+whole-repository index. Policy filters apply before extraction, commands are
+not executed, local/curated evidence is distinguished, and observed API-namespace
+tensions remain explicitly unresolved.
+
+Four references from the live VS Code/Pylance tool were passed through the
+saved-file adapter, CLI and actual Python MCP SDK stdio client with matching
+bounded output. A tiny authored line-retention diagnostic showed a benefit
+over literal windows at 2500 characters and parity at larger budgets. Neither
+check establishes independent relevance, agent activation or hidden patch
+correctness. Those outcome gates remain pending; no default or competitive
+quality promotion is claimed. See [scope and reproduction](../../CONTRIBUTING.md#p3-local-grounding-validation).
+
 ### M1 delivery
 
 - Canonical domain/stack schemas shared by the manifest and actual MCP discovery/validation.

@@ -36,6 +36,75 @@ def pinned_token_counter(path: Path, sha256: str, identity: str):
     }
 
 
+def evaluate_repository(workspace_root: str, cases: list[dict], budgets: list[int]) -> dict:
+    """Author-labeled line retention, not hidden patch correctness or agent activation."""
+    from . import repository
+    if (
+        not cases or not budgets or len(set(budgets)) != len(budgets)
+        or any(type(limit) is not int or limit < 1 or limit > 100000 for limit in budgets)
+    ):
+        raise ValueError("Repository evaluation needs cases and unique positive character budgets <=100000")
+    reports = {}
+    for limit in budgets:
+        rows = []
+        for case in cases:
+            if not isinstance(case.get("relevant"), list) or not isinstance(case.get("critical"), list):
+                raise ValueError("Repository cases require relevant and critical path/line spans")
+            snapshot = repository.Snapshot(workspace_root, case["paths"])
+            def label_lines(spans, snapshot=snapshot):
+                result = set()
+                for span in spans:
+                    path, start, end = span["path"], span["start_line"], span["end_line"]
+                    if (
+                        path not in snapshot.files or type(start) is not int or type(end) is not int
+                        or not 1 <= start <= end <= len(snapshot.files[path]["lines"])
+                    ):
+                        raise ValueError("Repository labels must refer to selected readable saved-file lines")
+                    result.update((path, line) for line in range(start, end + 1))
+                return result
+            relevant, critical = label_lines(case["relevant"]), label_lines(case["critical"])
+            if critical - relevant:
+                raise ValueError("Critical lines must be labeled relevant")
+            production = repository.repository_context(case["query"], case["paths"], workspace_root=workspace_root, max_chars=limit)
+            if production["workspace"] != snapshot.binding():
+                raise ValueError("Workspace changed during repository evaluation")
+            literal, _, _, omitted, _ = repository._local_candidates(snapshot, case["query"], None, literal_only=True)
+            baseline = {
+                **production, "results": [], "verification": [],
+                "discovery": {**production["discovery"], "mode": "literal_window_baseline"},
+                "omissions": {"budget": len(literal), **omitted},
+                "matched_count": len(literal) + sum(omitted.values()),
+            }
+            baseline = evidence.pack_units(baseline, list(enumerate(literal)), limit, balance_sources=True)
+            measured = {}
+            for name, result in (("literal_window", baseline), ("bounded_ast", production)):
+                retained = set()
+                for unit in result["results"]:
+                    binding = unit["binding"]
+                    retained.update((binding["path"], line) for line in range(binding["start_line"], binding["end_line"] + 1))
+                measured[name] = {
+                    "line_recall": len(retained & relevant) / len(relevant) if relevant else None,
+                    "labeled_line_precision": len(retained & relevant) / len(retained) if retained else None,
+                    "critical_line_retention": len(retained & critical) / len(critical) if critical else None,
+                    "no_match_control_passed": not retained if not relevant else None,
+                    "characters": len(compact_json(result)), "retained_lines": len(retained),
+                    "omissions_accounted": result["count"] + result["omitted_count"] == result["matched_count"],
+                    "response_sha256": hashlib.sha256(compact_json(result).encode()).hexdigest(),
+                }
+            snapshot.validate()
+            rows.append({"query": case["query"], "workspace": snapshot.binding(), "modes": measured})
+        reports[str(limit)] = {"cases": rows}
+    return {
+        "budget_unit": "characters", "budgets": reports, "quality_gates_demonstrated": False,
+        "agent_activation_measured": False, "hidden_patch_correctness_measured": False,
+        "measurement_scope": "Two local collectors on the same explicit files and budgets. Author-labeled line spans, not independently reviewed relevance or agent coding outcomes.",
+        "source_sha256": {
+            Path(module.__file__).name: hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest()
+            for module in (repository, evidence, templates)
+        },
+    }
+
+
 def evaluate_evidence(cases: list[dict], budgets: list[int], *, token_counter=None, candidates: int = 20) -> dict:
     if not cases or not budgets or len(set(budgets)) != len(budgets) or any(type(n) is not int or n < 1 for n in budgets):
         raise ValueError("Evidence cases and unique positive budgets are required")
@@ -233,11 +302,36 @@ def main():
     parser.add_argument("--tokenizer-file", type=Path)
     parser.add_argument("--tokenizer-sha256")
     parser.add_argument("--tokenizer-id", help="Auditable target-model/tokenizer identity including source revision")
+    parser.add_argument("--repository-root", help="Opt-in Git root for a repository line-retention dataset")
+    parser.add_argument("--repository-budgets", type=int, nargs="+")
     args = parser.parse_args()
     if args.max_p95_ms is not None and (not math.isfinite(args.max_p95_ms) or args.max_p95_ms <= 0):
         parser.error("--max-p95-ms must be finite and positive")
     raw = args.dataset.read_bytes()
     dataset = json.loads(raw)
+    if args.repository_root is not None or args.repository_budgets is not None:
+        if (
+            not args.repository_root or not args.repository_budgets or args.evidence_budgets
+            or any((args.tokenizer_file, args.tokenizer_sha256, args.tokenizer_id, args.candidate_pools))
+            or args.modes != list(MODES) or args.top_k != 5 or args.candidates != 20
+            or args.repeats != 3 or args.max_p95_ms is not None
+        ):
+            parser.error("Repository evaluation needs --repository-root/--repository-budgets without ranking/token options")
+        try:
+            report = evaluate_repository(args.repository_root, dataset["queries"], args.repository_budgets)
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
+        report.update(
+            dataset=dataset.get("name", args.dataset.name), dataset_sha256=hashlib.sha256(raw).hexdigest(),
+            limitations=dataset.get("limitations"), python=platform.python_version(),
+        )
+        report["source_sha256"][Path(__file__).name] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+        text = json.dumps(report, indent=2) + "\n"
+        if args.output:
+            args.output.write_text(text, encoding="utf-8")
+        else:
+            print(text, end="")
+        return
     tokenizer_info = None
     token_counter = None
     try:

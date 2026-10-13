@@ -190,6 +190,21 @@ adds a pinned-source Pydantic v1/v2 pilot, explicit unknown/conflicting version
 states, complementary evidence selection and omission accounting. It does not
 establish independently reviewed applicability or coding-outcome gains.
 
+For [local repository grounding](docs/USAGE.md#repository-grounding-p3-opt-in),
+use explicit file scopes:
+
+```bash
+backendpro context "retry" --workspace-root /path/to/git/repo \
+  --paths src/retry.py tests/test_retry.py --max-chars 6000
+```
+
+The Python/POSIX pilot prefers saved-file editor locations when supplied and
+otherwise uses bounded AST/text extraction. References carry Git revisions,
+file hashes and line ranges; stale inputs fail explicitly. Local and curated
+guidance stay distinguishable. No code execution, network or persistent index
+is involved. MCP requires operator-set `BACKENDPRO_WORKSPACE` and is disabled
+for repository reads by default.
+
 ### Decisions, not just search
 
 `--decide` pulls constraints out of your sentence, searches across domains, and ranks candidates by how well they fit. It isn't limited to the options you named. Real output:
@@ -267,6 +282,7 @@ backendpro-mcp                    # stdio transport
 | `search_all` | `query`, `max_results?` | Top hits per domain |
 | `search_stack` | `query`, `stack` | Stack guidelines with good and bad code |
 | `evidence_detail` | `evidence_id` | Full local source row for an exact content identity; stale IDs fail |
+| `repository_context` | `query`, `paths[]`, `editor?`, `max_chars?` | Opt-in revision-bound local context inside the configured workspace |
 | `compare` | `names[]`, `domain?` | Side-by-side table |
 | `decide` | `requirement` | Constraint-scored recommendation |
 | `adr` | `title`, `context_domains[]` | Nygard-format ADR |

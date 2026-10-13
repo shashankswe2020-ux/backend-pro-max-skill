@@ -5,6 +5,145 @@
     {
       "type": "function",
       "function": {
+        "name": "repository_context",
+        "description": "Opt-in local repository grounding for a substantive code task. Requires operator-configured BACKENDPRO_WORKSPACE; never guesses a root or crawls directories. Select explicit tracked files or supply saved-file editor locations with revision/hashes. Skip trivial edits. Local AST calls are unresolved syntax, not semantic call-graph proof. Optional curated scope stays separate; no network, repository execution or persistent index. Excluded/generated/sensitive-looking files are withheld; this is not a complete secret detector. Output is bounded JSON with source bindings, omissions, unresolved tensions and unexecuted verification suggestions.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 24,
+              "uniqueItems": true
+            },
+            "max_chars": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 6000
+            },
+            "editor": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "default": null,
+              "description": "editor-context-v1 packet from the local LSP adapter. Saved-file references only; hash/revision validation does not authenticate a client or resolve relationships."
+            },
+            "expected_revision": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
+            },
+            "expected_files": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "default": null
+            },
+            "domain": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "language",
+                "pattern",
+                "database",
+                "messaging",
+                "cache",
+                "cloud",
+                "iac",
+                "container",
+                "observability",
+                "api",
+                "auth",
+                "security",
+                "cicd",
+                "testing",
+                "architecture",
+                "scaling",
+                "consistency",
+                "performance",
+                "reliability",
+                "data",
+                "antipattern",
+                "cost",
+                "migration",
+                "incident",
+                "capacity",
+                "compliance",
+                "multi-tenant",
+                "release",
+                "ml-platform",
+                "edge",
+                "mobile-backend",
+                "api-contract",
+                "interview",
+                "latency",
+                null
+              ],
+              "default": null
+            },
+            "stack": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "go",
+                "java-spring",
+                "python-fastapi",
+                "nodejs-express",
+                "rust-axum",
+                "csharp-aspnet",
+                "kotlin-spring",
+                "scala-akka",
+                "elixir-phoenix",
+                "ruby-rails",
+                "php-laravel",
+                "cpp",
+                null
+              ],
+              "default": null
+            },
+            "library_versions": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": {
+                "type": "string"
+              },
+              "default": null
+            }
+          },
+          "required": [
+            "query",
+            "paths"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
         "name": "evidence_detail",
         "description": "Expand a bpme evidence ID returned by evidence-format search into its complete local source row and immutable content binding. No network access. An edited or removed record fails explicitly; repeat the search. This opt-in detail response is not character-packed.",
         "parameters": {
@@ -675,6 +814,142 @@
     }
   ],
   "anthropic": [
+    {
+      "name": "repository_context",
+      "description": "Opt-in local repository grounding for a substantive code task. Requires operator-configured BACKENDPRO_WORKSPACE; never guesses a root or crawls directories. Select explicit tracked files or supply saved-file editor locations with revision/hashes. Skip trivial edits. Local AST calls are unresolved syntax, not semantic call-graph proof. Optional curated scope stays separate; no network, repository execution or persistent index. Excluded/generated/sensitive-looking files are withheld; this is not a complete secret detector. Output is bounded JSON with source bindings, omissions, unresolved tensions and unexecuted verification suggestions.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 24,
+            "uniqueItems": true
+          },
+          "max_chars": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000,
+            "default": 6000
+          },
+          "editor": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "default": null,
+            "description": "editor-context-v1 packet from the local LSP adapter. Saved-file references only; hash/revision validation does not authenticate a client or resolve relationships."
+          },
+          "expected_revision": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "expected_files": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "default": null
+          },
+          "domain": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "language",
+              "pattern",
+              "database",
+              "messaging",
+              "cache",
+              "cloud",
+              "iac",
+              "container",
+              "observability",
+              "api",
+              "auth",
+              "security",
+              "cicd",
+              "testing",
+              "architecture",
+              "scaling",
+              "consistency",
+              "performance",
+              "reliability",
+              "data",
+              "antipattern",
+              "cost",
+              "migration",
+              "incident",
+              "capacity",
+              "compliance",
+              "multi-tenant",
+              "release",
+              "ml-platform",
+              "edge",
+              "mobile-backend",
+              "api-contract",
+              "interview",
+              "latency",
+              null
+            ],
+            "default": null
+          },
+          "stack": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "go",
+              "java-spring",
+              "python-fastapi",
+              "nodejs-express",
+              "rust-axum",
+              "csharp-aspnet",
+              "kotlin-spring",
+              "scala-akka",
+              "elixir-phoenix",
+              "ruby-rails",
+              "php-laravel",
+              "cpp",
+              null
+            ],
+            "default": null
+          },
+          "library_versions": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            },
+            "default": null
+          }
+        },
+        "required": [
+          "query",
+          "paths"
+        ],
+        "additionalProperties": false
+      }
+    },
     {
       "name": "evidence_detail",
       "description": "Expand a bpme evidence ID returned by evidence-format search into its complete local source row and immutable content binding. No network access. An edited or removed record fails explicitly; repeat the search. This opt-in detail response is not character-packed.",
