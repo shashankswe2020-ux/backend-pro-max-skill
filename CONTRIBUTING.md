@@ -138,6 +138,57 @@ the new tool catalogue. No corpus expansion is included without reviewed
 development failures; P0's independent labels and model calibration remain
 external prerequisites for quality claims.
 
+### P2 evidence and token-budget evaluation
+
+P2 is an opt-in source/output contract, not a default retrieval-quality upgrade.
+The four original Pydantic summaries in `src/backend-pro-max/data/evidence.json`
+bind exact release scopes to immutable official upstream document revisions and
+SHA256 hashes. `backendpro-validate` checks the supplemental corpus and any
+version metadata in CSVs. Keep library `Applies To`, `Platform Assumptions`,
+`Source Revision`, `Source SHA256` and `Last Verified` independent of corpus
+provenance. Do not extrapolate pilot compatibility to unreviewed versions or
+API namespaces. Source hashes bind an inspected snapshot; offline validation
+checks structure and local identity, not the truth of the upstream claims.
+
+```bash
+pytest tests/test_p2_evidence.py tests/test_mcp_server.py tests/test_tools_schema.py
+python -m backendpro.scripts.benchmark tests/evidence-benchmark.json \
+  --evidence-budgets 1000 2000 4000 --output evidence-characters.json
+```
+
+Those are **character** budgets. For actual target-token accounting, install
+the optional `tokens` extra and download only the public tokenizer data:
+
+```bash
+pip install -e '.[tokens]'
+TOKENIZER="$(mktemp)"
+curl --fail --silent --show-error --location \
+  https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct/resolve/c03e6d358207e414f1eca0bb1891e29f1db0e242/tokenizer.json \
+  --output "$TOKENIZER"
+python -m backendpro.scripts.benchmark tests/evidence-benchmark.json \
+  --evidence-budgets 1000 2000 4000 --tokenizer-file "$TOKENIZER" \
+  --tokenizer-sha256 c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539 \
+  --tokenizer-id Qwen/Qwen2.5-Coder-7B-Instruct@c03e6d358207e414f1eca0bb1891e29f1db0e242 \
+  --output evidence-tokens.json
+rm "$TOKENIZER"
+```
+
+The benchmark rejects hash mismatches, disables tokenizer truncation/padding,
+and counts the exact serialized evidence JSON without special tokens. It does
+not count chat templates, transport envelopes or generated code. Token mode
+also has an explicit 24000-character ceiling. No model weights, provider calls
+or workspace uploads are needed. CI retains this report alongside the existing
+ranking ablations. Reports bind source/corpus/dataset/tokenizer identities.
+
+The four author-labeled cases retained all labeled critical fields at each of
+the 1k/2k/4k token budgets in the local pinned-tokenizer run; retained local
+source bindings and omission arithmetic were valid. Sparse label precision
+declined as larger budgets admitted additional units. These are diagnostic
+results, not the proposed >=95% independently reviewer-rated applicability
+gate, unsupported-claim review, held-out success or evidence-application proof.
+`quality_gates_demonstrated` remains false. Raw/compact defaults and historical
+benchmark artifacts remain unchanged.
+
 ### Context7 comparison: SWE-bench Verified pilot
 
 The [pilot protocol](benchmarks/swebench-pilot/protocol.json) preregisters

@@ -43,6 +43,12 @@ requirement to retrieve for every backend edit.
   Check `retrieval` metadata for effective execution and fallbacks. Use
   `--diagnostics` (MCP: `diagnostics=true`) for auto-scope hints; explicit
   domains/stacks are never widened. Rank scores are not correctness probabilities.
+- For version-sensitive guidance, opt in to `--evidence` (MCP:
+  `response_format="evidence"`). Supply explicit `library_versions` or a local
+  `project_path` only when manifest inspection is authorized. Unknown/conflicting
+  versions are not compatibility claims; check platform and API namespace too.
+  Whole units preserve warnings within `max_chars` (default 6000); omissions are
+  counted. Expand returned IDs with `evidence_detail` rather than guessing facts.
 
 ## Search
 

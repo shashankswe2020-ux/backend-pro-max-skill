@@ -16,7 +16,7 @@ TOOLS_JSON = ROOT / "tools.json"
 def test_public_tool_names_do_not_repeat_the_server_namespace():
     assert {tool["name"] for tool in TOOLS} == {
         "search", "search_all", "search_stack", "compare",
-        "decide", "adr", "design", "find_stale",
+        "decide", "adr", "design", "find_stale", "evidence_detail",
     }
 
 
@@ -43,7 +43,7 @@ class TestOpenAIFormat:
         expected = {
             "search", "search_all", "search_stack",
             "compare", "decide", "adr",
-            "design", "find_stale",
+            "design", "find_stale", "evidence_detail",
         }
         assert names == expected
 
@@ -70,7 +70,7 @@ class TestAnthropicFormat:
     def test_all_tools_present(self):
         tools = self._load()
         names = {t["name"] for t in tools}
-        assert len(names) == 8
+        assert len(names) == 9
 
     def test_each_tool_has_input_schema(self):
         for tool in self._load():

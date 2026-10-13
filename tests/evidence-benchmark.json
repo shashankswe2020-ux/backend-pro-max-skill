@@ -1,0 +1,34 @@
+{
+  "name": "P2 Pydantic evidence retention pilot",
+  "limitations": "Four author-labeled release-specific cases. Narrow diagnostic, not independent review, no coding outcomes, and no claim about other releases or API namespaces.",
+  "queries": [
+    {
+      "query": "pydantic dictionary export migration",
+      "stack": "python-fastapi",
+      "library_versions": {"pydantic": "1.10.21"},
+      "relevant": ["Pydantic v1 dictionary export"],
+      "critical_fields": ["Do", "Don't", "When to Use", "Verification Method"]
+    },
+    {
+      "query": "pydantic dictionary export migration",
+      "stack": "python-fastapi",
+      "library_versions": {"pydantic": "2.10.6"},
+      "relevant": ["Pydantic v2 dictionary export migration"],
+      "critical_fields": ["Do", "Don't", "When to Use", "Verification Method"]
+    },
+    {
+      "query": "pydantic ORM attribute loading migration",
+      "stack": "python-fastapi",
+      "library_versions": {"pydantic": "1.10.21"},
+      "relevant": ["Pydantic v1 ORM attribute loading"],
+      "critical_fields": ["Do", "Don't", "When to Use", "Verification Method"]
+    },
+    {
+      "query": "pydantic ORM attribute loading migration",
+      "stack": "python-fastapi",
+      "library_versions": {"pydantic": "2.10.6"},
+      "relevant": ["Pydantic v2 ORM attribute migration"],
+      "critical_fields": ["Do", "Don't", "When to Use", "Verification Method"]
+    }
+  ]
+}

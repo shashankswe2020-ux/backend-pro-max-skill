@@ -34,6 +34,24 @@ held-out cases or historical results were changed. Independent P0 labels,
 broader answerable/unanswerable coverage and end-to-end coding benefit remain
 pending. See [reproduction instructions](../../CONTRIBUTING.md#coverage-targets-and-retrieval-diagnostics).
 
+### P2 version-aware evidence follow-up (2026-10-13)
+
+Opt-in `evidence-v1` adds local Python dependency observations, explicit unknown
+and conflict states, content-bound source IDs/detail expansion, and whole-unit
+selection by version match, marginal query coverage, scope diversity and ordinal
+rank. It does not compare independent BM25 scores globally. Raw and compact-v1
+defaults stay unchanged. Supplemental Pydantic guidance is scoped to exact
+1.10.21/2.10.6 releases and immutable official documentation snapshots; source
+content is not fetched during runtime retrieval.
+
+Four author-labeled migration cases retained their labeled critical facts at
+each of 1000/2000/4000 tokens with the pinned Qwen2.5-Coder-7B-Instruct tokenizer.
+All retained local source bindings and omission counts validated. This narrow
+diagnostic is not independent version-applicability review or coding-outcome
+evidence. P2's >=95% reviewed applicability gate and unsupported-claim review
+remain pending; no quality/default promotion is claimed.
+See [reproduction and limitations](../../CONTRIBUTING.md#p2-evidence-and-token-budget-evaluation).
+
 ### M1 delivery
 
 - Canonical domain/stack schemas shared by the manifest and actual MCP discovery/validation.

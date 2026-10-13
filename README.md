@@ -170,6 +170,11 @@ cp "$(python3 -c "import backendpro as b; print(b.__path__[0])")/templates/base/
 | `--rerank` | Cross-encoder ranking before final top-N selection (`pip install 'backendpro[rerank]'`) |
 | `--candidate-pool 20` | Candidates per scope before final selection; at least `-n` |
 | `--diagnostics` | Requested/effective engine, fallbacks, candidate counts, and auto-scope hints |
+| `--evidence` | Opt-in version-aware whole-unit evidence selection; legacy formats unchanged |
+| `--library-version pydantic=2.10.6` | Explicit release observation for evidence output |
+| `--project-path PATH` | Opt-in local Python manifest/lock inspection, never uploaded |
+| `--max-chars N` | Evidence JSON budget (default 6000 characters including metadata) |
+| `--evidence-id ID` | Expand a returned stable content ID to its full local source row |
 
 </details>
 
@@ -180,6 +185,10 @@ Explicit domains/stacks are never widened. Missing optional dependencies are
 reported as fallbacks; model execution errors are surfaced, not hidden.
 Rank scores are not confidence or correctness probabilities.
 See [retrieval options and compatibility notes](docs/USAGE.md#retrieval-pipeline-and-diagnostics).
+The opt-in [P2 evidence format](docs/USAGE.md#version-aware-budget-aware-evidence-p2-opt-in)
+adds a pinned-source Pydantic v1/v2 pilot, explicit unknown/conflicting version
+states, complementary evidence selection and omission accounting. It does not
+establish independently reviewed applicability or coding-outcome gains.
 
 ### Decisions, not just search
 
@@ -257,6 +266,7 @@ backendpro-mcp                    # stdio transport
 | `search` | `query`, `domain?`, `max_results?`, `min_score?` | Ranked rows from one domain (auto-detected if omitted) |
 | `search_all` | `query`, `max_results?` | Top hits per domain |
 | `search_stack` | `query`, `stack` | Stack guidelines with good and bad code |
+| `evidence_detail` | `evidence_id` | Full local source row for an exact content identity; stale IDs fail |
 | `compare` | `names[]`, `domain?` | Side-by-side table |
 | `decide` | `requirement` | Constraint-scored recommendation |
 | `adr` | `title`, `context_domains[]` | Nygard-format ADR |

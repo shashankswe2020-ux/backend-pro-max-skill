@@ -42,11 +42,13 @@ from mcp.types import TextContent  # noqa: E402
 try:
     from . import core
     from . import decide as decisions
+    from .evidence import evidence_detail as expand_evidence
     from .gen_tools_schema import TOOLS
     from .templates import compact_json, format_search_response
 except ImportError:
     import core  # type: ignore[no-redef]
     import decide as decisions  # type: ignore[no-redef]
+    from evidence import evidence_detail as expand_evidence  # type: ignore[no-redef]
     from gen_tools_schema import TOOLS  # type: ignore[no-redef]
     from templates import compact_json, format_search_response  # type: ignore[no-redef]
 
@@ -70,7 +72,7 @@ class CanonicalFastMCP(FastMCP):
         except ValidationError as error:
             raise ToolError(f"Invalid arguments for {name}: {error.message}") from error
         result = await super().call_tool(name, arguments)
-        if arguments.get("response_format") == "compact":
+        if arguments.get("response_format") in ("compact", "evidence"):
             # FastMCP returns either content or (content, structured output).
             content = result[0] if isinstance(result, tuple) else result
             if not isinstance(content, (list, tuple)):
@@ -114,6 +116,9 @@ def search(
     expand: bool = True,
     max_age_months: int | None = None,
     constraints: str | None = None,
+    max_chars: int = 6000,
+    project_path: str | None = None,
+    library_versions: dict[str, str] | None = None,
 ) -> dict:
     """BM25 search in a backend-engineering knowledge domain.
 
@@ -123,8 +128,8 @@ def search(
         core.search(
             query, domain=domain, max_results=max_results, min_score=min_score, engine=engine,
             rerank=rerank, candidate_pool=candidate_pool, diagnostics=diagnostics, expand=expand,
-            max_age_months=max_age_months, constraints=constraints,
-        ), response_format,
+            max_age_months=max_age_months, constraints=constraints, evidence=response_format == "evidence",
+        ), response_format, max_chars=max_chars, project_path=project_path, library_versions=library_versions,
     )
 
 
@@ -141,6 +146,9 @@ def search_all(
     min_score: float = 0.0,
     max_age_months: int | None = None,
     constraints: str | None = None,
+    max_chars: int = 6000,
+    project_path: str | None = None,
+    library_versions: dict[str, str] | None = None,
 ) -> dict:
     """Cross-domain search across every backend-engineering knowledge base.
 
@@ -149,8 +157,8 @@ def search_all(
     return format_search_response(core.search_all(
         query, max_results=max_results, min_score=min_score, engine=engine, rerank=rerank,
         candidate_pool=candidate_pool, diagnostics=diagnostics, expand=expand,
-        max_age_months=max_age_months, constraints=constraints,
-    ), response_format)
+        max_age_months=max_age_months, constraints=constraints, evidence=response_format == "evidence",
+    ), response_format, max_chars=max_chars, project_path=project_path, library_versions=library_versions)
 
 
 @expose
@@ -167,6 +175,9 @@ def search_stack(
     min_score: float = 0.0,
     max_age_months: int | None = None,
     constraints: str | None = None,
+    max_chars: int = 6000,
+    project_path: str | None = None,
+    library_versions: dict[str, str] | None = None,
 ) -> dict:
     """Search stack-specific guidelines for a language / framework.
 
@@ -177,8 +188,14 @@ def search_stack(
     return format_search_response(core.search_stack(
         query, stack, max_results=max_results, min_score=min_score, engine=engine, rerank=rerank,
         candidate_pool=candidate_pool, diagnostics=diagnostics, expand=expand,
-        max_age_months=max_age_months, constraints=constraints,
-    ), response_format)
+        max_age_months=max_age_months, constraints=constraints, evidence=response_format == "evidence",
+    ), response_format, max_chars=max_chars, project_path=project_path, library_versions=library_versions)
+
+
+@expose
+def evidence_detail(evidence_id: str) -> dict:
+    """Expand an exact local evidence ID without network access; stale IDs fail."""
+    return expand_evidence(evidence_id)
 
 
 @expose

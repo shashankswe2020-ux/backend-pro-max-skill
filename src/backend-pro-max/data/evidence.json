@@ -1,0 +1,94 @@
+{
+  "format": "source-evidence-v1",
+  "limitations": "Author-curated pilot, not independently reviewed. Original summaries reference immutable official documentation snapshots; upstream document text is not redistributed. Exact release scopes are deliberate, not claims about all v1/v2 releases or pydantic.v1 imports.",
+  "records": [
+    {
+      "scope_file": "stacks/python-fastapi.csv",
+      "fields": {
+        "Guideline": "Pydantic v1 dictionary export",
+        "Category": "Migration",
+        "Description": "Export a Pydantic model and its nested models as dictionaries.",
+        "Do": "Use model.dict() for recursive dictionary export in the v1 API.",
+        "Don't": "Do not substitute dict(model) when nested models must become dictionaries; that operation retains raw field values.",
+        "When to Use": "Code imports BaseModel from the installed Pydantic v1 package.",
+        "Verification Method": "Regression-check nested models and include/exclude options against the application's expected output.",
+        "Library": "pydantic",
+        "Applies To": "==1.10.21",
+        "Platform Assumptions": "Python; native pydantic v1 API, not the pydantic.v1 compatibility namespace in a v2 installation.",
+        "Source URL": "https://raw.githubusercontent.com/pydantic/pydantic/0cbba0f9774c470e8d8a2a62abb921b8cea4027d/docs/usage/exporting_models.md",
+        "Source Revision": "0cbba0f9774c470e8d8a2a62abb921b8cea4027d",
+        "Source SHA256": "a03261c6f99e155cbc6f302c6558478a6b21535c1f70c3d467ceffbf9ea05139",
+        "Source Type": "official-docs",
+        "Source License": "MIT",
+        "Last Verified": "2026-10-13",
+        "Last Updated": "2026-10-13"
+      }
+    },
+    {
+      "scope_file": "stacks/python-fastapi.csv",
+      "fields": {
+        "Guideline": "Pydantic v2 dictionary export migration",
+        "Category": "Migration",
+        "Description": "Migrate dictionary serialization from the v1 API to the v2 API.",
+        "Do": "Use model.model_dump() in v2 where v1 code used model.dict().",
+        "Don't": "Do not assume serialized output is unchanged across the migration; deprecated APIs and JSON formatting differ.",
+        "When to Use": "Code imports BaseModel from the native Pydantic v2 API.",
+        "Verification Method": "Regression-check nested models, aliases, include/exclude options and JSON consumers before switching APIs.",
+        "Library": "pydantic",
+        "Applies To": "==2.10.6",
+        "Platform Assumptions": "Python; native pydantic v2 API, not pydantic.v1 imports.",
+        "Source URL": "https://raw.githubusercontent.com/pydantic/pydantic/df05e69a8a3fb37628a0e3a33518ca0425334bc9/docs/migration.md",
+        "Source Revision": "df05e69a8a3fb37628a0e3a33518ca0425334bc9",
+        "Source SHA256": "9e51980256231ceb88bf3d4a87a6e7b1513e636b165744f7a566c88734e9c9a0",
+        "Source Type": "official-docs",
+        "Source License": "MIT",
+        "Last Verified": "2026-10-13",
+        "Last Updated": "2026-10-13"
+      }
+    },
+    {
+      "scope_file": "stacks/python-fastapi.csv",
+      "fields": {
+        "Guideline": "Pydantic v1 ORM attribute loading",
+        "Category": "Migration",
+        "Description": "Construct a Pydantic v1 model from object attributes.",
+        "Do": "Set Config.orm_mode = True and construct the model with from_orm().",
+        "Don't": "Do not call from_orm() without enabling orm_mode.",
+        "When to Use": "Native Pydantic v1 models consume ORM objects rather than dictionaries.",
+        "Verification Method": "Test attribute-backed and nested objects with the actual model configuration.",
+        "Library": "pydantic",
+        "Applies To": "==1.10.21",
+        "Platform Assumptions": "Python; native pydantic v1 API.",
+        "Source URL": "https://raw.githubusercontent.com/pydantic/pydantic/0cbba0f9774c470e8d8a2a62abb921b8cea4027d/docs/usage/models.md",
+        "Source Revision": "0cbba0f9774c470e8d8a2a62abb921b8cea4027d",
+        "Source SHA256": "93a04c0e93631d0e7be8910014a3176b07502b4852e5ba606ffa693d7c2a6c21",
+        "Source Type": "official-docs",
+        "Source License": "MIT",
+        "Last Verified": "2026-10-13",
+        "Last Updated": "2026-10-13"
+      }
+    },
+    {
+      "scope_file": "stacks/python-fastapi.csv",
+      "fields": {
+        "Guideline": "Pydantic v2 ORM attribute migration",
+        "Category": "Migration",
+        "Description": "Migrate attribute-backed object validation from v1 from_orm() to v2.",
+        "Do": "Enable from_attributes=True in model configuration and use model_validate().",
+        "Don't": "Do not rename from_orm() alone without configuring attribute access; from_orm() is deprecated in v2.",
+        "When to Use": "Native Pydantic v2 models consume ORM objects rather than dictionaries.",
+        "Verification Method": "Test attribute-backed and nested objects and review validation errors during migration.",
+        "Library": "pydantic",
+        "Applies To": "==2.10.6",
+        "Platform Assumptions": "Python; native pydantic v2 API, not pydantic.v1 imports.",
+        "Source URL": "https://raw.githubusercontent.com/pydantic/pydantic/df05e69a8a3fb37628a0e3a33518ca0425334bc9/docs/migration.md",
+        "Source Revision": "df05e69a8a3fb37628a0e3a33518ca0425334bc9",
+        "Source SHA256": "9e51980256231ceb88bf3d4a87a6e7b1513e636b165744f7a566c88734e9c9a0",
+        "Source Type": "official-docs",
+        "Source License": "MIT",
+        "Last Verified": "2026-10-13",
+        "Last Updated": "2026-10-13"
+      }
+    }
+  ]
+}

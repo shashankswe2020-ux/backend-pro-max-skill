@@ -665,13 +665,24 @@ def _retrieval_options(max_results, engine, rerank, candidate_pool, min_score, m
 
 def _search_csv(filepath, search_cols, output_cols, query, max_results,
                 *, min_score=0.0, max_age_months=None, expand=True, engine="bm25",
-                retrieval=None, constraints=None):
+                retrieval=None, constraints=None, evidence=False):
+    if type(evidence) is not bool:
+        raise ValueError("evidence must be a boolean")
     if retrieval is None:
         retrieval = _retrieval_options(max_results, engine, False, None, min_score, max_age_months, expand)
     if not filepath.exists():
         raise FileNotFoundError(filepath)
 
     data, bm25 = _get_index(filepath, search_cols)
+    base_count = len(data)
+    if evidence:
+        evidence_module = _retrieval_module("evidence")
+        scope_file = filepath.relative_to(DATA_DIR).as_posix()
+        additional = evidence_module.supplemental_rows(scope_file)
+        if additional:
+            data = data + additional
+            bm25 = BM25()
+            bm25.fit([" ".join(str(row.get(col, "")) for col in search_cols) for row in data])
     if data is None or bm25 is None or bm25.N == 0:
         return []
 
@@ -706,6 +717,8 @@ def _search_csv(filepath, search_cols, output_cols, query, max_results,
         if "Last Updated" in row and "Last Updated" not in out:
             out["Last Updated"] = row["Last Updated"]
         out["_score"] = round(float(score), 4)
+        if evidence:
+            out["_evidence"] = evidence_module.bind_row(row, scope_file, supplemental=idx >= base_count)
         results.append(out)
     retrieval["candidate_count"] += len(results)
     if results and retrieval["rerank_requested"] and retrieval["capabilities"]["rerank"]:
@@ -1113,7 +1126,7 @@ def apply_constraints(results, constraints):
 
 def search(query, domain=None, max_results=MAX_RESULTS,
            *, min_score=0.0, max_age_months=None, expand=True, engine="bm25",
-           rerank=False, candidate_pool=None, diagnostics=False, constraints=None):
+           rerank=False, candidate_pool=None, diagnostics=False, constraints=None, evidence=False):
     """Main search function with auto-domain detection.
 
     Args:
@@ -1129,6 +1142,7 @@ def search(query, domain=None, max_results=MAX_RESULTS,
         candidate_pool: Per-scope candidate limit; default at least 20 with reranking.
         diagnostics: Include execution metadata even for default BM25.
         constraints: Optional comma-separated key=value preferences.
+        evidence: Bind full source rows and include the opt-in versioned evidence corpus.
     """
     automatic = domain is None
     if automatic:
@@ -1146,7 +1160,7 @@ def search(query, domain=None, max_results=MAX_RESULTS,
     results = _search_csv(
         filepath, config["search_cols"], config["output_cols"], query, max_results,
         min_score=min_score, max_age_months=max_age_months, expand=expand, engine=engine,
-        retrieval=details, constraints=_search_constraints(constraints),
+        retrieval=details, constraints=_search_constraints(constraints), evidence=evidence,
     )
     _inject_citations(results, domain)
 
@@ -1165,7 +1179,7 @@ def search(query, domain=None, max_results=MAX_RESULTS,
 
 def search_stack(query, stack, max_results=MAX_RESULTS,
                  *, min_score=0.0, expand=True, engine="bm25", max_age_months=None,
-                 rerank=False, candidate_pool=None, diagnostics=False, constraints=None):
+                 rerank=False, candidate_pool=None, diagnostics=False, constraints=None, evidence=False):
     """Search stack-specific guidelines."""
     if stack not in STACK_CONFIG:
         return {"error": f"Unknown stack: {stack}. Available: {', '.join(AVAILABLE_STACKS)}"}
@@ -1179,7 +1193,7 @@ def search_stack(query, stack, max_results=MAX_RESULTS,
         filepath, _STACK_COLS["search_cols"], _STACK_COLS["output_cols"],
         query, max_results, min_score=min_score, expand=expand, engine=engine,
         max_age_months=max_age_months, retrieval=details,
-        constraints=_search_constraints(constraints),
+        constraints=_search_constraints(constraints), evidence=evidence,
     )
     _inject_citations(results, f"stack-{stack}")
 
@@ -1198,7 +1212,7 @@ def search_stack(query, stack, max_results=MAX_RESULTS,
 
 
 def search_all(query, max_results=2, *, min_score=0.0, expand=True, engine="bm25", max_age_months=None,
-               rerank=False, candidate_pool=None, diagnostics=False, constraints=None):
+               rerank=False, candidate_pool=None, diagnostics=False, constraints=None, evidence=False):
     """Cross-domain search: returns top hits across every domain CSV."""
     aggregated = {}
     details = _retrieval_options(max_results, engine, rerank, candidate_pool, min_score, max_age_months, expand)
@@ -1208,7 +1222,7 @@ def search_all(query, max_results=2, *, min_score=0.0, expand=True, engine="bm25
         hits = _search_csv(
             filepath, config["search_cols"], config["output_cols"],
             query, max_results, min_score=min_score, expand=expand, engine=engine,
-            max_age_months=max_age_months, retrieval=details, constraints=preferences,
+            max_age_months=max_age_months, retrieval=details, constraints=preferences, evidence=evidence,
         )
         if hits:
             _inject_citations(hits, domain)
