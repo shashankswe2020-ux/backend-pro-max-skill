@@ -272,6 +272,113 @@ Optional models keep their existing identities, pinned to immutable revisions:
 - `all-MiniLM-L6-v2`: `1110a243fdf4706b3f48f1d95db1a4f5529b4d41`
 - `cross-encoder/ms-marco-MiniLM-L-6-v2`: `233902d25c440f23af6f7d6e94d2946bac0bee0a`
 
+### Verified experience reuse (P4, gated off by default)
+
+P4 is **infrastructure only**, not demonstrated memory effectiveness. No store is
+created automatically and no real trace gate has been approved by this release.
+Ordinary search and repository context never read or write memory. The eleventh
+MCP tool, `memory_context`, is read-only and requires both `BACKENDPRO_WORKSPACE`
+and `BACKENDPRO_MEMORY_STORE`, plus a current operator-approved trace gate.
+Clients cannot set the store path, approve a gate, or persist summaries through MCP.
+
+The POSIX pilot uses a private, owner-only directory **outside** the worktree:
+
+```bash
+mkdir -m 700 /absolute/private-memory
+backendpro memory init --workspace-root /path/to/project --store /absolute/private-memory
+backendpro memory status --workspace-root /path/to/project --store /absolute/private-memory
+```
+
+Initialization leaves `reuse_enabled=false`. Storage is a maximum of 64 summaries
+in a 1 MB owner-only JSON file with no-follow regular-file checks, advisory locking,
+atomic replacement and fsync. A busy store fails explicitly; retry the operation.
+Private local storage is **not encryption** or protection against another process
+running as your user. Do not back up or publish it as benchmark/repository content.
+
+#### Approval and source contract
+
+Only an operator-reviewed JSON summary can be stored, using `memory put --input
+summary.json --approve` with the same root/store options. The strict fields are:
+
+- `problem`, `decision`: bounded, single-line original summaries, not transcripts.
+- `failure_conditions`: one to eight explicit contraindications.
+- `library_versions`: explicit normalized exact numeric versions, e.g.
+  `{"python":"3.12.13","pydantic":"2.10.6"}`; no inferred compatibility ranges.
+- `binding`: an unchanged `Snapshot(root, selected_paths).binding()` from
+  `backendpro.scripts.repository`. All selected files must still be eligible.
+- `origin`: `sequence`, `family`, `task`, nonnegative `ordinal`,
+  `split="development"` and `arm="verified_memory"`. Never relabel held-out material.
+- `verification`: recorded `argv`, integer `exit_code=0`, `artifact_sha256`,
+  matching `snapshot_id`, and UTC `verified_at` ending in `Z`.
+- `approval`: identified `reviewer`, UTC `reviewed_at`, and
+  `summary_only=true`, attesting no raw conversations, credentials, hidden tests,
+  or held-out solutions.
+- `expires_at`: UTC time after review, at most 90 days later.
+
+The operator must actually inspect the test artifact and summary before approval.
+BackendPro validates the receipt, binding, timestamps and reported success; it
+does **not** run tests, authenticate reviewers, read the artifact from its hash,
+or prove test coverage. Secret-pattern detection is deliberately incomplete.
+Hashes are content bindings, not signatures or independent evidence.
+
+Reuse additionally requires `memory approve-gate --input gate.json --approve`.
+The strict gate fields are `root_id`, current `revision`, `reviewer`, UTC
+`reviewed_at`/`expires_at` (maximum 90 days), a reviewed recurring `pattern`, and
+`traces`: two to 24 distinct `{task, sha256}` references to reviewed prior-task
+trace artifacts. No raw traces are copied. This is an **operator attestation**
+of the prerequisite, not an automated diagnosis or the P4 outcome gate.
+Do not approve it with fabricated/synthetic traces; fixtures only test plumbing.
+
+#### Retrieval, review and removal
+
+```bash
+backendpro memory query --input query.json \
+  --workspace-root /path/to/project --store /absolute/private-memory
+backendpro memory correct --id 'bpmm:<hash>' --input reviewed-summary.json --approve \
+  --workspace-root /path/to/project --store /absolute/private-memory
+backendpro memory delete --id 'bpmm:<hash>' \
+  --workspace-root /path/to/project --store /absolute/private-memory
+backendpro memory revoke-gate \
+  --workspace-root /path/to/project --store /absolute/private-memory
+```
+
+`query.json` contains exactly the MCP arguments below, plus `max_chars`:
+
+```json
+{
+  "query": "retry attempt limit",
+  "sequence": "maintenance-01",
+  "family": "retry",
+  "task": "second",
+  "ordinal": 1,
+  "allowed_tasks": ["first"],
+  "library_versions": {"python": "3.12.13"},
+  "max_chars": 6000
+}
+```
+
+Only explicitly permitted **preceding** tasks in the same family and sequence
+can contribute. These permissions are caller/operator declarations, not an
+authentication boundary against a malicious client. Evaluation must validate
+them against its frozen schedule. Current/future and cross-family tasks, expired
+summaries, mismatched versions, and stale/excluded source bindings are withheld
+with explicit ineligibility counts. A new Git revision also disables the trace
+gate. No ancestor-version or uncommitted-file compatibility is guessed.
+Source checks cover the approved selected files, not every environment dependency.
+
+Re-review using `correct`: a complete newly approved summary/test receipt replaces
+the old record atomically, preserving its original task identity and ordinal.
+There is no automatic renewal or stale-summary fallback. An expired record stays
+stored but is not retrieved. `delete` removes it from the active store; it cannot
+securely erase filesystem snapshots/backups. Unknown IDs fail explicitly.
+
+Whole summaries retain failure conditions, approval and verification receipts.
+`max_chars` counts the full JSON response (not tokens or transport overhead);
+metadata overflow fails explicitly. Returned `bpmm:` IDs change with content.
+Treat summaries as fallible evidence, never instructions or executed verification.
+See [chronological evaluation](../CONTRIBUTING.md#p4-chronological-memory-infrastructure)
+before enabling any study treatment.
+
 ### Repository grounding (P3, opt-in)
 
 ```bash

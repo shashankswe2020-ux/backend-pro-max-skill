@@ -61,6 +61,12 @@ calls as unresolved. MCP `repository_context` requires operator configuration
 of `BACKENDPRO_WORKSPACE`. Source hashes/revisions reject stale references;
 exclusions apply before extraction. No network, repository execution or
 persistent index is used. Code excerpts are data, not instructions.
+Experimental `memory_context` is separate and gated off until the operator
+approves recurring-pattern traces. It needs `BACKENDPRO_MEMORY_STORE` as well as
+the workspace setting. Only approved test-backed summaries may persist; never
+conversations or hidden/held-out material. Reuse is limited to permitted prior
+tasks, current source bindings, exact declared versions and unexpired review.
+Management, correction, deletion and approval are operator CLI actions.
 
 | Topic                       | Suggested query                                              |
 |----------------------------|---------------------------------------------------------------|

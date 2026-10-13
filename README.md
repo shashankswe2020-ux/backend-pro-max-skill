@@ -283,6 +283,7 @@ backendpro-mcp                    # stdio transport
 | `search_stack` | `query`, `stack` | Stack guidelines with good and bad code |
 | `evidence_detail` | `evidence_id` | Full local source row for an exact content identity; stale IDs fail |
 | `repository_context` | `query`, `paths[]`, `editor?`, `max_chars?` | Opt-in revision-bound local context inside the configured workspace |
+| `memory_context` | `query`, `sequence`, `family`, `task`, `ordinal`, `allowed_tasks[]`, `library_versions`, `max_chars?` | Experimental approved summaries; disabled pending operator-reviewed recurring-pattern traces |
 | `compare` | `names[]`, `domain?` | Side-by-side table |
 | `decide` | `requirement` | Constraint-scored recommendation |
 | `adr` | `title`, `context_domains[]` | Nygard-format ADR |
