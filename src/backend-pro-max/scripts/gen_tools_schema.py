@@ -26,6 +26,15 @@ except ImportError:
 
 TOOLS = [
     {
+        "name": "evidence_detail",
+        "description": "Expand a bpme evidence ID returned by evidence-format search into its complete local source row and immutable content binding. No network access. An edited or removed record fails explicitly; repeat the search. This opt-in detail response is not character-packed.",
+        "parameters": {
+            "type": "object",
+            "properties": {"evidence_id": {"type": "string", "pattern": "^bpme:[0-9a-f]{64}$"}},
+            "required": ["evidence_id"],
+        },
+    },
+    {
         "name": "search",
         "description": "Retrieve cited backend guidance for transaction boundaries, idempotency, retries, schema migrations, and operational failure handling. Use when external engineering guidance can affect correctness; skip typos, link fixes, and self-contained local edits. Domain is auto-detected if omitted. Raw results are the default; compact returns bounded, source-linked evidence with explicit gaps, not a confidence score.",
         "parameters": {
@@ -174,10 +183,13 @@ for _tool in TOOLS:
             "min_score": {"type": "number", "default": 0.0, "description": "Exclude pre-rerank scores <= this: BM25, cosine similarity or RRF, depending on effective engine. Not confidence."},
             "max_age_months": {"type": ["integer", "null"], "minimum": 0, "default": None, "description": "Exclude stale rows before candidate selection; rows with missing dates are kept."},
             "constraints": {"type": ["string", "null"], "default": None, "description": "Existing constraint preferences, e.g. cloud=gcp,cost=low. Prioritize satisfied preferences within the candidate pool; unknown metadata is not a hard exclusion."},
+            "max_chars": {"type": "integer", "minimum": 1, "default": 6000, "description": "Evidence-format JSON character budget including metadata, excluding transport envelopes. Whole units only."},
+            "project_path": {"type": ["string", "null"], "default": None, "description": "Evidence format only. Explicit local directory for root Python manifest/lockfile inspection; no execution, recursion or network. Omit to avoid workspace reads."},
+            "library_versions": {"type": ["object", "null"], "additionalProperties": {"type": "string"}, "default": None, "description": "Evidence format only. Explicit numeric release versions, e.g. pydantic: 2.10.6. Conflicts with local files remain conflicts, never overrides."},
         })
         _tool["parameters"]["properties"]["response_format"] = {
-            "type": "string", "enum": ["raw", "compact"], "default": "raw",
-            "description": "raw preserves returned rows; compact bounds JSON text to 6000 characters by omitting whole trailing evidence units.",
+            "type": "string", "enum": ["raw", "compact", "evidence"], "default": "raw",
+            "description": "raw preserves returned rows; compact keeps legacy 6000-character packing. Opt-in evidence adds source-bound version metadata, diverse whole-unit selection and omission counts within max_chars. Selection only considers retrieved rows; raise max_results to widen candidates. Unknown versions are not compatibility claims.",
         }
     for _name, _property in _tool["parameters"]["properties"].items():
         if _name == "max_results":

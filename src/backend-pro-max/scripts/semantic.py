@@ -140,8 +140,11 @@ def build_index(data: list[dict], search_cols: list[str], filepath: Path) -> str
     if model is None:
         return None
 
-    key = _cache_key(filepath, search_cols)
     texts = [" ".join(str(row.get(col, "")) for col in search_cols) for row in data]
+    # Opt-in source supplements share a CSV path but must never reuse its base-only vectors.
+    key = hashlib.sha256(
+        (_cache_key(filepath, search_cols) + json.dumps(texts, ensure_ascii=False)).encode("utf-8")
+    ).hexdigest()
 
     # Check memory cache
     if key in _EMBED_CACHE:

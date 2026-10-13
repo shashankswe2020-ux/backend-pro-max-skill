@@ -52,6 +52,17 @@ def main():
         assert fallback["retrieval"]["effective_engine"] == "bm25"
         assert fallback["retrieval"]["rerank_requested"] and not fallback["retrieval"]["rerank_applied"]
         assert len(fallback["retrieval"]["fallbacks"]) == 2
+        versioned_text = run(
+            "-m", "backendpro.scripts.search", "pydantic dictionary", "--stack", "python-fastapi",
+            "--evidence", "--library-version", "pydantic=2.10.6",
+        )
+        versioned = json.loads(versioned_text)
+        assert len(versioned_text.rstrip("\n")) <= 6000
+        assert versioned["results"][0]["version_match"] == "match"
+        detail = json.loads(run(
+            "-m", "backendpro.scripts.search", "--evidence-id", versioned["results"][0]["id"],
+        ))
+        assert detail["id"] == versioned["results"][0]["id"]
         report = json.loads(run("-m", "backendpro.scripts.coverage", "--json"))
         assert report["summary"]["domain_count"] == 34
         assert report["summary"]["total_rows"] > 0
@@ -60,7 +71,7 @@ def main():
             "from backendpro.scripts.coverage import _load_targets; "
             "assert _load_targets().get('database'), 'Missing bundled coverage targets'",
         )
-        print("Wheel smoke passed: isolated install, BM25/default contracts, explicit model fallback, CSV validation, coverage targets")
+        print("Wheel smoke passed: isolated install, BM25 defaults, explicit fallback, P2 evidence/detail, source validation, coverage targets")
 
 
 if __name__ == "__main__":

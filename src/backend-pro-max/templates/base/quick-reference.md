@@ -29,6 +29,9 @@ python3 src/backend-pro-max/scripts/search.py "kafka consistency" --diagnostics 
 
 # List everything
 python3 src/backend-pro-max/scripts/search.py --list
+
+# Opt-in version-aware evidence; unknowns are never compatibility claims
+python3 src/backend-pro-max/scripts/search.py "pydantic dictionary migration" --stack python-fastapi --evidence --library-version pydantic=2.10.6
 ```
 
 ## Common queries by topic
@@ -43,6 +46,13 @@ Use raw output for omitted context; citations are not guarantees of correctness.
 CLI and MCP share optional engines, reranking, candidate pools and filtering.
 Missing optional packages are explicit fallbacks in `retrieval` metadata;
 model execution failures are errors. Rank scores are not confidence.
+For `--evidence` / MCP `response_format="evidence"`, `max_chars` bounds full JSON
+(default 6000 characters, not tokens). `omissions` counts budget, duplicate and
+version exclusions; whole warnings stay with recommendations. Optional local
+`project_path` inspection reads only root Python manifests/locks, never uploads
+them, and reports unknown/conflicting states. `evidence_detail` expands an exact
+returned content ID without network access. Platform/API namespace still needs
+checking even when the declared library version matches.
 
 | Topic                       | Suggested query                                              |
 |----------------------------|---------------------------------------------------------------|

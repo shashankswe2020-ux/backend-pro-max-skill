@@ -56,6 +56,9 @@ mcp = [
     "mcp>=1.0,<2.0",
     "jsonschema>=4.20,<5.0",
 ]
+tokens = [
+    "tokenizers>=0.15",
+]
 
 [project.urls]
 Homepage = "https://github.com/shashankswe2020-ux/backend-pro-max-skill"

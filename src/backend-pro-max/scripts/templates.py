@@ -106,12 +106,21 @@ def format_compact(result: dict, max_chars: int = COMPACT_MAX_CHARS) -> dict:
     return output
 
 
-def format_search_response(result: dict, response_format: str = "raw") -> dict:
+def format_search_response(result: dict, response_format: str = "raw", *, max_chars: int = COMPACT_MAX_CHARS,
+                           project_path: str | None = None, library_versions: dict | None = None) -> dict:
+    if response_format != "evidence" and (project_path is not None or library_versions is not None or max_chars != COMPACT_MAX_CHARS):
+        raise ValueError("Version and budget options require response_format='evidence'")
     if response_format == "raw":
         return result
     if response_format == "compact":
         return format_compact(result)
-    raise ValueError("response_format must be 'raw' or 'compact'")
+    if response_format == "evidence":
+        try:
+            from .evidence import format_evidence
+        except ImportError:
+            from evidence import format_evidence
+        return format_evidence(result, max_chars, project_path=project_path, library_versions=library_versions)
+    raise ValueError("response_format must be 'raw', 'compact', or 'evidence'")
 
 
 def _head(row: dict) -> str:

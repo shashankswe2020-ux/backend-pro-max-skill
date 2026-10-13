@@ -229,8 +229,8 @@ backendpro "idempotency" --all --rerank --candidate-pool 20 -n 5
 All three search surfaces use the same candidate generation, score/freshness
 filtering, optional cross-encoder ranking, constraint preferences and final
 top-N selection. Pool size is per domain/stack, not a global evidence budget.
-In cross-domain search, reranking happens inside each domain; this does not
-implement global evidence selection or version-aware documentation retrieval.
+In cross-domain search, reranking happens inside each domain. The opt-in
+`evidence` formatter below adds global selection over those returned candidates.
 
 Filters run before candidate truncation. `--constraints` accepts unique
 `key=value` preferences using `cloud`, `throughput`, `latency`, `consistency`,
@@ -272,7 +272,84 @@ Optional models keep their existing identities, pinned to immutable revisions:
 - `all-MiniLM-L6-v2`: `1110a243fdf4706b3f48f1d95db1a4f5529b4d41`
 - `cross-encoder/ms-marco-MiniLM-L-6-v2`: `233902d25c440f23af6f7d6e94d2946bac0bee0a`
 
-First use may download model data from Hugging Face; queries are evaluated
+### Version-aware, budget-aware evidence (P2, opt-in)
+
+```bash
+backendpro "pydantic dictionary export migration" --stack python-fastapi \
+  --evidence --library-version pydantic=2.10.6 --max-chars 6000 -n 20
+backendpro "pydantic ORM migration" --stack python-fastapi \
+  --evidence --project-path /path/to/project
+backendpro "retry timeout" --all --evidence --max-chars 4000
+backendpro --evidence-id 'bpme:<64-hex-content-hash>'
+```
+
+MCP searches accept `response_format="evidence"`, `max_chars`, `project_path`
+and `library_versions` (an object, e.g. `{"pydantic":"2.10.6"}`). The ninth tool,
+`evidence_detail(evidence_id)`, expands a returned ID to the full local source
+row. Restart clients for the updated schema. Version/budget options on other
+formats fail rather than being ignored. Core callers use `evidence=True` and
+then `format_search_response(result, "evidence", ...)`.
+
+**Compatibility:** raw search and `compact-v1` remain unchanged. Only the new
+format includes the four Pydantic pilot records from `data/evidence.json`.
+They are original summaries bound to immutable official documentation URLs,
+document SHA256, upstream revision, source license and last-verified date.
+No upstream document text is redistributed and no documentation network access
+occurs at runtime. Pilot annotations cover **1.10.21 and 2.10.6 only**. Other
+versions are not claimed compatible; `pydantic.v1` imports in v2 require separate
+inspection. Existing corpus `Version` and `Last Updated` are not library
+compatibility or source-verification dates.
+
+**Local version observations:** filesystem inspection is opt-in and reads only
+root `requirements.txt`, `pyproject.toml`, `uv.lock`, `poetry.lock`,
+`Pipfile.lock` and `.python-version`. It does not run package managers, inspect
+code, follow include directives/symlinks or upload content. Python 3.11+ can
+inspect TOML with the standard library; older runtimes explicitly report that
+limitation. PEP 621 direct dependencies and basic Poetry dependency strings are
+supported; optional dependency groups are not inferred as installed. Conditional
+Pipfile development entries stay unknown, and partial Python selectors such as
+`3.12` are ranges rather than invented `3.12.0` pins. Conditional
+markers, prereleases, URLs, dynamic declarations, unsupported constraints and
+multiple conflicting lock versions remain unknown/conflicting. Numeric
+`==`, `>=`, `>`, `<=`, `<` comma-separated release constraints are supported.
+Bare requirements and Poetry `*` are unconstrained numeric release ranges, so
+they do not mask a compatible exact lockfile pin.
+Explicit versions are additional observations, never silent lockfile overrides.
+These are declared constraints, not proof of the running environment.
+File-derived observations include the inspected manifest's SHA256, not its
+contents or absolute path.
+
+**Selection:** version matches are prioritized, then marginal query-term
+coverage, scope diversity and within-scope ordinal rank. Independent BM25
+scores are never globally compared. Known version mismatches/conflicts are
+omitted; unknown guidance remains explicitly unknown. A match only describes
+the declared version range; platform assumptions and API namespaces still need
+checking. Stable content IDs change when source fields change; old IDs fail
+closed. Duplicate suppression includes all supported facts and applicability
+metadata, so different warnings are not merged.
+
+Whole units retain recommendations, preconditions, contraindications,
+verification guidance and sources when present; missing fields are explicit.
+Oversized units are skipped so a smaller complementary unit may still fit.
+`omissions` counts every dropped candidate by budget, duplicate, version
+mismatch or version conflict. Counts, rather than an unbounded list of omitted
+IDs, keep metadata bounded; source fields not selected into a unit are named
+in `omitted_fields` and available through detail expansion. Metadata that
+cannot fit causes an explicit error.
+
+The default limit is still **6000 JSON characters**, including metadata but
+excluding the CLI newline/MCP envelope; `--max-chars` is an explicit override.
+Detail expansion is intentionally full/unpacked. Selection only considers the
+rows returned by retrieval: increase `-n`/MCP `max_results` to widen that pool;
+`candidate_pool` alone only widens preranking, not delivered rows. `--all`
+continues to mean registered domains, not every language stack.
+
+Characters are not token estimates. The benchmark can separately enforce
+1k/2k/4k-token budgets using a local hash-pinned target tokenizer; see
+[P2 evaluation](../CONTRIBUTING.md#p2-evidence-and-token-budget-evaluation).
+No default change or competitive quality claim follows from the small pilot.
+
+Optional embedding/reranker first use may download model data from Hugging Face; queries are evaluated
 locally. BM25 never downloads models. Set `HF_HUB_OFFLINE=1` after caching
 weights when optional-model execution must also stay offline. Missing optional
 packages fall back with a warning and structured metadata; model download,

@@ -45,7 +45,8 @@ try:
         format_decide,
         format_design,
     )
-    from .templates import compact_json, format_by_intent, format_compact
+    from .evidence import evidence_detail
+    from .templates import compact_json, format_by_intent, format_search_response
 except ImportError:
     from calc import CALCULATORS, format_calc_result  # type: ignore[no-redef]
     from conflicts import format_tensions, format_tensions_json, scan_conflicts  # type: ignore[no-redef]
@@ -69,7 +70,8 @@ except ImportError:
         format_decide,
         format_design,
     )
-    from templates import compact_json, format_by_intent, format_compact  # type: ignore[no-redef]
+    from evidence import evidence_detail  # type: ignore[no-redef]
+    from templates import compact_json, format_by_intent, format_search_response  # type: ignore[no-redef]
 
 # Force UTF-8 for stdout/stderr to handle emojis on Windows (cp1252 default).
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
@@ -399,6 +401,13 @@ def _build_parser():
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     parser.add_argument("--compact", action="store_true",
                         help="Opt-in source-linked search JSON, bounded to 6000 characters; raw defaults unchanged")
+    parser.add_argument("--evidence", action="store_true",
+                        help="Opt-in version-aware, diverse whole-unit evidence JSON; raw and compact unchanged")
+    parser.add_argument("--max-chars", type=int, default=6000, help="Evidence JSON budget including metadata")
+    parser.add_argument("--project-path", help="Evidence only: inspect root Python manifests locally, never upload")
+    parser.add_argument("--library-version", action="append", default=[], metavar="NAME=VERSION",
+                        help="Evidence only: explicit numeric release; conflicts with manifests are reported")
+    parser.add_argument("--evidence-id", help="Expand an exact bpme ID to its full local source row")
     parser.add_argument("--jsonl", action="store_true",
                         help="Output as JSON Lines (one JSON object per result line)")
     parser.add_argument("--list", action="store_true",
@@ -574,18 +583,41 @@ def main():
     args = parser.parse_args()
     if args.max_results is None:
         args.max_results = 2 if args.all else MAX_RESULTS
-    if args.compact and (
+    if args.compact and args.evidence:
+        parser.error("--compact and --evidence are mutually exclusive")
+    if not args.evidence and (args.project_path is not None or args.library_version or args.max_chars != 6000):
+        parser.error("--project-path, --library-version and --max-chars require --evidence")
+    if args.evidence_id:
+        if any((args.query, args.compact, args.evidence, args.all, args.stack, args.domain, args.jsonl,
+                args.list, args.interactive, args.stale, args.decide, args.adr, args.design, args.conflicts)):
+            parser.error("--evidence-id is a standalone detail operation")
+        try:
+            print(compact_json(evidence_detail(args.evidence_id)))
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
+        return
+    if (args.compact or args.evidence) and (
         args.jsonl or args.interactive or args.list or args.stale or args.conflicts or args.decide
         or args.adr is not None or args.design or args.query in ("compare", "latency")
     ):
-        parser.error("--compact supports normal, --stack, and --all searches only; not --jsonl")
+        parser.error("--compact supports normal, --stack, and --all searches only; not --jsonl (also applies to --evidence)")
+
+    library_versions = {}
+    for expression in args.library_version:
+        name, separator, value = expression.partition("=")
+        if not separator or name in library_versions:
+            parser.error("--library-version requires unique NAME=VERSION entries")
+        library_versions[name] = value
 
     def print_compact(result):
         if args.intent:
             result = {**result, "intent": args.intent}
         try:
-            value = format_compact(result)
-        except ValueError as error:
+            value = format_search_response(
+                result, "evidence" if args.evidence else "compact", max_chars=args.max_chars,
+                project_path=args.project_path, library_versions=library_versions if args.evidence else None,
+            )
+        except (ValueError, OSError) as error:
             parser.error(str(error))
         print(compact_json(value))
 
@@ -664,31 +696,31 @@ def main():
             result = search_all(
                 args.query, max_results=args.max_results, min_score=args.min_score, expand=expand, engine=args.engine,
                 max_age_months=args.max_age_months, rerank=args.rerank, candidate_pool=args.candidate_pool,
-                diagnostics=args.diagnostics, constraints=args.constraints,
+                diagnostics=args.diagnostics, constraints=args.constraints, evidence=args.evidence,
             )
         elif args.stack:
             result = search_stack(
                 args.query, args.stack, max_results=args.max_results, min_score=args.min_score,
                 expand=expand, engine=args.engine, max_age_months=args.max_age_months,
                 rerank=args.rerank, candidate_pool=args.candidate_pool,
-                diagnostics=args.diagnostics, constraints=args.constraints,
+                diagnostics=args.diagnostics, constraints=args.constraints, evidence=args.evidence,
             )
         else:
             result = search(
                 args.query, args.domain, max_results=args.max_results, min_score=args.min_score,
                 expand=expand, engine=args.engine, max_age_months=args.max_age_months,
                 rerank=args.rerank, candidate_pool=args.candidate_pool,
-                diagnostics=args.diagnostics, constraints=args.constraints,
+                diagnostics=args.diagnostics, constraints=args.constraints, evidence=args.evidence,
             )
     except (ValueError, RuntimeError, OSError) as error:
         parser.error(str(error))
     if "error" in result:
         parser.error(result["error"])
-    if "retrieval" in result and not (args.json or args.jsonl or args.compact):
+    if "retrieval" in result and not (args.json or args.jsonl or args.compact or args.evidence):
         print("Retrieval: " + compact_json(result["retrieval"]) + "\n")
 
     if args.all:
-        if args.compact:
+        if args.compact or args.evidence:
             print_compact(result)
         elif args.jsonl:
             print(format_jsonl_all(result))
@@ -702,7 +734,7 @@ def main():
     intent_value = args.intent or classify_intent(args.query).value
     result["intent"] = intent_value
 
-    if args.compact:
+    if args.compact or args.evidence:
         print_compact(result)
     elif args.jsonl:
         print(format_jsonl(result))

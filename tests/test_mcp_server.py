@@ -35,7 +35,7 @@ def test_stdio_transport(tmp_path):
                 async with ClientSession(reader, writer) as session:
                     result = await check_session(session)
                     assert result["status"] == "passed"
-                    assert result["tools"] == 8
+                    assert result["tools"] == 9
                     cases = {
                         "search": {"query": "Kafka", "domain": "messaging"},
                         "search_all": {"query": "idempotency"},
@@ -46,7 +46,21 @@ def test_stdio_transport(tmp_path):
                         "design": {"description": "URL shortener serving 10M reads/day"},
                         "find_stale": {"domain": "pattern", "months": 0},
                     }
-                    assert {tool.name for tool in (await session.list_tools()).tools} == set(cases)
+                    assert {tool.name for tool in (await session.list_tools()).tools} == set(cases) | {"evidence_detail"}
+                    versioned = await session.call_tool("search_stack", {
+                        "query": "pydantic dictionary", "stack": "python-fastapi",
+                        "response_format": "evidence", "library_versions": {"pydantic": "2.10.6"},
+                        "max_chars": 5000,
+                    })
+                    assert not versioned.isError
+                    value = json.loads(versioned.content[0].text)
+                    assert len(versioned.content[0].text) <= 5000
+                    assert value["results"][0]["version_match"] == "match"
+                    detail = await session.call_tool("evidence_detail", {"evidence_id": value["results"][0]["id"]})
+                    assert not detail.isError
+                    assert json.loads(detail.content[0].text)["id"] == value["results"][0]["id"]
+                    stale = await session.call_tool("evidence_detail", {"evidence_id": "bpme:" + "0" * 64})
+                    assert stale.isError
                     for name, arguments in cases.items():
                         response = await session.call_tool(name, arguments)
                         assert not response.isError, name
@@ -64,6 +78,15 @@ def test_stdio_transport(tmp_path):
                         value = json.loads(compact.content[0].text)
                         assert value["format"] == "compact-v1"
                         assert value["count"] > 0
+                        evidence_response = await session.call_tool(name, {
+                            **arguments, "response_format": "evidence", "max_chars": 5000,
+                        })
+                        assert not evidence_response.isError
+                        assert len(evidence_response.content[0].text) <= 5000
+                        actual_evidence = json.loads(evidence_response.content[0].text)
+                        assert actual_evidence == globals()[name](
+                            **arguments, response_format="evidence", max_chars=5000,
+                        )
                     invalid = await session.call_tool(
                         "search", {"query": "Kafka", "response_format": "unsupported"},
                     )
@@ -90,6 +113,9 @@ def test_stdio_transport(tmp_path):
                     for options in [
                         {"engine": "bogus"}, {"candidate_pool": 1, "max_results": 5},
                         {"max_age_months": -1}, {"rerank": "yes"}, {"constraints": "bogus"},
+                        {"response_format": "evidence", "max_chars": 0},
+                        {"response_format": "evidence", "library_versions": {"pydantic": "latest"}},
+                        {"response_format": "raw", "project_path": str(tmp_path)},
                     ]:
                         response = await session.call_tool("search", {"query": "saga", **options})
                         assert response.isError
@@ -122,6 +148,22 @@ def test_real_model_pipeline_over_mcp():
                     assert result["retrieval"]["candidate_count"] > 5
                     assert result["count"] > 0
                     assert len(response.content[0].text) <= 6000
+                    arguments = {
+                        "query": "pydantic dictionary export migration", "stack": "python-fastapi",
+                        "engine": "hybrid", "rerank": True, "candidate_pool": 20,
+                    }
+                    baseline = await session.call_tool("search_stack", arguments)
+                    assert not baseline.isError
+                    versioned = await session.call_tool("search_stack", {
+                        **arguments, "response_format": "evidence",
+                        "library_versions": {"pydantic": "2.10.6"},
+                    })
+                    assert not versioned.isError
+                    result = json.loads(versioned.content[0].text)
+                    assert result["retrieval"]["effective_engine"] == "hybrid"
+                    assert result["retrieval"]["rerank_applied"]
+                    assert result["results"][0]["version_match"] == "match"
+                    assert len(versioned.content[0].text) <= 6000
     anyio.run(exercise)
 
 # ── We test the underlying tool functions directly ──────────────
@@ -140,6 +182,7 @@ if mcp_available:
         compare,
         decide,
         design,
+        evidence_detail,
         find_stale,
         mcp_server,
         search,
@@ -247,10 +290,10 @@ class TestServerMetadata:
         assert mcp_server.name == "Backend Pro Max"
 
     def test_tool_count(self):
-        """Server should expose exactly 8 tools."""
+        """Server should expose the nine canonical tools."""
         # FastMCP stores tools internally; we verify via our definitions
         tools = mcp_server._tool_manager._tools
-        assert len(tools) == 8, f"Expected 8 tools, got {len(tools)}: {list(tools.keys())}"
+        assert len(tools) == 9, f"Expected 9 tools, got {len(tools)}: {list(tools.keys())}"
 
 
 def test_unexpected_failure_is_not_a_success_dictionary(monkeypatch):
@@ -262,6 +305,11 @@ def test_unexpected_failure_is_not_a_success_dictionary(monkeypatch):
     monkeypatch.setattr(module.core, "search", fail)
     with pytest.raises(OSError, match="storage unavailable"):
         search("Kafka")
+
+
+def test_unknown_evidence_id_fails_directly():
+    with pytest.raises(ValueError, match="not found"):
+        evidence_detail("bpme:" + "0" * 64)
 
 
 def test_tool_contracts_match_function_signatures():
