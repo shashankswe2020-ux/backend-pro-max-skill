@@ -93,15 +93,19 @@ def _git(root: Path, *args: str, input_data: bytes | None = None, allowed=(0,)) 
     return result.stdout
 
 
+def workspace_revision(root: str) -> tuple[Path, str]:
+    path = Path(root).resolve()
+    if not path.is_dir():
+        raise ValueError("workspace_root must be an existing Git repository root")
+    top = _git(path, "rev-parse", "--show-toplevel").decode().strip()
+    if Path(top).resolve() != path:
+        raise ValueError("workspace_root must be the Git repository root")
+    return path, _git(path, "rev-parse", "--verify", "HEAD").decode().strip()
+
+
 class Snapshot:
     def __init__(self, root: str, paths: list[str], expected_revision=None, expected_files=None):
-        self.root = Path(root).resolve()
-        if not self.root.is_dir():
-            raise ValueError("workspace_root must be an existing Git repository root")
-        top = _git(self.root, "rev-parse", "--show-toplevel").decode().strip()
-        if Path(top).resolve() != self.root:
-            raise ValueError("workspace_root must be the Git repository root")
-        self.revision = _git(self.root, "rev-parse", "--verify", "HEAD").decode().strip()
+        self.root, self.revision = workspace_revision(root)
         if expected_revision is not None and expected_revision != self.revision:
             raise ValueError("Stale repository revision; refresh editor evidence")
         if (

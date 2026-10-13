@@ -4,7 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 
-_EVIDENCE_FORMATS = {"compact-v1", "evidence-v1", "repository-context-v1"}
+_EVIDENCE_FORMATS = {"compact-v1", "evidence-v1", "repository-context-v1", "verified-memory-v1", "memory-sequence-context-v1"}
 
 def describe_payload(value: dict) -> dict:
     if not isinstance(value, dict):
@@ -42,7 +42,7 @@ def describe_payload(value: dict) -> dict:
                 for source in row.get("sources", {}).values():
                     if isinstance(source, str) and source:
                         citations.append(source)
-                if row.get("kind") == "local" and isinstance(row.get("id"), str):
+                if row.get("kind") in ("local", "verified_memory") and isinstance(row.get("id"), str):
                     citations.append(row["id"])
     return {
         "status": status, "result_count": len(rows) if rows is not None else None,

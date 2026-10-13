@@ -45,6 +45,7 @@ try:
     from . import decide as decisions
     from .evidence import evidence_detail as expand_evidence
     from .gen_tools_schema import TOOLS
+    from .memory import memory_context as recalled_context
     from .repository import repository_context as local_context
     from .templates import compact_json, format_search_response
 except ImportError:
@@ -52,6 +53,7 @@ except ImportError:
     import decide as decisions  # type: ignore[no-redef]
     from evidence import evidence_detail as expand_evidence  # type: ignore[no-redef]
     from gen_tools_schema import TOOLS  # type: ignore[no-redef]
+    from memory import memory_context as recalled_context  # type: ignore[no-redef]
     from repository import repository_context as local_context  # type: ignore[no-redef]
     from templates import compact_json, format_search_response  # type: ignore[no-redef]
 
@@ -75,7 +77,7 @@ class CanonicalFastMCP(FastMCP):
         except ValidationError as error:
             raise ToolError(f"Invalid arguments for {name}: {error.message}") from error
         result = await super().call_tool(name, arguments)
-        if arguments.get("response_format") in ("compact", "evidence") or name == "repository_context":
+        if arguments.get("response_format") in ("compact", "evidence") or name in ("repository_context", "memory_context"):
             # FastMCP returns either content or (content, structured output).
             content = result[0] if isinstance(result, tuple) else result
             if not isinstance(content, (list, tuple)):
@@ -104,6 +106,19 @@ def expose(function):
 
 
 # ── Tool definitions ─────────────────────────────────────────────
+
+@expose
+def memory_context(
+    query: str, sequence: str, family: str, task: str, ordinal: int,
+    allowed_tasks: list[str], library_versions: dict[str, str], max_chars: int = 6000,
+) -> dict:
+    """Read approved summaries; only the operator CLI can mutate or approve the store."""
+    root, store = os.environ.get("BACKENDPRO_WORKSPACE"), os.environ.get("BACKENDPRO_MEMORY_STORE")
+    if not root or not store:
+        raise ValueError("Memory is disabled; operator must configure BACKENDPRO_WORKSPACE and BACKENDPRO_MEMORY_STORE")
+    return recalled_context(query, sequence, family, task, ordinal, allowed_tasks, library_versions,
+                            workspace_root=root, store=store, max_chars=max_chars)
+
 
 @expose
 def search(

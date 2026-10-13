@@ -80,6 +80,13 @@ def main():
         local = json.loads(local_text)
         assert local["count"] == 1 and local["results"][0]["kind"] == "local"
         assert len(local_text.rstrip("\n")) <= 6000
+        store = root / "memory"
+        store.mkdir(mode=0o700)
+        memory = json.loads(run(
+            "-m", "backendpro.scripts.search", "memory", "init",
+            "--workspace-root", str(project), "--store", str(store),
+        ))
+        assert memory["records"] == 0 and not memory["reuse_enabled"]
         report = json.loads(run("-m", "backendpro.scripts.coverage", "--json"))
         assert report["summary"]["domain_count"] == 34
         assert report["summary"]["total_rows"] > 0
@@ -88,7 +95,7 @@ def main():
             "from backendpro.scripts.coverage import _load_targets; "
             "assert _load_targets().get('database'), 'Missing bundled coverage targets'",
         )
-        print("Wheel smoke passed: isolated install, BM25 defaults, explicit fallback, P2 evidence/detail, P3 local context, source validation, coverage targets")
+        print("Wheel smoke passed: isolated install, BM25 defaults, explicit fallback, P2 evidence/detail, P3 local context, P4 disabled memory, source validation, coverage targets")
 
 
 if __name__ == "__main__":

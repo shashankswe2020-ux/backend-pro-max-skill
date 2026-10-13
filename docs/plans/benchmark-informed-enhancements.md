@@ -70,6 +70,24 @@ check establishes independent relevance, agent activation or hidden patch
 correctness. Those outcome gates remain pending; no default or competitive
 quality promotion is claimed. See [scope and reproduction](../../CONTRIBUTING.md#p3-local-grounding-validation).
 
+### P4 gated memory infrastructure follow-up (2026-10-13)
+
+Explicitly approved infrastructure is available while reuse remains disabled
+pending real recurring-pattern trace review. A private repository-bound store
+accepts only operator-approved, reported-test-backed summaries with exact
+versions, source hashes/revision, failure conditions and expiry. CLI-only
+management supports correction, deletion and gate revocation; MCP only retrieves.
+Operator attestations and hashes do not authenticate execution or review.
+
+Chronological inputs distinguish no memory, raw prior tool context and selective
+verified memory; permissions forbid current/future and cross-family tasks.
+Offline reporting includes every assignment and setup-token cost, paired
+family-cluster uncertainty, a 15% token-reduction diagnostic and a -2 pp resolution
+non-inferiority margin. Stale-guidance/contamination regressions reject memory.
+Tests use synthetic attestations/counters only. No real trace approval, token
+savings, non-inferiority or independent outcome gate is claimed, and no default
+retrieval path consumes memory. See [contracts and reproduction](../../CONTRIBUTING.md#p4-chronological-memory-infrastructure).
+
 ### M1 delivery
 
 - Canonical domain/stack schemas shared by the manifest and actual MCP discovery/validation.

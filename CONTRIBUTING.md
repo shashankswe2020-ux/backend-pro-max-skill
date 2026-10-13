@@ -189,6 +189,76 @@ gate, unsupported-claim review, held-out success or evidence-application proof.
 `quality_gates_demonstrated` remains false. Raw/compact defaults and historical
 benchmark artifacts remain unchanged.
 
+### P4 chronological memory infrastructure
+
+```bash
+pytest tests/test_memory.py tests/test_memory_benchmark.py \
+  tests/test_repository.py tests/test_mcp_server.py tests/test_tools_schema.py
+python -m backendpro.scripts.memory_benchmark protocol.json observations.json \
+  --output memory-report.json
+```
+
+The fixtures are synthetic operator attestations and token counters, not real
+recurring-pattern traces or efficiency measurements. Actual CLI/MCP tests use
+temporary private stores, revoke approval and verify tool errors; normal product
+reuse remains disabled. No provider calls, raw conversation capture or automatic
+approval are implemented. See [operator contracts](docs/USAGE.md#verified-experience-reuse-p4-gated-off-by-default).
+
+`memory_benchmark.context_for_task(protocol, task_id, arm, workspace_root=...,
+store=..., prior_context=..., repetition=0)` builds one bounded input for a coding harness.
+Its arms are `no_memory`, `raw_prior_context`, and `verified_memory`. Every call
+starts empty; the first two never access the summary store. No conversation or
+raw context is persisted. For the raw arm, supply **only** allowed preceding IDs,
+each mapped to `{tool_context, approved: true, source_arm: "raw_prior_context", scope}`.
+Use authorized tool output, not raw conversations, hidden tests or held-out solutions.
+Verified retrieval requires the operator gate and revalidates record origin
+against the schedule. It never writes the store during evaluation.
+
+Freeze a protocol with exactly:
+
+- `format="memory-sequence-v1"`, `study`, explicit pinned `model_revision`,
+  UTC `preregistered_at` ending in `Z`, `repetitions` (1-10), `max_chars`.
+- `tasks`: entries with unique `id`, `sequence`, `family`, nonnegative `ordinal`,
+  explicit `allowed_tasks`, `query`, and exact `library_versions`.
+  Permissions must refer to strictly earlier tasks within that family/sequence.
+
+`sequence_scope(protocol, sequence, repetition)` returns the required opaque
+scope ID bound to the entire protocol and repetition. Use it for raw `scope`
+and stored summary `origin.sequence`; a plain schedule sequence name will not
+match. Changed protocols/studies or repetitions cannot reuse an earlier scope.
+Use separate fresh stores as an additional independent-study safeguard.
+Within an authorized verified-memory sequence, ingest only approved
+preceding outcomes from that arm. Never seed a treatment from another arm's
+solutions. The harness owns task execution, test receipts and isolated workspaces;
+this helper does not execute agents or tests. Strict revision invalidation may
+require a fresh test-backed review after a task changes the revision.
+
+Each observation must contain `task`, `arm`, zero-based `repetition`,
+`protocol_sha256` (canonical sorted-JSON SHA256 via `repository._identity`),
+UTC `started_at`/`finished_at`, `status` (`completed`, `failed`, `timeout`),
+boolean `resolved`, measured integer `input_tokens`, `output_tokens`,
+`setup_tokens`, `source_tasks`, `context_sha256`, and boolean
+`stale_guidance`/`contamination`. Charge summary creation/review model tokens to
+setup; include failed, empty and timed-out attempts. Unknown token counts cannot
+be silently replaced by zero. Record the actual model/tokenizer accounting,
+transport/chat overhead and non-token verification cost in the study artifacts.
+
+Reporting rejects missing/duplicate assignments, future/cross-family evidence,
+protocol mismatches and nonchronological executions. It compares paired total
+tokens and resolution against **both** baselines, clustering by task family
+(including repetitions). The fixed diagnostic uses 2000 bootstrap draws,
+seed 0, and Bonferroni 98.75% percentile intervals for four endpoints (nominal
+95% familywise). Fewer than two clusters or undefined ratios yield no interval;
+few clusters remain unreliable and cannot establish statistical power.
+
+Diagnostic eligibility requires >=15% point-estimate token reduction with
+positive lower confidence bounds, and resolution lower bounds >=-2 percentage
+points against both baselines. This does not prove a population reduction of
+at least 15%. Any verified-memory stale-guidance/contamination regression rejects
+the treatment. Otherwise unmet thresholds are inconclusive. `quality_gates_demonstrated`
+always remains false: imported observations/hashes are not authenticated execution
+or independent review, and a report never enables reuse.
+
 ### P3 local grounding validation
 
 ```bash
