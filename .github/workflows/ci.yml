@@ -44,6 +44,33 @@ jobs:
           backendpro compare "Kafka" "RabbitMQ" --domain messaging
           backendpro "idempotency" --all
 
+  p0-task-infrastructure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install evaluation dependencies
+        run: python -m pip install -e ".[dev]"
+      - name: Lint P0 evaluation tooling
+        run: python -m ruff check scripts/run_p0.py scripts/run_m3.py benchmarks/p0/tasks.py tests/test_p0.py
+      - name: Build pinned grading image
+        run: docker build -t backendpro-m3:p0-ci benchmarks/m3/environment
+      - name: Freeze development cohort
+        run: python scripts/run_p0.py freeze --image backendpro-m3:p0-ci --output "${{ runner.temp }}/p0-frozen"
+      - name: Verify all references and seeded faulty starters
+        run: python scripts/run_p0.py self-test --frozen "${{ runner.temp }}/p0-frozen" --output "${{ runner.temp }}/p0-self-test"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p0-infrastructure-validation
+          path: |
+            ${{ runner.temp }}/p0-frozen/manifest.json
+            ${{ runner.temp }}/p0-self-test/
+
   mcp-integration:
     runs-on: ubuntu-latest
     steps:
@@ -55,7 +82,13 @@ jobs:
       - name: Install MCP test dependencies
         run: python -m pip install -e ".[dev,mcp]"
       - name: Verify MCP tools
-        run: python -m pytest tests/test_mcp_server.py tests/test_tools_schema.py tests/test_compact.py tests/test_m4_retrieval.py
+        run: python -m pytest tests/test_mcp_server.py tests/test_tools_schema.py tests/test_compact.py tests/test_p2_evidence.py tests/test_repository.py tests/test_memory.py tests/test_memory_benchmark.py tests/test_m4_retrieval.py
+      - name: Measure explicit-scope repository evidence retention
+        run: python -m backendpro.scripts.benchmark tests/repository-benchmark.json --repository-root . --repository-budgets 2500 4000 6000 --output repository-benchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: repository-context-diagnostic
+          path: repository-benchmark.json
 
   wheel-smoke:
     runs-on: ubuntu-latest
@@ -79,12 +112,25 @@ jobs:
           python-version: "3.11"
           cache: pip
       - name: Install retrieval test dependencies
-        run: python -m pip install -e ".[dev,semantic,rerank]"
+        run: python -m pip install -e ".[dev,semantic,rerank,mcp,tokens]"
       - name: Verify real retrieval models and fallback behavior
-        run: python -m pytest tests/test_semantic.py tests/test_rerank.py
+        run: python -m pytest tests/test_semantic.py tests/test_rerank.py tests/test_p1_retrieval.py tests/test_p2_evidence.py tests/test_mcp_server.py
       - name: Measure retrieval quality and warm latency
-        run: python -m backendpro.scripts.benchmark tests/retrieval-benchmark.json --output retrieval-benchmark.json
+        run: python -m backendpro.scripts.benchmark tests/retrieval-benchmark.json --candidate-pools 20 50 --output retrieval-benchmark.json
+      - name: Measure whole-evidence retention with pinned target tokenizer
+        run: |
+          curl --fail --silent --show-error --location \
+            https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct/resolve/c03e6d358207e414f1eca0bb1891e29f1db0e242/tokenizer.json \
+            --output "${{ runner.temp }}/qwen-tokenizer.json"
+          python -m backendpro.scripts.benchmark tests/evidence-benchmark.json \
+            --evidence-budgets 1000 2000 4000 \
+            --tokenizer-file "${{ runner.temp }}/qwen-tokenizer.json" \
+            --tokenizer-sha256 c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539 \
+            --tokenizer-id Qwen/Qwen2.5-Coder-7B-Instruct@c03e6d358207e414f1eca0bb1891e29f1db0e242 \
+            --output evidence-benchmark.json
       - uses: actions/upload-artifact@v4
         with:
           name: retrieval-benchmark
-          path: retrieval-benchmark.json
+          path: |
+            retrieval-benchmark.json
+            evidence-benchmark.json

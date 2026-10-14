@@ -103,19 +103,217 @@ or a successful HTTP response does not establish factual correctness.
 
 ```bash
 python -m pip install -e ".[dev,mcp,semantic,rerank]"
-python -m pytest tests/test_mcp_server.py tests/test_semantic.py tests/test_rerank.py
-python -m backendpro.scripts.benchmark tests/retrieval-benchmark.json --output benchmark.json
+python -m pytest tests/test_mcp_server.py tests/test_semantic.py tests/test_rerank.py tests/test_p1_retrieval.py tests/test_benchmark.py
+python -m backendpro.scripts.benchmark tests/retrieval-benchmark.json --candidate-pools 20 50 --output benchmark.json
 python -m pip wheel --no-deps --wheel-dir dist .
 python scripts/smoke_wheel.py dist/backendpro-0.9.0-py3-none-any.whl
 ```
 
-The benchmark reports binary Recall@K, MRR@K, nDCG@K, and warm-query p50/p95
-latency for BM25, hybrid, and hybrid-plus-reranking. Downloads, model loading,
+The benchmark exercises the shared production pipeline and reports labeled
+Recall@K, Precision@K, MRR@K, nDCG@K, false no-match rate on answerable cases,
+abstention on explicitly unanswerable cases, and warm-query p50/p95 latency.
+Modes are `bm25-no-expand`, `bm25` (existing synonym expansion), `hybrid`, and
+`hybrid-rerank`. Candidate pools of 20/50 keep a fixed final top five.
+Downloads, model loading,
 and index creation are excluded from latency. Use `--modes bm25` without ML
 dependencies, or `--max-p95-ms N` to enforce your environment's latency budget.
 The supplied eight-query set is an author-labeled diagnostic, not a held-out
-evaluation; review broader relevance labels independently before making
-retrieval-quality claims. CI retains the model benchmark as an artifact.
+evaluation; it has one positive label per query and no unanswerable cases.
+Its incomplete labels cannot establish reviewer-rated Precision@5 >= 80%;
+a missing unanswerable track is reported as null, not zero errors.
+Review broader relevance/applicability labels independently before making
+retrieval-quality claims. Proposed P1 development gates are Recall@5 >= 90%,
+reviewed Precision@5 >= 80%, and answerable false no-match <= 5%.
+The report deliberately keeps `quality_gates_demonstrated=false`.
+Do not alter the dataset or corpus to improve these reported scores.
+CI retains the model benchmark as an artifact, including corpus hashes and
+immutable model revisions. Model/dependency fallback invalidates a benchmark.
+
+P1 preserves BM25 defaults and exposes engine/pool/filter controls consistently
+through CLI/MCP. See [usage and compatibility](docs/USAGE.md#retrieval-pipeline-and-diagnostics).
+Raw JSON gains `retrieval` metadata only for opt-in settings; compact keeps it
+within its bound; JSONL prepends a metadata record when present.
+Historical traces must still be validated against their frozen schemas, not
+the new tool catalogue. No corpus expansion is included without reviewed
+development failures; P0's independent labels and model calibration remain
+external prerequisites for quality claims.
+
+### P2 evidence and token-budget evaluation
+
+P2 is an opt-in source/output contract, not a default retrieval-quality upgrade.
+The four original Pydantic summaries in `src/backend-pro-max/data/evidence.json`
+bind exact release scopes to immutable official upstream document revisions and
+SHA256 hashes. `backendpro-validate` checks the supplemental corpus and any
+version metadata in CSVs. Keep library `Applies To`, `Platform Assumptions`,
+`Source Revision`, `Source SHA256` and `Last Verified` independent of corpus
+provenance. Do not extrapolate pilot compatibility to unreviewed versions or
+API namespaces. Source hashes bind an inspected snapshot; offline validation
+checks structure and local identity, not the truth of the upstream claims.
+
+```bash
+pytest tests/test_p2_evidence.py tests/test_mcp_server.py tests/test_tools_schema.py
+python -m backendpro.scripts.benchmark tests/evidence-benchmark.json \
+  --evidence-budgets 1000 2000 4000 --output evidence-characters.json
+```
+
+Those are **character** budgets. For actual target-token accounting, install
+the optional `tokens` extra and download only the public tokenizer data:
+
+```bash
+pip install -e '.[tokens]'
+TOKENIZER="$(mktemp)"
+curl --fail --silent --show-error --location \
+  https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct/resolve/c03e6d358207e414f1eca0bb1891e29f1db0e242/tokenizer.json \
+  --output "$TOKENIZER"
+python -m backendpro.scripts.benchmark tests/evidence-benchmark.json \
+  --evidence-budgets 1000 2000 4000 --tokenizer-file "$TOKENIZER" \
+  --tokenizer-sha256 c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539 \
+  --tokenizer-id Qwen/Qwen2.5-Coder-7B-Instruct@c03e6d358207e414f1eca0bb1891e29f1db0e242 \
+  --output evidence-tokens.json
+rm "$TOKENIZER"
+```
+
+The benchmark rejects hash mismatches, disables tokenizer truncation/padding,
+and counts the exact serialized evidence JSON without special tokens. It does
+not count chat templates, transport envelopes or generated code. Token mode
+also has an explicit 24000-character ceiling. No model weights, provider calls
+or workspace uploads are needed. CI retains this report alongside the existing
+ranking ablations. Reports bind source/corpus/dataset/tokenizer identities.
+
+The four author-labeled cases retained all labeled critical fields at each of
+the 1k/2k/4k token budgets in the local pinned-tokenizer run; retained local
+source bindings and omission arithmetic were valid. Sparse label precision
+declined as larger budgets admitted additional units. These are diagnostic
+results, not the proposed >=95% independently reviewer-rated applicability
+gate, unsupported-claim review, held-out success or evidence-application proof.
+`quality_gates_demonstrated` remains false. Raw/compact defaults and historical
+benchmark artifacts remain unchanged.
+
+### P4 chronological memory infrastructure
+
+```bash
+pytest tests/test_memory.py tests/test_memory_benchmark.py \
+  tests/test_repository.py tests/test_mcp_server.py tests/test_tools_schema.py
+python -m backendpro.scripts.memory_benchmark protocol.json observations.json \
+  --output memory-report.json
+```
+
+The fixtures are synthetic operator attestations and token counters, not real
+recurring-pattern traces or efficiency measurements. Actual CLI/MCP tests use
+temporary private stores, revoke approval and verify tool errors; normal product
+reuse remains disabled. No provider calls, raw conversation capture or automatic
+approval are implemented. See [operator contracts](docs/USAGE.md#verified-experience-reuse-p4-gated-off-by-default).
+
+`memory_benchmark.context_for_task(protocol, task_id, arm, workspace_root=...,
+store=..., prior_context=..., repetition=0)` builds one bounded input for a coding harness.
+Its arms are `no_memory`, `raw_prior_context`, and `verified_memory`. Every call
+starts empty; the first two never access the summary store. No conversation or
+raw context is persisted. For the raw arm, supply **only** allowed preceding IDs,
+each mapped to `{tool_context, approved: true, source_arm: "raw_prior_context", scope}`.
+Use authorized tool output, not raw conversations, hidden tests or held-out solutions.
+Verified retrieval requires the operator gate and revalidates record origin
+against the schedule. It never writes the store during evaluation.
+
+Freeze a protocol with exactly:
+
+- `format="memory-sequence-v1"`, `study`, explicit pinned `model_revision`,
+  UTC `preregistered_at` ending in `Z`, `repetitions` (1-10), `max_chars`.
+- `tasks`: entries with unique `id`, `sequence`, `family`, nonnegative `ordinal`,
+  explicit `allowed_tasks`, `query`, and exact `library_versions`.
+  Permissions must refer to strictly earlier tasks within that family/sequence.
+
+`sequence_scope(protocol, sequence, repetition)` returns the required opaque
+scope ID bound to the entire protocol and repetition. Use it for raw `scope`
+and stored summary `origin.sequence`; a plain schedule sequence name will not
+match. Changed protocols/studies or repetitions cannot reuse an earlier scope.
+Use separate fresh stores as an additional independent-study safeguard.
+Within an authorized verified-memory sequence, ingest only approved
+preceding outcomes from that arm. Never seed a treatment from another arm's
+solutions. The harness owns task execution, test receipts and isolated workspaces;
+this helper does not execute agents or tests. Strict revision invalidation may
+require a fresh test-backed review after a task changes the revision.
+
+Each observation must contain `task`, `arm`, zero-based `repetition`,
+`protocol_sha256` (canonical sorted-JSON SHA256 via `repository._identity`),
+UTC `started_at`/`finished_at`, `status` (`completed`, `failed`, `timeout`),
+boolean `resolved`, measured integer `input_tokens`, `output_tokens`,
+`setup_tokens`, `source_tasks`, `context_sha256`, and boolean
+`stale_guidance`/`contamination`. Charge summary creation/review model tokens to
+setup; include failed, empty and timed-out attempts. Unknown token counts cannot
+be silently replaced by zero. Record the actual model/tokenizer accounting,
+transport/chat overhead and non-token verification cost in the study artifacts.
+
+Reporting rejects missing/duplicate assignments, future/cross-family evidence,
+protocol mismatches and nonchronological executions. It compares paired total
+tokens and resolution against **both** baselines, clustering by task family
+(including repetitions). The fixed diagnostic uses 2000 bootstrap draws,
+seed 0, and Bonferroni 98.75% percentile intervals for four endpoints (nominal
+95% familywise). Fewer than two clusters or undefined ratios yield no interval;
+few clusters remain unreliable and cannot establish statistical power.
+
+Diagnostic eligibility requires >=15% point-estimate token reduction with
+positive lower confidence bounds, and resolution lower bounds >=-2 percentage
+points against both baselines. This does not prove a population reduction of
+at least 15%. Any verified-memory stale-guidance/contamination regression rejects
+the treatment. Otherwise unmet thresholds are inconclusive. `quality_gates_demonstrated`
+always remains false: imported observations/hashes are not authenticated execution
+or independent review, and a report never enables reuse.
+
+### P3 local grounding validation
+
+```bash
+pytest tests/test_repository.py tests/test_mcp_server.py tests/test_tools_schema.py \
+  tests/test_p2_evidence.py tests/test_compact.py tests/test_retrieval_evidence.py
+python -m backendpro.scripts.benchmark tests/repository-benchmark.json \
+  --repository-root . --repository-budgets 2500 4000 6000 \
+  --output repository-benchmark.json
+```
+
+The repository fixture must be tracked (it is included in this branch).
+The diagnostic compares literal line windows and bounded AST units over the
+same explicit files, labels and **character**, not token, budgets. It measures
+line recall/precision, retained critical lines, omissions and a no-match
+control. The tiny authored fixture retained its critical lines with AST at
+2500 characters where literal windows did not; both retained them at larger
+budgets. That is a mechanical diagnostic, not independently reviewed relevance,
+agent activation or hidden multi-file patch correctness.
+
+For a native editor handoff, save selected buffers, capture source hashes
+before the native call, and use real Locations returned by the editor:
+
+```python
+from backendpro.scripts.repository import Snapshot, editor_context, repository_context
+
+capture = Snapshot(root, paths).binding()
+# Obtain `locations` with the editor's native textDocument/references call now.
+packet = editor_context(
+    root, locations, client="VS Code/Pylance", method="textDocument/references",
+    expected_revision=capture["revision"], expected_files=capture["files"],
+)
+result = repository_context(query, paths, workspace_root=root, editor=packet)
+```
+
+Record native-provider results separately from MCP transport checks. The local
+pilot used four references from the **live VS Code/Pylance LSP tool**, then
+validated the saved-file packet through the CLI and an **actual Python MCP SDK
+stdio client**. Both returned the same bounded evidence; all four units fit at
+the default 6000 characters. This is one native editor plus a second protocol
+client, **not two commercial IDEs**. It does not authenticate unsaved buffers
+or prove that a model correctly applies the evidence.
+
+Tests cover stale revisions, same-mtime edits, concurrent changes, changed
+ignore policy, root/path boundaries, tracked ignored files, common secret
+patterns, symlinks, missing root authorization, output bounds, native range
+validation and P2 compatibility. Secret screening is conservative, not
+comprehensive DLP. Test code does not execute the inspected repository.
+Verification commands remain suggestions, and local/curated tensions remain
+unresolved rather than guessed away. CI runs the fixture diagnostic, real MCP
+checks and a no-dependency installed-wheel context smoke check.
+
+The P3 outcome gate remains pending: independent code-context labels, actual
+agent negative-control activation and hidden multi-file correctness have not
+been measured. `quality_gates_demonstrated` stays false. No paid coding-model
+calls, held-out solution ingestion or persistent task memory is introduced.
 
 ### Context7 comparison: SWE-bench Verified pilot
 
@@ -238,6 +436,20 @@ and both-available arms resolved 12, 14, 12, and 13 of 18 tasks respectively.
 No model attempt invoked a knowledge tool. Do not present the numerical
 differences as a retrieval-quality ranking or a product superiority claim.
 The aggregate API cost upper bound was $3.575932, including startup checks.
+
+### P0 harder-cohort readiness
+
+The [P0 workflow](benchmarks/p0/README.md) extends the existing M3 Docker grader
+with 40 multi-file development cases, separate held-out intake, baseline
+headroom checks, hash-bound retrieval diagnosis, and external benchmark
+access/usage gates. It makes no provider calls. Independent review, paid-model
+calibration and independently authored evaluation tasks remain explicit
+prerequisites, not results implied by a successful local self-test.
+
+Use `python scripts/run_p0.py --help` and follow the workflow's freeze,
+self-test and readiness steps. Keep private evaluation exports outside the
+checkout. Preserve the existing 24 public M3 tasks as smoke/regression coverage
+and never rewrite historical benchmark artifacts.
 
 ### M1 integration and evaluation gates
 

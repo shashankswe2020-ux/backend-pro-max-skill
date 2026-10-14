@@ -30,11 +30,9 @@ try:
         CSV_CONFIG,
         MAX_RESULTS,
         Intent,
-        apply_constraints,
         classify_intent,
         compare,
         find_stale,
-        parse_constraints,
         search,
         search_all,
         search_stack,
@@ -47,7 +45,8 @@ try:
         format_decide,
         format_design,
     )
-    from .templates import compact_json, format_by_intent, format_compact
+    from .evidence import evidence_detail
+    from .templates import compact_json, format_by_intent, format_search_response
 except ImportError:
     from calc import CALCULATORS, format_calc_result  # type: ignore[no-redef]
     from conflicts import format_tensions, format_tensions_json, scan_conflicts  # type: ignore[no-redef]
@@ -56,11 +55,9 @@ except ImportError:
         CSV_CONFIG,
         MAX_RESULTS,
         Intent,
-        apply_constraints,
         classify_intent,
         compare,
         find_stale,
-        parse_constraints,
         search,
         search_all,
         search_stack,
@@ -73,7 +70,8 @@ except ImportError:
         format_decide,
         format_design,
     )
-    from templates import compact_json, format_by_intent, format_compact  # type: ignore[no-redef]
+    from evidence import evidence_detail  # type: ignore[no-redef]
+    from templates import compact_json, format_by_intent, format_search_response  # type: ignore[no-redef]
 
 # Force UTF-8 for stdout/stderr to handle emojis on Windows (cp1252 default).
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
@@ -83,16 +81,6 @@ if sys.stderr.encoding and sys.stderr.encoding.lower() != "utf-8":
 
 
 # ============ FORMATTERS ============
-def _confidence_label(score):
-    if score >= 4.0:
-        return "high"
-    if score >= 1.5:
-        return "medium"
-    if score > 0:
-        return "low"
-    return "none"
-
-
 def format_output(result, show_scores=True):
     """Format results for AI/CLI consumption (token-optimized)."""
     if "error" in result:
@@ -117,7 +105,7 @@ def format_output(result, show_scores=True):
         if citation:
             header += f"  {citation}"
         if show_scores and score is not None:
-            header += f"  _(score: {score:.2f}, confidence: {_confidence_label(score)})_"
+            header += f"  _(rank score: {score:.2f})_"
         output.append(header)
         for key, value in row.items():
             if key in ("_score", "_citation"):
@@ -226,9 +214,11 @@ def format_stale(result):
 
 def format_jsonl(result):
     """One JSON object per result line (single-domain search)."""
-    if "error" in result or not result.get("results"):
+    if "error" in result:
         return ""
     lines = []
+    if "retrieval" in result:
+        lines.append(json.dumps({"_type": "retrieval_metadata", "retrieval": result["retrieval"]}, ensure_ascii=False))
     domain = result.get("domain", "")
     for i, row in enumerate(result["results"], 1):
         obj = {"_index": i, "_domain": domain}
@@ -240,6 +230,8 @@ def format_jsonl(result):
 def format_jsonl_all(result):
     """One JSON object per result line (cross-domain), with ``_domain``."""
     lines = []
+    if "retrieval" in result:
+        lines.append(json.dumps({"_type": "retrieval_metadata", "retrieval": result["retrieval"]}, ensure_ascii=False))
     idx = 0
     for domain, rows in result.get("results", {}).items():
         for row in rows:
@@ -385,22 +377,23 @@ def _build_parser():
     parser.add_argument("compare_args", nargs="*",
                         help="When the first positional is 'compare', the remaining names to compare.")
 
-    parser.add_argument("--domain", "-d", choices=list(CSV_CONFIG.keys()),
+    scope = parser.add_mutually_exclusive_group()
+    scope.add_argument("--domain", "-d", choices=list(CSV_CONFIG.keys()),
                         help="Search a specific domain (auto-detected if omitted)")
-    parser.add_argument("--stack", "-s", choices=AVAILABLE_STACKS,
+    scope.add_argument("--stack", "-s", choices=AVAILABLE_STACKS,
                         help=f"Stack-specific search. Available: {', '.join(AVAILABLE_STACKS)}")
-    parser.add_argument("--all", action="store_true",
+    scope.add_argument("--all", action="store_true",
                         help="Cross-domain search across every CSV")
-    parser.add_argument("--max-results", "-n", type=int, default=MAX_RESULTS,
-                        help=f"Max results per domain (default: {MAX_RESULTS})")
+    parser.add_argument("--max-results", "-n", type=int, default=None,
+                        help=f"Max results per scope (default: {MAX_RESULTS}; --all defaults to 2 per domain)")
     parser.add_argument("--min-score", type=float, default=0.0,
-                        help="Drop results with BM25 score <= this (default 0.0)")
+                        help="Drop pre-rerank BM25/cosine/RRF rank scores <= this (default 0.0; not confidence)")
     parser.add_argument("--max-age-months", type=int, default=None,
                         help="Drop results whose `Last Updated` is older than N months")
     parser.add_argument("--no-expand", action="store_true",
                         help="Disable synonym expansion")
     parser.add_argument("--no-scores", action="store_true",
-                        help="Hide BM25 confidence scores in markdown output")
+                        help="Hide rank scores in markdown output")
     parser.add_argument("--stale", action="store_true",
                         help="List stale entries in --domain (requires --max-age-months)")
     parser.add_argument("--interactive", "-i", action="store_true",
@@ -408,6 +401,13 @@ def _build_parser():
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     parser.add_argument("--compact", action="store_true",
                         help="Opt-in source-linked search JSON, bounded to 6000 characters; raw defaults unchanged")
+    parser.add_argument("--evidence", action="store_true",
+                        help="Opt-in version-aware, diverse whole-unit evidence JSON; raw and compact unchanged")
+    parser.add_argument("--max-chars", type=int, default=6000, help="Evidence JSON budget including metadata")
+    parser.add_argument("--project-path", help="Evidence only: inspect root Python manifests locally, never upload")
+    parser.add_argument("--library-version", action="append", default=[], metavar="NAME=VERSION",
+                        help="Evidence only: explicit numeric release; conflicts with manifests are reported")
+    parser.add_argument("--evidence-id", help="Expand an exact bpme ID to its full local source row")
     parser.add_argument("--jsonl", action="store_true",
                         help="Output as JSON Lines (one JSON object per result line)")
     parser.add_argument("--list", action="store_true",
@@ -428,7 +428,11 @@ def _build_parser():
                         default=os.environ.get("BACKENDPRO_ENGINE", "bm25"),
                         help="Search engine: bm25 (default), hybrid (BM25+embeddings), semantic")
     parser.add_argument("--rerank", action="store_true",
-                        help="Re-rank BM25 results with a cross-encoder (requires backendpro[rerank])")
+                        help="Re-rank candidates before final top-N selection (requires backendpro[rerank])")
+    parser.add_argument("--candidate-pool", type=int,
+                        help="Candidates per scope, >= -n (default: max(20,-n) with --rerank, otherwise -n)")
+    parser.add_argument("--diagnostics", action="store_true",
+                        help="Expose requested/effective engines, fallbacks and bounded auto-scope hints")
     parser.add_argument("--show-provenance", action="store_true",
                         help="Include provenance fields (Added By, Version) in output")
     parser.add_argument("--conflicts", action="store_true",
@@ -516,6 +520,20 @@ def _handle_calc(argv):
 def main():
     # Intercept subcommands before argparse.
     raw_args = sys.argv[1:]
+    if raw_args and raw_args[0] == "memory":
+        try:
+            from .memory import main as memory_main
+        except ImportError:
+            from memory import main as memory_main
+        memory_main(raw_args[1:])
+        return
+    if raw_args and raw_args[0] == "context":
+        try:
+            from .repository import main as context_main
+        except ImportError:
+            from repository import main as context_main
+        context_main(raw_args[1:])
+        return
     if raw_args and raw_args[0] == "--load":
         _handle_load(raw_args[1] if len(raw_args) > 1 else "")
         return
@@ -577,18 +595,43 @@ def main():
 
     parser = _build_parser()
     args = parser.parse_args()
-    if args.compact and (
+    if args.max_results is None:
+        args.max_results = 2 if args.all else MAX_RESULTS
+    if args.compact and args.evidence:
+        parser.error("--compact and --evidence are mutually exclusive")
+    if not args.evidence and (args.project_path is not None or args.library_version or args.max_chars != 6000):
+        parser.error("--project-path, --library-version and --max-chars require --evidence")
+    if args.evidence_id:
+        if any((args.query, args.compact, args.evidence, args.all, args.stack, args.domain, args.jsonl,
+                args.list, args.interactive, args.stale, args.decide, args.adr, args.design, args.conflicts)):
+            parser.error("--evidence-id is a standalone detail operation")
+        try:
+            print(compact_json(evidence_detail(args.evidence_id)))
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
+        return
+    if (args.compact or args.evidence) and (
         args.jsonl or args.interactive or args.list or args.stale or args.conflicts or args.decide
         or args.adr is not None or args.design or args.query in ("compare", "latency")
     ):
-        parser.error("--compact supports normal, --stack, and --all searches only; not --jsonl")
+        parser.error("--compact supports normal, --stack, and --all searches only; not --jsonl (also applies to --evidence)")
+
+    library_versions = {}
+    for expression in args.library_version:
+        name, separator, value = expression.partition("=")
+        if not separator or name in library_versions:
+            parser.error("--library-version requires unique NAME=VERSION entries")
+        library_versions[name] = value
 
     def print_compact(result):
         if args.intent:
             result = {**result, "intent": args.intent}
         try:
-            value = format_compact(result)
-        except ValueError as error:
+            value = format_search_response(
+                result, "evidence" if args.evidence else "compact", max_chars=args.max_chars,
+                project_path=args.project_path, library_versions=library_versions if args.evidence else None,
+            )
+        except (ValueError, OSError) as error:
             parser.error(str(error))
         print(compact_json(value))
 
@@ -662,12 +705,36 @@ def main():
     expand = not args.no_expand
     show_scores = not args.no_scores
 
+    try:
+        if args.all:
+            result = search_all(
+                args.query, max_results=args.max_results, min_score=args.min_score, expand=expand, engine=args.engine,
+                max_age_months=args.max_age_months, rerank=args.rerank, candidate_pool=args.candidate_pool,
+                diagnostics=args.diagnostics, constraints=args.constraints, evidence=args.evidence,
+            )
+        elif args.stack:
+            result = search_stack(
+                args.query, args.stack, max_results=args.max_results, min_score=args.min_score,
+                expand=expand, engine=args.engine, max_age_months=args.max_age_months,
+                rerank=args.rerank, candidate_pool=args.candidate_pool,
+                diagnostics=args.diagnostics, constraints=args.constraints, evidence=args.evidence,
+            )
+        else:
+            result = search(
+                args.query, args.domain, max_results=args.max_results, min_score=args.min_score,
+                expand=expand, engine=args.engine, max_age_months=args.max_age_months,
+                rerank=args.rerank, candidate_pool=args.candidate_pool,
+                diagnostics=args.diagnostics, constraints=args.constraints, evidence=args.evidence,
+            )
+    except (ValueError, RuntimeError, OSError) as error:
+        parser.error(str(error))
+    if "error" in result:
+        parser.error(result["error"])
+    if "retrieval" in result and not (args.json or args.jsonl or args.compact or args.evidence):
+        print("Retrieval: " + compact_json(result["retrieval"]) + "\n")
+
     if args.all:
-        result = search_all(
-            args.query, max_results=max(1, args.max_results // 2),
-            min_score=args.min_score, expand=expand, engine=args.engine,
-        )
-        if args.compact:
+        if args.compact or args.evidence:
             print_compact(result)
         elif args.jsonl:
             print(format_jsonl_all(result))
@@ -677,40 +744,11 @@ def main():
             print(format_all(result, show_scores=show_scores))
         return
 
-    if args.stack:
-        result = search_stack(
-            args.query, args.stack, args.max_results,
-            min_score=args.min_score, expand=expand, engine=args.engine,
-        )
-    else:
-        result = search(
-            args.query, args.domain, args.max_results,
-            min_score=args.min_score, max_age_months=args.max_age_months,
-            expand=expand, engine=args.engine,
-        )
-
-    # Apply --constraints post-filter if provided.
-    if args.constraints and "results" in result:
-        constraints = parse_constraints(args.constraints)
-        if constraints:
-            apply_constraints(result["results"], constraints)
-
-    # Apply --rerank if requested.
-    if args.rerank and "results" in result and result["results"]:
-        try:
-            try:
-                from .rerank import rerank as _rerank
-            except ImportError:
-                from rerank import rerank as _rerank  # type: ignore[no-redef]
-            result["results"] = _rerank(args.query, result["results"], top_k=args.max_results)
-        except Exception as e:
-            print(f"⚠️  Reranking failed: {e}", file=sys.stderr)
-
     # Intent classification — auto-detect or use --intent override.
     intent_value = args.intent or classify_intent(args.query).value
     result["intent"] = intent_value
 
-    if args.compact:
+    if args.compact or args.evidence:
         print_compact(result)
     elif args.jsonl:
         print(format_jsonl(result))

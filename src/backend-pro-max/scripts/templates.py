@@ -93,6 +93,8 @@ def format_compact(result: dict, max_chars: int = COMPACT_MAX_CHARS) -> dict:
         "evidence_note": "Quoted KB fields, not verified advice. Missing fields are not inferred. Ranking is not confidence.",
         "results": units,
     }
+    if "retrieval" in result:
+        output["retrieval"] = result["retrieval"]
     while len(compact_json(output)) > max_chars:
         if not units:
             raise ValueError("Compact response metadata exceeds the character limit; shorten the query")
@@ -104,12 +106,21 @@ def format_compact(result: dict, max_chars: int = COMPACT_MAX_CHARS) -> dict:
     return output
 
 
-def format_search_response(result: dict, response_format: str = "raw") -> dict:
+def format_search_response(result: dict, response_format: str = "raw", *, max_chars: int = COMPACT_MAX_CHARS,
+                           project_path: str | None = None, library_versions: dict | None = None) -> dict:
+    if response_format != "evidence" and (project_path is not None or library_versions is not None or max_chars != COMPACT_MAX_CHARS):
+        raise ValueError("Version and budget options require response_format='evidence'")
     if response_format == "raw":
         return result
     if response_format == "compact":
         return format_compact(result)
-    raise ValueError("response_format must be 'raw' or 'compact'")
+    if response_format == "evidence":
+        try:
+            from .evidence import format_evidence
+        except ImportError:
+            from evidence import format_evidence
+        return format_evidence(result, max_chars, project_path=project_path, library_versions=library_versions)
+    raise ValueError("response_format must be 'raw', 'compact', or 'evidence'")
 
 
 def _head(row: dict) -> str:
@@ -123,20 +134,10 @@ def _head(row: dict) -> str:
     return "?"
 
 
-def _confidence_label(score: float) -> str:
-    if score >= 4.0:
-        return "high"
-    if score >= 1.5:
-        return "medium"
-    if score > 0:
-        return "low"
-    return "none"
-
-
 def _score_tag(row: dict, show_scores: bool) -> str:
     score = row.get("_score")
     if show_scores and score is not None:
-        return f"  _(score: {score:.2f}, confidence: {_confidence_label(score)})_"
+        return f"  _(rank score: {score:.2f})_"
     return ""
 
 

@@ -124,30 +124,34 @@ backendpro compare "Kafka" "RabbitMQ" --json
 
 | Flag                       | Effect                                                                |
 | -------------------------- | --------------------------------------------------------------------- |
-| `-n, --max-results N`      | Cap returned rows (default 5)                                         |
-| `--min-score F`            | Drop weak matches (BM25 score ≤ F)                                    |
+| `-n, --max-results N`      | Cap rows per scope (default 5; `--all` defaults to 2 per domain) |
+| `--min-score F`            | Drop pre-rerank scores <= F; scale depends on effective engine |
 | `--max-age-months N`       | Drop rows whose `Last Updated` is older than N months                 |
 | `--no-expand`              | Disable synonym expansion (`partial failure → compensation, saga, …`) |
-| `--no-scores`              | Hide BM25 confidence scores in markdown output                        |
+| `--no-scores`              | Hide rank scores in markdown output |
 | `--json`                   | Machine-readable JSON output                                          |
 | `--interactive` / `-i`     | Start the REPL                                                        |
 | `--stale`                  | Audit mode (with `--domain` and `--max-age-months`)                   |
 | `--list`                   | List domains and stacks                                               |
 | `--intent <type>`          | Override auto-detected intent (`comparison`, `troubleshoot`, `migration`, `incident`, `definition`, `best-practice`, `checklist`) |
 | `--engine <engine>`        | Retrieval engine: `bm25` (default), `hybrid`, or `semantic`. Hybrid/semantic require `pip install backendpro[semantic]` |
-| `--rerank`                 | Re-rank results with a cross-encoder model. Requires `pip install backendpro[rerank]` |
+| `--rerank`                 | Re-rank candidates before final selection. Requires `pip install backendpro[rerank]` |
+| `--candidate-pool N`       | Candidate rows per scope, >= `-n`; default max(20, `-n`) with reranking, otherwise `-n` |
+| `--diagnostics`            | Include requested/effective retrieval, fallbacks, counts and scope hints |
 
-### Confidence scores
+### Rank scores
 
-Markdown results carry a per-result confidence label so an AI agent can
-gate its trust:
+Markdown results show ranking signals, not calibrated confidence:
 
 ```
-### Result 1  _(score: 7.69, confidence: high)_
+### Result 1  _(rank score: 7.69)_
 ```
 
-Buckets: `score ≥ 4.0` = **high**, `≥ 1.5` = **medium**, `> 0` = **low**.
-Use `--no-scores` to suppress them in human-only output.
+`_score` is BM25, cosine similarity, or reciprocal-rank fusion (RRF), depending
+on the effective engine. `_rerank_score` is a cross-encoder ranking signal.
+Neither is a correctness probability; independent domain scores are not
+globally calibrated. The former high/medium/low confidence labels were removed.
+Use `--no-scores` to suppress ranking scores in Markdown.
 
 ### Synonym / hybrid search
 
@@ -211,6 +215,348 @@ pip install backendpro[rerank]
 
 backendpro "saga pattern" --rerank
 ```
+
+### Retrieval pipeline and diagnostics
+
+```bash
+backendpro "message loss after failover" --domain messaging \
+  --engine hybrid --rerank --candidate-pool 50 -n 5 --compact
+backendpro "transaction rollback" --stack java-spring \
+  --candidate-pool 20 --diagnostics --json
+backendpro "idempotency" --all --rerank --candidate-pool 20 -n 5
+```
+
+All three search surfaces use the same candidate generation, score/freshness
+filtering, optional cross-encoder ranking, constraint preferences and final
+top-N selection. Pool size is per domain/stack, not a global evidence budget.
+In cross-domain search, reranking happens inside each domain. The opt-in
+`evidence` formatter below adds global selection over those returned candidates.
+
+Filters run before candidate truncation. `--constraints` accepts unique
+`key=value` preferences using `cloud`, `throughput`, `latency`, `consistency`,
+and `cost`. Satisfied preferences sort first, followed by cross-encoder score
+if present, otherwise the retrieval score. Unknown metadata is annotated, not
+silently excluded. Malformed or unknown constraint keys are errors.
+
+MCP `search`, `search_stack`, and `search_all` expose `engine`, `rerank`,
+`candidate_pool`, `diagnostics`, `expand`, `min_score`, `max_age_months`,
+`constraints` and `response_format`. Restart clients after updating tool schemas.
+`expand=false` corresponds to CLI `--no-expand`.
+
+Default BM25 raw result shapes and result ordering remain unchanged.
+Non-default engines, reranking, explicit candidate pools, or `diagnostics=true`
+add a `retrieval` object:
+
+- Requested/effective engine and its score kind.
+- Whether reranking was requested and actually applied to any candidates.
+- Installed dependency capabilities when checked; `not_checked` does not
+  mean unavailable. Capability checks do not prove weights can be loaded.
+- Pinned model names/revisions, explicit missing-dependency fallbacks, candidate
+  and pre-packing returned counts. Cross-domain counts sum all domains.
+- Selected scope and up to three keyword-based auto-routing suggestions.
+  Suggestions are not retrieval results or confidence estimates.
+
+Compact JSON retains these diagnostics inside its existing 6000-character
+bound and continues omitting whole evidence units. A metadata-only response
+is explicitly `budget_exhausted`, not useful evidence. JSONL adds a leading
+`_type: "retrieval_metadata"` record only when diagnostics exist, including
+empty searches. Markdown CLI output prints the same metadata before evidence.
+
+Explicit scopes are never widened. CLI `--domain`, `--stack`, and `--all` are
+mutually exclusive. `--all` without `-n` still returns up to two rows per domain;
+an explicit `--all -n N` now uses N rather than the old undocumented N/2
+conversion, matching the core and MCP APIs.
+
+Optional models keep their existing identities, pinned to immutable revisions:
+
+- `all-MiniLM-L6-v2`: `1110a243fdf4706b3f48f1d95db1a4f5529b4d41`
+- `cross-encoder/ms-marco-MiniLM-L-6-v2`: `233902d25c440f23af6f7d6e94d2946bac0bee0a`
+
+### Verified experience reuse (P4, gated off by default)
+
+P4 is **infrastructure only**, not demonstrated memory effectiveness. No store is
+created automatically and no real trace gate has been approved by this release.
+Ordinary search and repository context never read or write memory. The eleventh
+MCP tool, `memory_context`, is read-only and requires both `BACKENDPRO_WORKSPACE`
+and `BACKENDPRO_MEMORY_STORE`, plus a current operator-approved trace gate.
+Clients cannot set the store path, approve a gate, or persist summaries through MCP.
+
+The POSIX pilot uses a private, owner-only directory **outside** the worktree:
+
+```bash
+mkdir -m 700 /absolute/private-memory
+backendpro memory init --workspace-root /path/to/project --store /absolute/private-memory
+backendpro memory status --workspace-root /path/to/project --store /absolute/private-memory
+```
+
+Initialization leaves `reuse_enabled=false`. Storage is a maximum of 64 summaries
+in a 1 MB owner-only JSON file with no-follow regular-file checks, advisory locking,
+atomic replacement and fsync. A busy store fails explicitly; retry the operation.
+Private local storage is **not encryption** or protection against another process
+running as your user. Do not back up or publish it as benchmark/repository content.
+
+#### Approval and source contract
+
+Only an operator-reviewed JSON summary can be stored, using `memory put --input
+summary.json --approve` with the same root/store options. The strict fields are:
+
+- `problem`, `decision`: bounded, single-line original summaries, not transcripts.
+- `failure_conditions`: one to eight explicit contraindications.
+- `library_versions`: explicit normalized exact numeric versions, e.g.
+  `{"python":"3.12.13","pydantic":"2.10.6"}`; no inferred compatibility ranges.
+- `binding`: an unchanged `Snapshot(root, selected_paths).binding()` from
+  `backendpro.scripts.repository`. All selected files must still be eligible.
+- `origin`: `sequence`, `family`, `task`, nonnegative `ordinal`,
+  `split="development"` and `arm="verified_memory"`. Never relabel held-out material.
+- `verification`: recorded `argv`, integer `exit_code=0`, `artifact_sha256`,
+  matching `snapshot_id`, and UTC `verified_at` ending in `Z`.
+- `approval`: identified `reviewer`, UTC `reviewed_at`, and
+  `summary_only=true`, attesting no raw conversations, credentials, hidden tests,
+  or held-out solutions.
+- `expires_at`: UTC time after review, at most 90 days later.
+
+The operator must actually inspect the test artifact and summary before approval.
+BackendPro validates the receipt, binding, timestamps and reported success; it
+does **not** run tests, authenticate reviewers, read the artifact from its hash,
+or prove test coverage. Secret-pattern detection is deliberately incomplete.
+Hashes are content bindings, not signatures or independent evidence.
+
+Reuse additionally requires `memory approve-gate --input gate.json --approve`.
+The strict gate fields are `root_id`, current `revision`, `reviewer`, UTC
+`reviewed_at`/`expires_at` (maximum 90 days), a reviewed recurring `pattern`, and
+`traces`: two to 24 distinct `{task, sha256}` references to reviewed prior-task
+trace artifacts. No raw traces are copied. This is an **operator attestation**
+of the prerequisite, not an automated diagnosis or the P4 outcome gate.
+Do not approve it with fabricated/synthetic traces; fixtures only test plumbing.
+
+#### Retrieval, review and removal
+
+```bash
+backendpro memory query --input query.json \
+  --workspace-root /path/to/project --store /absolute/private-memory
+backendpro memory correct --id 'bpmm:<hash>' --input reviewed-summary.json --approve \
+  --workspace-root /path/to/project --store /absolute/private-memory
+backendpro memory delete --id 'bpmm:<hash>' \
+  --workspace-root /path/to/project --store /absolute/private-memory
+backendpro memory revoke-gate \
+  --workspace-root /path/to/project --store /absolute/private-memory
+```
+
+`query.json` contains exactly the MCP arguments below, plus `max_chars`:
+
+```json
+{
+  "query": "retry attempt limit",
+  "sequence": "maintenance-01",
+  "family": "retry",
+  "task": "second",
+  "ordinal": 1,
+  "allowed_tasks": ["first"],
+  "library_versions": {"python": "3.12.13"},
+  "max_chars": 6000
+}
+```
+
+Only explicitly permitted **preceding** tasks in the same family and sequence
+can contribute. These permissions are caller/operator declarations, not an
+authentication boundary against a malicious client. Evaluation must validate
+them against its frozen schedule. Current/future and cross-family tasks, expired
+summaries, mismatched versions, and stale/excluded source bindings are withheld
+with explicit ineligibility counts. A new Git revision also disables the trace
+gate. No ancestor-version or uncommitted-file compatibility is guessed.
+Source checks cover the approved selected files, not every environment dependency.
+
+Re-review using `correct`: a complete newly approved summary/test receipt replaces
+the old record atomically, preserving its original task identity and ordinal.
+There is no automatic renewal or stale-summary fallback. An expired record stays
+stored but is not retrieved. `delete` removes it from the active store; it cannot
+securely erase filesystem snapshots/backups. Unknown IDs fail explicitly.
+
+Whole summaries retain failure conditions, approval and verification receipts.
+`max_chars` counts the full JSON response (not tokens or transport overhead);
+metadata overflow fails explicitly. Returned `bpmm:` IDs change with content.
+Treat summaries as fallible evidence, never instructions or executed verification.
+See [chronological evaluation](../CONTRIBUTING.md#p4-chronological-memory-infrastructure)
+before enabling any study treatment.
+
+### Repository grounding (P3, opt-in)
+
+```bash
+backendpro context "retry" --workspace-root /path/to/git/repo \
+  --paths src/retry.py tests/test_retry.py AGENTS.md --max-chars 6000
+backendpro context "pydantic dictionary migration" --workspace-root /path/to/git/repo \
+  --paths src/models.py --stack python-fastapi --library-version pydantic=2.10.6
+```
+
+This is a **saved-file Python/POSIX pilot**, not a whole-repository index.
+Select 1-24 explicit tracked files. There is no directory crawling, import
+execution, test execution, package-manager invocation, network access or
+persistent index. A Git repository with a HEAD commit is required. Files may
+have saved uncommitted changes; `workspace.revision` identifies HEAD while
+`workspace.files` hashes the actual saved bytes. `snapshot_id` and `bpml:` IDs
+bind that content, line ranges and workspace identity. Reuse the previous
+`workspace.revision` and `workspace.files` as `expected_revision` and
+`expected_files` to reject stale references. CLI equivalents are
+`--expected-revision` and `--expected-files <JSON-map-file>`.
+
+**MCP authorization:** the tenth tool, `repository_context`, is disabled unless
+the operator sets `BACKENDPRO_WORKSPACE` to an authorized Git root:
+
+```json
+{
+  "mcpServers": {
+    "backendpro": {
+      "command": "backendpro-mcp",
+      "env": {"BACKENDPRO_WORKSPACE": "/absolute/path/to/git/repo"}
+    }
+  }
+}
+```
+
+Its inputs mirror the command: `query`, relative `paths`, `max_chars`, optional
+`editor`, `expected_revision`, `expected_files`, and one curated `domain` or
+`stack` with optional `library_versions`. Clients cannot supply a different
+root per call. No curated search occurs unless a scope is explicitly selected;
+it uses offline BM25 only. P3 never reads manifests outside `paths`; version
+observations for curated guidance are explicit inputs, or can be obtained with
+P2 separately when authorized.
+
+**Prefer editor facts:** a client can supply an `editor-context-v1` packet via
+MCP `editor` or CLI `--editor-context <JSON-file>`. Use the Python
+`repository.editor_context` adapter on actual standard LSP Locations. Capture
+a `Snapshot(root, paths).binding()` **before** requesting references, then pass
+its revision and file hashes to the adapter. It validates file URIs, UTF-16
+positions, saved-file ranges and content, normalizes one-based inclusive line
+references, and adds up to three context lines on each side by default.
+`editor_anchor` preserves the original location. Save dirty editor buffers
+first; buffer overlays, client identity and semantic correctness are not
+authenticated by hashes. Filter to authorized paths or explicitly expand the
+scope and recapture; never fabricate locations to make a packet pass.
+
+Without an editor packet, bounded Python AST extraction returns matching
+definitions, syntactic call sites and imports. Calls are **unresolved names**:
+aliases, dispatch and dynamic imports require native editor inspection.
+Selected configuration/convention files use literal line neighborhoods.
+If this Python interpreter cannot parse a saved file, AST fallback fails
+explicitly. Native locations can still be used, with `analysis_gaps` reporting
+that AST-dependent tension/verification checks were unavailable.
+Excerpts are not necessarily complete symbols. Extraction is capped at
+128 candidates, 80 lines/8000 excerpt characters per unit and 200 KB per file;
+oversized/capped units are counted, not silently clipped. Non-Python source
+languages are not implemented by this pilot.
+
+**Policy:** untracked/Git-ignored files (even force-tracked ignored files),
+hidden/private/generated directories, disallowed extensions, symlinks, binary
+files and generated headers are excluded or rejected before extraction.
+Common credential/private-key patterns cause the entire file to be withheld.
+This conservative filter can have false positives and is **not a complete
+secret detector**: select only authorized non-sensitive files and maintain Git
+exclusions. Reads use POSIX descriptor-relative no-follow access; other
+platforms fail explicitly rather than weakening that boundary.
+
+Local and curated units have distinct `kind` values. Selection balances source
+kinds within one character budget and preserves whole units. `omissions`
+accounts for extraction, duplication, eligibility and packing; file-policy
+exclusions are reported separately without exposing withheld contents.
+Local conventions never silently override curated guidance. `tensions`
+currently flags observed `pydantic.v1` imports alongside native-API guidance;
+this is not a general semantic contradiction detector. Reconciliation remains
+explicitly unresolved. Verification commands are suggestions for selected,
+recognizable pytest files, run from the authorized root only after review;
+BackendPro does not execute them.
+
+Prefer native navigation for substantive code tasks and skip retrieval for
+self-contained trivial edits. See [P3 validation and client scope](../CONTRIBUTING.md#p3-local-grounding-validation)
+for what was actually measured.
+
+### Version-aware, budget-aware evidence (P2, opt-in)
+
+```bash
+backendpro "pydantic dictionary export migration" --stack python-fastapi \
+  --evidence --library-version pydantic=2.10.6 --max-chars 6000 -n 20
+backendpro "pydantic ORM migration" --stack python-fastapi \
+  --evidence --project-path /path/to/project
+backendpro "retry timeout" --all --evidence --max-chars 4000
+backendpro --evidence-id 'bpme:<64-hex-content-hash>'
+```
+
+MCP searches accept `response_format="evidence"`, `max_chars`, `project_path`
+and `library_versions` (an object, e.g. `{"pydantic":"2.10.6"}`). The
+`evidence_detail(evidence_id)`, expands a returned ID to the full local source
+row. Restart clients for the updated schema. Version/budget options on other
+formats fail rather than being ignored. Core callers use `evidence=True` and
+then `format_search_response(result, "evidence", ...)`.
+
+**Compatibility:** raw search and `compact-v1` remain unchanged. Only the new
+format includes the four Pydantic pilot records from `data/evidence.json`.
+They are original summaries bound to immutable official documentation URLs,
+document SHA256, upstream revision, source license and last-verified date.
+No upstream document text is redistributed and no documentation network access
+occurs at runtime. Pilot annotations cover **1.10.21 and 2.10.6 only**. Other
+versions are not claimed compatible; `pydantic.v1` imports in v2 require separate
+inspection. Existing corpus `Version` and `Last Updated` are not library
+compatibility or source-verification dates.
+
+**Local version observations:** filesystem inspection is opt-in and reads only
+root `requirements.txt`, `pyproject.toml`, `uv.lock`, `poetry.lock`,
+`Pipfile.lock` and `.python-version`. It does not run package managers, inspect
+code, follow include directives/symlinks or upload content. Python 3.11+ can
+inspect TOML with the standard library; older runtimes explicitly report that
+limitation. PEP 621 direct dependencies and basic Poetry dependency strings are
+supported; optional dependency groups are not inferred as installed. Conditional
+Pipfile development entries stay unknown, and partial Python selectors such as
+`3.12` are ranges rather than invented `3.12.0` pins. Conditional
+markers, prereleases, URLs, dynamic declarations, unsupported constraints and
+multiple conflicting lock versions remain unknown/conflicting. Numeric
+`==`, `>=`, `>`, `<=`, `<` comma-separated release constraints are supported.
+Bare requirements and Poetry `*` are unconstrained numeric release ranges, so
+they do not mask a compatible exact lockfile pin.
+Explicit versions are additional observations, never silent lockfile overrides.
+These are declared constraints, not proof of the running environment.
+File-derived observations include the inspected manifest's SHA256, not its
+contents or absolute path.
+
+**Selection:** version matches are prioritized, then marginal query-term
+coverage, scope diversity and within-scope ordinal rank. Independent BM25
+scores are never globally compared. Known version mismatches/conflicts are
+omitted; unknown guidance remains explicitly unknown. A match only describes
+the declared version range; platform assumptions and API namespaces still need
+checking. Stable content IDs change when source fields change; old IDs fail
+closed. Duplicate suppression includes all supported facts and applicability
+metadata, so different warnings are not merged.
+
+Whole units retain recommendations, preconditions, contraindications,
+verification guidance and sources when present; missing fields are explicit.
+Oversized units are skipped so a smaller complementary unit may still fit.
+`omissions` counts every dropped candidate by budget, duplicate, version
+mismatch or version conflict. Counts, rather than an unbounded list of omitted
+IDs, keep metadata bounded; source fields not selected into a unit are named
+in `omitted_fields` and available through detail expansion. Metadata that
+cannot fit causes an explicit error.
+
+The default limit is still **6000 JSON characters**, including metadata but
+excluding the CLI newline/MCP envelope; `--max-chars` is an explicit override.
+Detail expansion is intentionally full/unpacked. Selection only considers the
+rows returned by retrieval: increase `-n`/MCP `max_results` to widen that pool;
+`candidate_pool` alone only widens preranking, not delivered rows. `--all`
+continues to mean registered domains, not every language stack.
+
+Characters are not token estimates. The benchmark can separately enforce
+1k/2k/4k-token budgets using a local hash-pinned target tokenizer; see
+[P2 evaluation](../CONTRIBUTING.md#p2-evidence-and-token-budget-evaluation).
+No default change or competitive quality claim follows from the small pilot.
+
+Optional embedding/reranker first use may download model data from Hugging Face; queries are evaluated
+locally. BM25 never downloads models. Set `HF_HUB_OFFLINE=1` after caching
+weights when optional-model execution must also stay offline. Missing optional
+packages fall back with a warning and structured metadata; model download,
+load or inference errors fail explicitly instead of claiming successful
+semantic execution. Benchmarks reject fallback results.
+
+Embedding cache identity includes corpus bytes, searchable columns and pinned
+model identity. BM25 checks timestamps and content; copied files with unchanged
+timestamps cannot silently retain an old index. Invalid embedding caches are
+reported and rebuilt. Existing old cache entries are not reused.
 
 ## Recipes
 
@@ -373,7 +719,7 @@ print(compare(["Kafka", "RabbitMQ"], domain="messaging"))
 # Audit: list rows older than 18 months
 print(find_stale("pattern", months=18))
 
-# Long-running process? Indexes are mtime-cached automatically.
+# Long-running process? Indexes invalidate on timestamp or content changes.
 # Force a refresh after manual edits:
 clear_cache()
 ```

@@ -46,13 +46,18 @@ dev = [
 semantic = [
     "sentence-transformers>=2.2.0",
     "numpy>=1.21.0",
+    "huggingface-hub>=0.16.0",
 ]
 rerank = [
     "sentence-transformers>=2.2.0",
+    "huggingface-hub>=0.16.0",
 ]
 mcp = [
     "mcp>=1.0,<2.0",
     "jsonschema>=4.20,<5.0",
+]
+tokens = [
+    "tokenizers>=0.15",
 ]
 
 [project.urls]

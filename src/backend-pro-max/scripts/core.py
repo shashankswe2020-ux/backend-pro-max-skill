@@ -19,15 +19,19 @@ Public API (stable):
 
 import csv
 import enum
+import hashlib
 import re
+import sys
 from collections import defaultdict
 from datetime import datetime
-from math import log
+from importlib import import_module
+from math import isfinite, log
 from pathlib import Path
 
 # ============ CONFIGURATION ============
 DATA_DIR = Path(__file__).parent.parent / "data"
 MAX_RESULTS = 5
+_WARNED_FALLBACKS = set()
 
 # Standard column shapes used by most domain CSVs.
 _GENERIC_OUTPUT = [
@@ -495,8 +499,7 @@ def _expand_query(query):
     return query + " " + " ".join(extras)
 
 
-# ----- Index cache (lazy, mtime-invalidated) -----
-# _INDEX_CACHE[filepath_str] = {"mtime": float, "data": [rows], "bm25": BM25, "search_cols": [...]}
+# ----- Index cache (lazy, content-invalidated) -----
 _INDEX_CACHE = {}
 
 
@@ -507,17 +510,16 @@ def clear_cache():
 
 def _get_index(filepath, search_cols):
     """Return (data, bm25) for filepath, building & caching on first use,
-    invalidating when the file's mtime changes or search_cols changes."""
+    invalidating when file contents or search_cols change."""
     key = str(filepath)
-    try:
-        mtime = filepath.stat().st_mtime
-    except OSError:
-        return None, None
+    mtime = filepath.stat().st_mtime_ns
+    content_hash = hashlib.sha256(filepath.read_bytes()).hexdigest()
 
     cached = _INDEX_CACHE.get(key)
     if (
         cached
         and cached["mtime"] == mtime
+        and cached["content_hash"] == content_hash
         and cached["search_cols"] == tuple(search_cols)
     ):
         return cached["data"], cached["bm25"]
@@ -528,6 +530,7 @@ def _get_index(filepath, search_cols):
     bm25.fit(documents)
     _INDEX_CACHE[key] = {
         "mtime": mtime,
+        "content_hash": content_hash,
         "data": data,
         "bm25": bm25,
         "search_cols": tuple(search_cols),
@@ -567,7 +570,6 @@ def _is_stale(row, max_age_months):
     return _months_since(dt) > max_age_months
 
 
-_warned_semantic = False
 
 
 # ============ CITATION TOKENS ============
@@ -614,56 +616,96 @@ def _inject_citations(results, domain):
         row["_citation"] = _make_citation(domain, row)
 
 
+def _retrieval_module(name):
+    return import_module(f".{name}", __package__) if __package__ else import_module(name)
+
+
+def _retrieval_options(max_results, engine, rerank, candidate_pool, min_score, max_age_months, expand):
+    if engine not in ("bm25", "hybrid", "semantic"):
+        raise ValueError("engine must be bm25, hybrid, or semantic")
+    if type(max_results) is not int or max_results < 1:
+        raise ValueError("max_results must be a positive integer")
+    if type(rerank) is not bool or type(expand) is not bool:
+        raise ValueError("rerank and expand must be booleans")
+    if type(min_score) not in (int, float) or not isfinite(min_score):
+        raise ValueError("min_score must be finite")
+    if max_age_months is not None and (type(max_age_months) is not int or max_age_months < 0):
+        raise ValueError("max_age_months must be a nonnegative integer")
+    pool = max(20, max_results) if candidate_pool is None and rerank else candidate_pool
+    pool = max_results if pool is None else pool
+    if type(pool) is not int or pool < max_results:
+        raise ValueError("candidate_pool must be an integer >= max_results")
+    details = {
+        "requested_engine": engine, "effective_engine": engine,
+        "rerank_requested": rerank, "rerank_applied": False, "candidate_pool": pool,
+        "candidate_count": 0, "returned_count": 0, "expand": expand,
+        "capabilities": {"semantic": "not_checked", "rerank": "not_checked"},
+        "fallbacks": [], "models": {},
+        "score_kind": {"bm25": "bm25", "semantic": "cosine_similarity", "hybrid": "rrf"}[engine],
+        "score_note": "Ranking signals, not probabilities or confidence; scores across domains are not calibrated.",
+    }
+    for name, requested in (("semantic", engine != "bm25"), ("rerank", rerank)):
+        if not requested:
+            continue
+        module = _retrieval_module(name)
+        available = module.is_available()
+        details["capabilities"][name] = available
+        if available:
+            details["models"][name] = {"name": module._MODEL_NAME, "revision": module._MODEL_REVISION}
+        else:
+            reason = f"{name} dependencies unavailable; using the non-{name} retrieval path"
+            details["fallbacks"].append(reason)
+            if name not in _WARNED_FALLBACKS:
+                print(f"Warning: {reason}. Install backendpro[{name}].", file=sys.stderr)
+                _WARNED_FALLBACKS.add(name)
+            if name == "semantic":
+                details.update(effective_engine="bm25", score_kind="bm25")
+    return details
+
+
 def _search_csv(filepath, search_cols, output_cols, query, max_results,
-                *, min_score=0.0, max_age_months=None, expand=True, engine="bm25"):
-    global _warned_semantic
+                *, min_score=0.0, max_age_months=None, expand=True, engine="bm25",
+                retrieval=None, constraints=None, evidence=False):
+    if type(evidence) is not bool:
+        raise ValueError("evidence must be a boolean")
+    if retrieval is None:
+        retrieval = _retrieval_options(max_results, engine, False, None, min_score, max_age_months, expand)
     if not filepath.exists():
-        return []
+        raise FileNotFoundError(filepath)
 
     data, bm25 = _get_index(filepath, search_cols)
+    base_count = len(data)
+    if evidence:
+        evidence_module = _retrieval_module("evidence")
+        scope_file = filepath.relative_to(DATA_DIR).as_posix()
+        additional = evidence_module.supplemental_rows(scope_file)
+        if additional:
+            data = data + additional
+            bm25 = BM25()
+            bm25.fit([" ".join(str(row.get(col, "")) for col in search_cols) for row in data])
     if data is None or bm25 is None or bm25.N == 0:
         return []
 
     effective_query = _expand_query(query) if expand else query
     bm25_ranked = bm25.score(effective_query)
 
-    # Determine final ranking based on engine choice.
+    engine = retrieval["effective_engine"]
     if engine in ("hybrid", "semantic"):
-        try:
-            from . import semantic as _sem  # type: ignore[import]
-        except ImportError:
-            try:
-                import semantic as _sem  # type: ignore[import,no-redef]
-            except ImportError:
-                _sem = None
-
-        if _sem is not None and _sem.is_available():
-            cache_key = _sem.build_index(data, search_cols, filepath)
-            if cache_key is not None:
-                embed_ranked = _sem.semantic_search(query, cache_key, top_k=max(20, max_results * 4))
-                if engine == "semantic":
-                    ranked = embed_ranked
-                else:
-                    # hybrid: RRF merge
-                    ranked = _sem.reciprocal_rank_fusion(bm25_ranked, embed_ranked)
-            else:
-                ranked = bm25_ranked
+        semantic = _retrieval_module("semantic")
+        cache_key = semantic.build_index(data, search_cols, filepath)
+        if cache_key is None:
+            raise RuntimeError("Semantic model unavailable after capability check")
+        embed_ranked = semantic.semantic_search(query, cache_key, top_k=len(data))
+        if engine == "semantic":
+            ranked = embed_ranked
         else:
-            if not _warned_semantic:
-                _warned_semantic = True
-                import sys as _sys
-                print(
-                    "⚠️  sentence-transformers not installed — falling back to BM25. "
-                    "Install with: pip install backendpro[semantic]",
-                    file=_sys.stderr,
-                )
-            ranked = bm25_ranked
+            ranked = semantic.reciprocal_rank_fusion(bm25_ranked, embed_ranked)
     else:
         ranked = bm25_ranked
 
     results = []
     for idx, score in ranked:
-        if len(results) >= max_results:
+        if len(results) >= retrieval["candidate_pool"]:
             break
         if score <= min_score:
             continue
@@ -675,7 +717,17 @@ def _search_csv(filepath, search_cols, output_cols, query, max_results,
         if "Last Updated" in row and "Last Updated" not in out:
             out["Last Updated"] = row["Last Updated"]
         out["_score"] = round(float(score), 4)
+        if evidence:
+            out["_evidence"] = evidence_module.bind_row(row, scope_file, supplemental=idx >= base_count)
         results.append(out)
+    retrieval["candidate_count"] += len(results)
+    if results and retrieval["rerank_requested"] and retrieval["capabilities"]["rerank"]:
+        results = _retrieval_module("rerank").rerank(query, results, top_k=len(results), strict=True)
+        retrieval["rerank_applied"] = True
+    if constraints:
+        apply_constraints(results, constraints)
+    results = results[:max_results]
+    retrieval["returned_count"] += len(results)
     return results
 
 
@@ -814,8 +866,7 @@ _DOMAIN_KEYWORDS = {
 }
 
 
-def detect_domain(query):
-    """Auto-detect the most relevant domain from query."""
+def _domain_scores(query):
     q = query.lower()
     scores = {}
     for domain, keywords in _DOMAIN_KEYWORDS.items():
@@ -827,8 +878,24 @@ def detect_domain(query):
             elif re.search(r'\b' + re.escape(kw) + r'\b', q):
                 score += 1
         scores[domain] = score
+    return scores
+
+
+def detect_domain(query):
+    """Auto-detect the most relevant domain from query."""
+    scores = _domain_scores(query)
     best = max(scores, key=scores.get)
     return best if scores[best] > 0 else "pattern"
+
+
+def _scope_details(query, domain, automatic):
+    candidates = []
+    if automatic:
+        candidates = [
+            name for name, score in sorted(_domain_scores(query).items(), key=lambda item: -item[1])
+            if score > 0
+        ][:3]
+    return {"mode": "auto" if automatic else "explicit", "selected": domain, "candidates": candidates}
 
 
 # ============ INTENT CLASSIFICATION ============
@@ -987,13 +1054,28 @@ def parse_constraints(constraint_str):
     return constraints
 
 
+def _search_constraints(expression):
+    if expression is None:
+        return None
+    if not isinstance(expression, str) or not expression.strip():
+        raise ValueError("constraints must be a nonempty key=value expression")
+    parsed = parse_constraints(expression)
+    if (
+        len(parsed) != len(expression.split(","))
+        or any(part.count("=") != 1 for part in expression.split(","))
+        or set(parsed) - set(_CONSTRAINT_COL_MAP)
+    ):
+        raise ValueError("Use unique supported constraint keys: " + ", ".join(_CONSTRAINT_COL_MAP))
+    return parsed
+
+
 def apply_constraints(results, constraints):
     """Post-filter search results against structured constraint columns.
 
     Each result is annotated with a `_constraints` dict:
       {constraint_key: {"value": csv_value, "wanted": user_value, "match": bool|"unknown"}}
     Results are re-sorted by number of satisfied constraints (descending),
-    then by BM25 score.
+    then by reranker score when present, otherwise the retrieval score.
     """
     if not constraints:
         return results
@@ -1032,18 +1114,19 @@ def apply_constraints(results, constraints):
 
             row["_constraints"][key] = {"value": actual, "wanted": wanted, "match": match}
 
-    # Sort: most constraints satisfied first, then by BM25 score.
+    # Constraints remain preferences, not hard exclusions for missing metadata.
     def _sort_key(row):
         cm = row.get("_constraints", {})
         satisfied = sum(1 for v in cm.values() if v["match"] is True)
-        return (-satisfied, -float(row.get("_score", 0.0)))
+        return (-satisfied, -float(row.get("_rerank_score", row.get("_score", 0.0))))
 
     results.sort(key=_sort_key)
     return results
 
 
 def search(query, domain=None, max_results=MAX_RESULTS,
-           *, min_score=0.0, max_age_months=None, expand=True, engine="bm25"):
+           *, min_score=0.0, max_age_months=None, expand=True, engine="bm25",
+           rerank=False, candidate_pool=None, diagnostics=False, constraints=None, evidence=False):
     """Main search function with auto-domain detection.
 
     Args:
@@ -1055,8 +1138,14 @@ def search(query, domain=None, max_results=MAX_RESULTS,
             than this many months. Rows without a date are kept.
         expand: Apply synonym expansion to the query (default True).
         engine: Search engine — "bm25" (default), "hybrid", or "semantic".
+        rerank: Opt-in cross-encoder scoring before final selection.
+        candidate_pool: Per-scope candidate limit; default at least 20 with reranking.
+        diagnostics: Include execution metadata even for default BM25.
+        constraints: Optional comma-separated key=value preferences.
+        evidence: Bind full source rows and include the opt-in versioned evidence corpus.
     """
-    if domain is None:
+    automatic = domain is None
+    if automatic:
         domain = detect_domain(query)
 
     config = CSV_CONFIG.get(domain)
@@ -1067,23 +1156,30 @@ def search(query, domain=None, max_results=MAX_RESULTS,
     if not filepath.exists():
         return {"error": f"File not found: {filepath}", "domain": domain}
 
+    details = _retrieval_options(max_results, engine, rerank, candidate_pool, min_score, max_age_months, expand)
     results = _search_csv(
         filepath, config["search_cols"], config["output_cols"], query, max_results,
         min_score=min_score, max_age_months=max_age_months, expand=expand, engine=engine,
+        retrieval=details, constraints=_search_constraints(constraints), evidence=evidence,
     )
     _inject_citations(results, domain)
 
-    return {
+    result = {
         "domain": domain,
         "query": query,
         "file": config["file"],
         "count": len(results),
         "results": results,
     }
+    if diagnostics or engine != "bm25" or rerank or candidate_pool is not None:
+        details["scope"] = _scope_details(query, domain, automatic)
+        result["retrieval"] = details
+    return result
 
 
 def search_stack(query, stack, max_results=MAX_RESULTS,
-                 *, min_score=0.0, expand=True, engine="bm25"):
+                 *, min_score=0.0, expand=True, engine="bm25", max_age_months=None,
+                 rerank=False, candidate_pool=None, diagnostics=False, constraints=None, evidence=False):
     """Search stack-specific guidelines."""
     if stack not in STACK_CONFIG:
         return {"error": f"Unknown stack: {stack}. Available: {', '.join(AVAILABLE_STACKS)}"}
@@ -1092,13 +1188,16 @@ def search_stack(query, stack, max_results=MAX_RESULTS,
     if not filepath.exists():
         return {"error": f"Stack file not found: {filepath}", "stack": stack}
 
+    details = _retrieval_options(max_results, engine, rerank, candidate_pool, min_score, max_age_months, expand)
     results = _search_csv(
         filepath, _STACK_COLS["search_cols"], _STACK_COLS["output_cols"],
         query, max_results, min_score=min_score, expand=expand, engine=engine,
+        max_age_months=max_age_months, retrieval=details,
+        constraints=_search_constraints(constraints), evidence=evidence,
     )
     _inject_citations(results, f"stack-{stack}")
 
-    return {
+    result = {
         "domain": "stack",
         "stack": stack,
         "query": query,
@@ -1106,23 +1205,34 @@ def search_stack(query, stack, max_results=MAX_RESULTS,
         "count": len(results),
         "results": results,
     }
+    if diagnostics or engine != "bm25" or rerank or candidate_pool is not None:
+        details["scope"] = _scope_details(query, stack, False)
+        result["retrieval"] = details
+    return result
 
 
-def search_all(query, max_results=2, *, min_score=0.0, expand=True, engine="bm25"):
+def search_all(query, max_results=2, *, min_score=0.0, expand=True, engine="bm25", max_age_months=None,
+               rerank=False, candidate_pool=None, diagnostics=False, constraints=None, evidence=False):
     """Cross-domain search: returns top hits across every domain CSV."""
     aggregated = {}
+    details = _retrieval_options(max_results, engine, rerank, candidate_pool, min_score, max_age_months, expand)
+    preferences = _search_constraints(constraints)
     for domain, config in CSV_CONFIG.items():
         filepath = DATA_DIR / config["file"]
-        if not filepath.exists():
-            continue
         hits = _search_csv(
             filepath, config["search_cols"], config["output_cols"],
             query, max_results, min_score=min_score, expand=expand, engine=engine,
+            max_age_months=max_age_months, retrieval=details, constraints=preferences, evidence=evidence,
         )
         if hits:
             _inject_citations(hits, domain)
             aggregated[domain] = hits
-    return {"query": query, "domains": list(aggregated.keys()), "results": aggregated}
+    result = {"query": query, "domains": list(aggregated.keys()), "results": aggregated}
+    if diagnostics or engine != "bm25" or rerank or candidate_pool is not None:
+        details["scope"] = {"mode": "all", "selected": list(CSV_CONFIG), "candidates": []}
+        details["limit_scope"] = "per_domain"
+        result["retrieval"] = details
+    return result
 
 
 # ============ DECISION HELPERS ============
@@ -1232,4 +1342,3 @@ def find_stale(domain, months):
         "count": len(stale),
         "results": stale,
     }
-

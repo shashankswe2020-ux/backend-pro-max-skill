@@ -105,8 +105,13 @@ def test_landing_example_matches_knowledge_base():
         assert row[field] in excerpt, field
 
 
-def test_landing_mcp_setup_matches_package():
-    template = (ROOT / "designs/scripts/landing.template.html").read_text(encoding="utf-8")
+@pytest.mark.parametrize("page", [
+    "designs/scripts/landing.template.html",
+    "designs/redesign/landing.html",
+    "sites/index.html",
+])
+def test_landing_mcp_setup_matches_package(page):
+    template = (ROOT / page).read_text(encoding="utf-8")
     block = re.search(r'<div class="cfg">(.*?)</div>', template, re.DOTALL).group(1)
     plain = unescape(re.sub(r"<[^>]+>", "", block))
     config = json.loads("\n".join(line for line in plain.splitlines() if not line.strip().startswith("//")))
@@ -135,3 +140,8 @@ def test_landing_mcp_setup_matches_package():
     advertised = re.findall(r"<span>(.*?)</span>", tools_block)
     assert len(advertised) == len(set(advertised))
     assert set(advertised) == registered
+    description = next(description for name, description, _ in clients if name == "CLI / MCP")
+    assert f"{len(registered)} MCP tools" in description
+    assert "disabled by default" in template
+    assert "BACKENDPRO_WORKSPACE" in template
+    assert "BACKENDPRO_MEMORY_STORE" in template

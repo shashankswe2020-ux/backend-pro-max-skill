@@ -437,7 +437,8 @@ footer{padding:var(--s-9) 0 var(--s-6)}
       <div class="label">Model Context Protocol</div>
       <h2>Connect your assistant</h2>
       <p class="lede">Install <code>pip install 'backendpro[mcp]'</code>, then add this server entry to your client's MCP configuration. The client must be able to run <code>backendpro-mcp</code> on its PATH.</p>
-      <div class="mcp-tools"><span>search</span><span>search_all</span><span>search_stack</span><span>compare</span><span>decide</span><span>adr</span><span>design</span><span>find_stale</span></div>
+      <div class="mcp-tools"><span>search</span><span>search_all</span><span>search_stack</span><span>compare</span><span>decide</span><span>adr</span><span>design</span><span>find_stale</span><span>evidence_detail</span><span>repository_context</span><span>memory_context</span></div>
+      <p>Local repository and memory tools are disabled by default. Repository context requires operator-configured <code>BACKENDPRO_WORKSPACE</code>; memory also requires <code>BACKENDPRO_MEMORY_STORE</code> and current operator-reviewed trace approval.</p>
     </div>
 <div class="cfg"><span class="c" style="color:var(--ink-500)">// claude_desktop_config.json</span>
 {
@@ -572,7 +573,7 @@ const TOOLS=[
 ["Design document","Draft a design with capacity estimates.",'design "Postgres for 50M DAU"'],
 ["Interactive search","Keep a search session open while you work.","--interactive"],
 ["Conflicts","Find documented tensions between recommendations.","conflicts --domain cache"]];
-const CLIENTS=[["Claude Code","Adds SKILL.md to your project","pip install backendpro\nmkdir -p .claude/skills\nbackendpro --load claude"],["Cursor","Adds .cursor/rules/backend.mdc","pip install backendpro\nbackendpro --load cursor"],["Windsurf","Adds .windsurfrules","pip install backendpro\nbackendpro --load windsurf"],["GitHub Copilot","Adds .github/copilot-instructions.md","pip install backendpro\nbackendpro --load copilot"],["Continue","Adds AGENTS.md","pip install backendpro\nbackendpro --load continue"],["CLI / MCP","Search locally or serve the eight MCP tools","pip install 'backendpro[mcp]'\nbackendpro \"redis cluster\" --json\nbackendpro-mcp"]];
+const CLIENTS=[["Claude Code","Adds SKILL.md to your project","pip install backendpro\nmkdir -p .claude/skills\nbackendpro --load claude"],["Cursor","Adds .cursor/rules/backend.mdc","pip install backendpro\nbackendpro --load cursor"],["Windsurf","Adds .windsurfrules","pip install backendpro\nbackendpro --load windsurf"],["GitHub Copilot","Adds .github/copilot-instructions.md","pip install backendpro\nbackendpro --load copilot"],["Continue","Adds AGENTS.md","pip install backendpro\nbackendpro --load continue"],["CLI / MCP","Search locally or serve the 11 MCP tools","pip install 'backendpro[mcp]'\nbackendpro \"redis cluster\" --json\nbackendpro-mcp"]];
 const ICONS={{ICONS_JSON}};
 const icon=n=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">'+ICONS[n]+'</svg>';
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));

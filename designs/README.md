@@ -89,8 +89,11 @@ or `designs/brand/`, then regenerate both pages rather than editing generated HT
 The font files are local; three.js, anime.js and stack icons still require CDN
 access. Clipboard buttons require HTTPS or localhost and report copy failures.
 MCP setup requires `pip install 'backendpro[mcp]'` and starts the registered
-`backendpro-mcp` entry point. The page lists the eight server tools; lint,
+`backendpro-mcp` entry point. The page lists the eleven server tools; lint,
 conflicts and learn remain CLI commands, not MCP tools.
+Local repository and memory tools are disabled by default. Repository context
+requires `BACKENDPRO_WORKSPACE`; memory additionally requires
+`BACKENDPRO_MEMORY_STORE` and current operator-reviewed trace approval.
 The closing CTA includes a “Buy me a coffee” button linking directly to
 https://buymeacoffee.com/shashanksw9, without a third-party widget or script.
 

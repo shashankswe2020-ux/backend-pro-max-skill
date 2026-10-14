@@ -39,6 +39,7 @@ try:
         STACK_CONFIG,
         _parse_date,
     )
+    from .evidence import validate_corpus, validate_metadata
 except ImportError:
     from core import (  # type: ignore[no-redef]
         _STACK_COLS,
@@ -47,6 +48,7 @@ except ImportError:
         STACK_CONFIG,
         _parse_date,
     )
+    from evidence import validate_corpus, validate_metadata
 
 # Allowed values for the Source Type column.
 VALID_SOURCE_TYPES = frozenset({
@@ -98,6 +100,10 @@ def _validate_file(
     has_source_type_col = "Source Type" in header_set
 
     for i, row in enumerate(rows, start=2):  # line 1 is header
+        try:
+            validate_metadata(row)
+        except ValueError as error:
+            errors.append(f"[{label}] {filepath.name}:L{i}: {error}")
         # Ragged rows: csv.DictReader gives us None keys for extras
         if None in row:
             errors.append(f"[{label}] {filepath.name}:L{i}: extra/ragged columns")
@@ -178,6 +184,10 @@ def validate_all(*, strict: bool = False) -> tuple[list[str], list[str]]:
     """Return (errors, warnings) across all CSVs."""
     all_errors: list[str] = []
     all_warnings: list[str] = []
+    try:
+        validate_corpus()
+    except (ValueError, OSError) as error:
+        all_errors.append(f"[evidence] {error}")
     for domain, cfg in CSV_CONFIG.items():
         errs, warns = _validate_file(
             f"domain:{domain}",

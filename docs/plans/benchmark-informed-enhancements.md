@@ -5,6 +5,89 @@ are implemented and validated. A separately approved 96-attempt, required-retrie
 live exploratory run completed on 2026-10-11. The planned larger optional/required
 study, independent review, and held-out validation remain pending.
 
+### P0 harder-cohort follow-up (2026-10-12)
+
+The [P0 evaluation-readiness workflow](../../benchmarks/p0/README.md) adds 40
+public multi-file development cases across eight correlated task families,
+reuses the M3 isolated grader, and gates baseline calibration, independent
+review and separate evaluation intake. It also adds hash-bound failure
+diagnosis and explicit unknown causes for historical aggregate-only data.
+External benchmark licenses/access remain fail-closed pending verification.
+This is offline infrastructure, not measured model headroom or a completed
+independently reviewed held-out study. The original M3 suite/results are unchanged.
+
+### P1 retrieval parity follow-up (2026-10-13)
+
+The shared CLI/MCP pipeline now supports candidate pools before optional
+reranking, score/freshness filters, constraint preferences, and explicit
+requested/effective engine diagnostics. Explicit scopes are preserved;
+auto-routing hints are opt-in. Existing optional models are pinned, embedding
+caches are content/model-bound, and rank scores are no longer labeled confidence.
+
+The existing eight-query diagnostic was run with no-expansion BM25, expanded
+BM25, hybrid and hybrid-reranking at candidate pools 20 and 50, final top five.
+Every mode had Recall@5/MRR/nDCG of 1.0 and no empty responses. This saturated,
+incompletely labeled set establishes no retrieval-quality improvement.
+Labeled Precision@5 was 0.2 (one supplied positive per query), not a reviewed
+applicability judgment. BM25 remains the default. No corpus rows, synonyms,
+held-out cases or historical results were changed. Independent P0 labels,
+broader answerable/unanswerable coverage and end-to-end coding benefit remain
+pending. See [reproduction instructions](../../CONTRIBUTING.md#coverage-targets-and-retrieval-diagnostics).
+
+### P2 version-aware evidence follow-up (2026-10-13)
+
+Opt-in `evidence-v1` adds local Python dependency observations, explicit unknown
+and conflict states, content-bound source IDs/detail expansion, and whole-unit
+selection by version match, marginal query coverage, scope diversity and ordinal
+rank. It does not compare independent BM25 scores globally. Raw and compact-v1
+defaults stay unchanged. Supplemental Pydantic guidance is scoped to exact
+1.10.21/2.10.6 releases and immutable official documentation snapshots; source
+content is not fetched during runtime retrieval.
+
+Four author-labeled migration cases retained their labeled critical facts at
+each of 1000/2000/4000 tokens with the pinned Qwen2.5-Coder-7B-Instruct tokenizer.
+All retained local source bindings and omission counts validated. This narrow
+diagnostic is not independent version-applicability review or coding-outcome
+evidence. P2's >=95% reviewed applicability gate and unsupported-claim review
+remain pending; no quality/default promotion is claimed.
+See [reproduction and limitations](../../CONTRIBUTING.md#p2-evidence-and-token-budget-evaluation).
+
+### P3 local-grounding follow-up (2026-10-13)
+
+The Python/POSIX pilot adds an explicit-scope `context` CLI command and
+operator-authorized MCP `repository_context` tool. Saved local bytes, file/line
+references and Git revisions are bound together; editor packets are checked
+for staleness, and an unresolved AST/text fallback is available without a
+whole-repository index. Policy filters apply before extraction, commands are
+not executed, local/curated evidence is distinguished, and observed API-namespace
+tensions remain explicitly unresolved.
+
+Four references from the live VS Code/Pylance tool were passed through the
+saved-file adapter, CLI and actual Python MCP SDK stdio client with matching
+bounded output. A tiny authored line-retention diagnostic showed a benefit
+over literal windows at 2500 characters and parity at larger budgets. Neither
+check establishes independent relevance, agent activation or hidden patch
+correctness. Those outcome gates remain pending; no default or competitive
+quality promotion is claimed. See [scope and reproduction](../../CONTRIBUTING.md#p3-local-grounding-validation).
+
+### P4 gated memory infrastructure follow-up (2026-10-13)
+
+Explicitly approved infrastructure is available while reuse remains disabled
+pending real recurring-pattern trace review. A private repository-bound store
+accepts only operator-approved, reported-test-backed summaries with exact
+versions, source hashes/revision, failure conditions and expiry. CLI-only
+management supports correction, deletion and gate revocation; MCP only retrieves.
+Operator attestations and hashes do not authenticate execution or review.
+
+Chronological inputs distinguish no memory, raw prior tool context and selective
+verified memory; permissions forbid current/future and cross-family tasks.
+Offline reporting includes every assignment and setup-token cost, paired
+family-cluster uncertainty, a 15% token-reduction diagnostic and a -2 pp resolution
+non-inferiority margin. Stale-guidance/contamination regressions reject memory.
+Tests use synthetic attestations/counters only. No real trace approval, token
+savings, non-inferiority or independent outcome gate is claimed, and no default
+retrieval path consumes memory. See [contracts and reproduction](../../CONTRIBUTING.md#p4-chronological-memory-infrastructure).
+
 ### M1 delivery
 
 - Canonical domain/stack schemas shared by the manifest and actual MCP discovery/validation.
