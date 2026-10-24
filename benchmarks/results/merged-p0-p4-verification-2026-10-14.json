@@ -1,0 +1,313 @@
+{
+  "format": "merged-benchmark-verification-v1",
+  "verified_at": "2026-10-14T11:40:37.719926+00:00",
+  "baseline_revision": "930e99a0ee918801804ece48dcb68cc71b3f6385",
+  "merged_revision": "ccdb56e519cb8c3de4ebc8f9a4ffc1a0b915b499",
+  "overall": "Narrow authored context-retention improvement verified. No ranking improvement or coding-outcome/competitive superiority demonstrated.",
+  "ranking": {
+    "cases": 8,
+    "baseline": {
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "p50_ms": 0.10306200420018286,
+      "p95_ms": 0.14183297753334045
+    },
+    "merged": {
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "p50_ms": 0.13927050167694688,
+      "p95_ms": 0.1699579879641533
+    },
+    "delta": {
+      "recall": 0.0,
+      "mrr": 0.0,
+      "ndcg": 0.0
+    },
+    "same_dataset_and_corpus": true,
+    "same_default_public_call": true,
+    "ablations": {
+      "20": {
+        "bm25-no-expand": {
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0,
+          "p50_ms": 0.13914599549025297,
+          "p95_ms": 0.17745798686519265
+        },
+        "bm25": {
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0,
+          "p50_ms": 0.1426874950993806,
+          "p95_ms": 0.1774580159690231
+        },
+        "hybrid": {
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0,
+          "p50_ms": 7.051520515233278,
+          "p95_ms": 8.435583993559703
+        },
+        "hybrid-rerank": {
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0,
+          "p50_ms": 31.953770492691547,
+          "p95_ms": 43.46141600399278
+        }
+      },
+      "50": {
+        "bm25-no-expand": {
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0,
+          "p50_ms": 0.13243751891423017,
+          "p95_ms": 0.17508299788460135
+        },
+        "bm25": {
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0,
+          "p50_ms": 0.1363540068268776,
+          "p95_ms": 0.17675000708550215
+        },
+        "hybrid": {
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0,
+          "p50_ms": 5.466417002025992,
+          "p95_ms": 6.213291984749958
+        },
+        "hybrid-rerank": {
+          "recall": 1.0,
+          "mrr": 1.0,
+          "ndcg": 1.0,
+          "p50_ms": 33.31535399775021,
+          "p95_ms": 56.85966700548306
+        }
+      }
+    },
+    "interpretation": "All ranking modes are saturated at 1.0 on eight incomplete author labels. Hybrid/reranking cost more warm-query time without measured quality benefit. Timings are single-host diagnostics, not confidence-bounded speed claims."
+  },
+  "versioned_evidence": {
+    "cases": 4,
+    "tokenizer": {
+      "identity": "Qwen/Qwen2.5-Coder-7B-Instruct@c03e6d358207e414f1eca0bb1891e29f1db0e242",
+      "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+      "engine": "tokenizers",
+      "version": "0.23.3",
+      "add_special_tokens": false,
+      "padding": false,
+      "truncation": false
+    },
+    "budgets": {
+      "1000": {
+        "relevance_recall": 1.0,
+        "labeled_precision": 0.875,
+        "critical_field_retention": 1.0,
+        "all_bindings_valid": true,
+        "all_omissions_accounted": true
+      },
+      "2000": {
+        "relevance_recall": 1.0,
+        "labeled_precision": 0.25,
+        "critical_field_retention": 1.0,
+        "all_bindings_valid": true,
+        "all_omissions_accounted": true
+      },
+      "4000": {
+        "relevance_recall": 1.0,
+        "labeled_precision": 0.18333333333333335,
+        "critical_field_retention": 1.0,
+        "all_bindings_valid": true,
+        "all_omissions_accounted": true
+      }
+    },
+    "interpretation": "All labeled critical fields retained within each actual tokenizer budget. Pydantic 1.10.21/2.10.6 authored cases only; no comparable pre-upgrade evidence-v1 contract, independent applicability review or coding outcomes."
+  },
+  "repository_context": {
+    "positive_cases": 1,
+    "no_match_controls": 1,
+    "comparison": "Within-merged collector ablation, not old-release versus new-release coding comparison.",
+    "budgets": {
+      "2500": {
+        "positive": {
+          "literal_window": {
+            "line_recall": 0.5,
+            "labeled_line_precision": 1.0,
+            "critical_line_retention": 0.0,
+            "no_match_control_passed": null,
+            "characters": 1949,
+            "retained_lines": 4,
+            "omissions_accounted": true,
+            "response_sha256": "c11ef3f577091a8b685c6261a7387a64ffcb35984fd7830ba449cf5ec5c57100"
+          },
+          "bounded_ast": {
+            "line_recall": 1.0,
+            "labeled_line_precision": 1.0,
+            "critical_line_retention": 1.0,
+            "no_match_control_passed": null,
+            "characters": 2050,
+            "retained_lines": 8,
+            "omissions_accounted": true,
+            "response_sha256": "e8ee2f3bf7ea56a37d9f0aed9f8abd58cccd49953191364881415823fe358e39"
+          }
+        },
+        "control": {
+          "literal_window": {
+            "line_recall": null,
+            "labeled_line_precision": null,
+            "critical_line_retention": null,
+            "no_match_control_passed": true,
+            "characters": 1209,
+            "retained_lines": 0,
+            "omissions_accounted": true,
+            "response_sha256": "3f8c481aba1bdd81288ce9d208382deba4a2d90c949cacf7ea4d2ea690f6b1cc"
+          },
+          "bounded_ast": {
+            "line_recall": null,
+            "labeled_line_precision": null,
+            "critical_line_retention": null,
+            "no_match_control_passed": true,
+            "characters": 1213,
+            "retained_lines": 0,
+            "omissions_accounted": true,
+            "response_sha256": "a5478d73d17ec593059d7589949c694a0414651a4e33f87b91ee325d5b0a9199"
+          }
+        }
+      },
+      "4000": {
+        "positive": {
+          "literal_window": {
+            "line_recall": 1.0,
+            "labeled_line_precision": 0.8888888888888888,
+            "critical_line_retention": 1.0,
+            "no_match_control_passed": null,
+            "characters": 3549,
+            "retained_lines": 9,
+            "omissions_accounted": true,
+            "response_sha256": "57ea9b4bb3ac862c112552fed7cf311a91ab52a7e13bfab22569523d0a92070f"
+          },
+          "bounded_ast": {
+            "line_recall": 1.0,
+            "labeled_line_precision": 0.8,
+            "critical_line_retention": 1.0,
+            "no_match_control_passed": null,
+            "characters": 2717,
+            "retained_lines": 10,
+            "omissions_accounted": true,
+            "response_sha256": "ded1b337ef43113ce1288b648bf86de84e40738b36f021996babacb7c76b8f88"
+          }
+        },
+        "control": {
+          "literal_window": {
+            "line_recall": null,
+            "labeled_line_precision": null,
+            "critical_line_retention": null,
+            "no_match_control_passed": true,
+            "characters": 1209,
+            "retained_lines": 0,
+            "omissions_accounted": true,
+            "response_sha256": "3f8c481aba1bdd81288ce9d208382deba4a2d90c949cacf7ea4d2ea690f6b1cc"
+          },
+          "bounded_ast": {
+            "line_recall": null,
+            "labeled_line_precision": null,
+            "critical_line_retention": null,
+            "no_match_control_passed": true,
+            "characters": 1213,
+            "retained_lines": 0,
+            "omissions_accounted": true,
+            "response_sha256": "a5478d73d17ec593059d7589949c694a0414651a4e33f87b91ee325d5b0a9199"
+          }
+        }
+      },
+      "6000": {
+        "positive": {
+          "literal_window": {
+            "line_recall": 1.0,
+            "labeled_line_precision": 0.6666666666666666,
+            "critical_line_retention": 1.0,
+            "no_match_control_passed": null,
+            "characters": 4297,
+            "retained_lines": 12,
+            "omissions_accounted": true,
+            "response_sha256": "f3e8cec3107e8868445797ea1eccaa5de22ad317040a71491dbcf4192b69ebfd"
+          },
+          "bounded_ast": {
+            "line_recall": 1.0,
+            "labeled_line_precision": 0.8,
+            "critical_line_retention": 1.0,
+            "no_match_control_passed": null,
+            "characters": 2717,
+            "retained_lines": 10,
+            "omissions_accounted": true,
+            "response_sha256": "ded1b337ef43113ce1288b648bf86de84e40738b36f021996babacb7c76b8f88"
+          }
+        },
+        "control": {
+          "literal_window": {
+            "line_recall": null,
+            "labeled_line_precision": null,
+            "critical_line_retention": null,
+            "no_match_control_passed": true,
+            "characters": 1209,
+            "retained_lines": 0,
+            "omissions_accounted": true,
+            "response_sha256": "3f8c481aba1bdd81288ce9d208382deba4a2d90c949cacf7ea4d2ea690f6b1cc"
+          },
+          "bounded_ast": {
+            "line_recall": null,
+            "labeled_line_precision": null,
+            "critical_line_retention": null,
+            "no_match_control_passed": true,
+            "characters": 1213,
+            "retained_lines": 0,
+            "omissions_accounted": true,
+            "response_sha256": "a5478d73d17ec593059d7589949c694a0414651a4e33f87b91ee325d5b0a9199"
+          }
+        }
+      }
+    },
+    "interpretation": "At 2500 characters, line recall improves 0.5 to 1.0 and critical retention 0 to 1. At 4000/6000 both retain all critical lines. Sparse precision is mixed; this is one tiny authored file and not independent relevance."
+  },
+  "p0": {
+    "origin": "Downloaded artifact from successful merged-main CI run 38502676722, not a new local Docker rerun.",
+    "ci_url": "https://github.com/shashankswe2020-ux/backend-pro-max-skill/actions/runs/38502676722",
+    "status": "passed",
+    "reference_passed": 40,
+    "starter_failed": 40,
+    "model_attempts": 0,
+    "independent_review": "pending",
+    "source_and_artifact_hashes_verified": true,
+    "interpretation": "Grader integrity verified, not model improvement. Independent review, model headroom calibration and disjoint evaluation cohort remain pending."
+  },
+  "p4": {
+    "evaluated": false,
+    "enabled_by_this_verification": false,
+    "reason": "No authorized real chronological model observations or approved recurring-pattern trace evidence supplied. Synthetic test counters are not benchmark gains.",
+    "token_reduction": null,
+    "resolution_noninferiority": null
+  },
+  "competitive_coding_outcomes": {
+    "evaluated": false,
+    "paid_model_calls": 0,
+    "superiority_claim_supported": false,
+    "required_next": "Freeze an authorized model/client/task protocol and spending cap; calibrate no-context versus pre-upgrade versus merged on the 40-task development cohort before a powered independently reviewed held-out comparator study."
+  },
+  "quality_gates_demonstrated": false,
+  "artifacts_sha256": {
+    "baseline-bm25.json": "cf60dc883b74b23aa08a3864b0e7d46f0d946035567452edd0f2952a7afe7f40",
+    "baseline-default-matched.json": "dbb625fcdfc6fc4fea125470c91d013c1c87a442b697755084296b3b5450228d",
+    "merged-default-matched.json": "e1c12377996dd7857ba8f537cf66d17ee019991cd6eefb3464052020cf79b8de",
+    "merged-retrieval.json": "c196b0efcf534545c12e25aa19d6afaa5ce536f4cd6691a684b15dc1a29351df",
+    "merged-evidence-tokens.json": "0b6bc75245181677f71b263d951d51237c90dd9c7567e57b0dbe7082f80d2922",
+    "merged-repository.json": "70881ea33837267542083e1db68d922af6421a845b150ad878527b3cf71264b0",
+    "ci-p0/p0-self-test/summary.json": "caedaedf9eea48e6231629b9380cbb80927d03d3142993963e3caaa276fdeb79",
+    "ci-p0/p0-frozen/manifest.json": "5d9b19fc5ab77ee8791c5e5388719a3f9a9699577d7efdb00112f666b2b1be8e",
+    "measure_default.py": "a43ac7b8e47f5698d97fc43e8fa565e46ac50699e0c783b5d8fca6c6c0fbee01",
+    "summarize.py": "ec8a2e69341a0dcdea53174eb4f41dc4586b99912aa8220d313c426d8ffb05e9"
+  }
+}

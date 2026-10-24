@@ -5,6 +5,7 @@
 <br />
 
 [![PyPI](https://img.shields.io/pypi/v/backendpro?style=flat-square&color=22D67A&labelColor=0D1110)](https://pypi.org/project/backendpro/)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/backendpro?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/backendpro)
 [![CI](https://img.shields.io/github/actions/workflow/status/shashankswe2020-ux/backend-pro-max-skill/ci.yml?branch=main&style=flat-square&label=CI&labelColor=0D1110)](https://github.com/shashankswe2020-ux/backend-pro-max-skill/actions/workflows/ci.yml)
 [![Rows cited](https://img.shields.io/badge/rows_with_a_source-731%2F731-22D67A?style=flat-square&labelColor=0D1110)](#why-you-can-trust-it)
 [![MCP](https://img.shields.io/badge/MCP-8_tools-5B9CF6?style=flat-square&labelColor=0D1110)](#mcp-server)
