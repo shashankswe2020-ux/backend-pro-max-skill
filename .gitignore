@@ -37,6 +37,7 @@ htmlcov/
 
 # Local design / project notes
 /tmp_local/
+/designs/video/
 
 # Local-only Copilot / agent config (not part of the published skill)
 .github/agents/
