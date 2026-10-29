@@ -130,3 +130,38 @@ def test_scan_all_finds_stale(tmp_path: Path, monkeypatch):
     assert len(results) == 1
     assert results[0]["domain"] == "test"
     assert len(results[0]["stale"]) == 1
+
+
+def _completed(returncode: int, stderr: str = ""):
+    import subprocess
+    return subprocess.CompletedProcess(args=[], returncode=returncode, stdout="", stderr=stderr)
+
+
+def test_open_issue_reports_gh_error(capsys):
+    with patch("freshness.subprocess.run", return_value=_completed(1, "could not add label: 'freshness' not found")):
+        assert freshness.open_issue("t", "b") is False
+    assert "'freshness' not found" in capsys.readouterr().err
+
+
+def test_open_issue_omits_label_when_none():
+    with patch("freshness.subprocess.run", return_value=_completed(0)) as run:
+        assert freshness.open_issue("t", "b", label=None) is True
+    assert "--label" not in run.call_args[0][0]
+
+
+def test_ensure_label_uses_force():
+    with patch("freshness.subprocess.run", return_value=_completed(0)) as run:
+        assert freshness.ensure_label() is True
+    cmd = run.call_args[0][0]
+    assert cmd[:4] == ["gh", "label", "create", "freshness"]
+    assert "--force" in cmd
+
+
+def test_main_exits_nonzero_when_issue_creation_fails(monkeypatch):
+    result = {"domain": "database", "file": "x.csv", "stale": [], "broken": [{"line": 2, "name": "n", "url": "u", "status": 404}]}
+    monkeypatch.setattr("sys.argv", ["freshness.py", "--open-issues"])
+    monkeypatch.setattr(freshness, "scan_all", lambda **_: [result])
+    monkeypatch.setattr(freshness, "ensure_label", lambda: True)
+    monkeypatch.setattr(freshness, "check_existing_issue", lambda _d: False)
+    monkeypatch.setattr(freshness, "open_issue", lambda *_a, **_k: False)
+    assert freshness.main() == 1

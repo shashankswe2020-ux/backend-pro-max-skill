@@ -202,16 +202,40 @@ def check_existing_issue(domain: str) -> bool:
     return False
 
 
-def open_issue(title: str, body: str) -> bool:
-    """Open a GitHub issue. Returns True on success."""
+ISSUE_LABEL = "freshness"
+
+
+def ensure_label(name: str = ISSUE_LABEL) -> bool:
+    """Create the issue label if missing (`gh issue create` fails on unknown labels)."""
     try:
         result = subprocess.run(
-            ["gh", "issue", "create", "--title", title, "--body", body, "--label", "freshness"],
-            capture_output=True, text=True, timeout=30,
+            ["gh", "label", "create", name, "--force",
+             "--color", "FBCA04", "--description", "Stale rows or broken URLs in knowledge base"],
+            capture_output=True, text=True, timeout=15,
         )
-        return result.returncode == 0
-    except (FileNotFoundError, subprocess.TimeoutExpired):
+    except (FileNotFoundError, subprocess.TimeoutExpired) as exc:
+        print(f"⚠️  Could not ensure label '{name}': {exc}", file=sys.stderr)
         return False
+    if result.returncode != 0:
+        print(f"⚠️  Could not ensure label '{name}': {result.stderr.strip()}", file=sys.stderr)
+        return False
+    return True
+
+
+def open_issue(title: str, body: str, label: str | None = ISSUE_LABEL) -> bool:
+    """Open a GitHub issue. Returns True on success."""
+    cmd = ["gh", "issue", "create", "--title", title, "--body", body]
+    if label:
+        cmd += ["--label", label]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    except (FileNotFoundError, subprocess.TimeoutExpired) as exc:
+        print(f"   gh error: {exc}", file=sys.stderr)
+        return False
+    if result.returncode != 0:
+        print(f"   gh error: {result.stderr.strip()}", file=sys.stderr)
+        return False
+    return True
 
 
 # ============ CLI ============
@@ -234,6 +258,11 @@ def main() -> int:
         print("✅ No freshness issues found.")
         return 0
 
+    label: str | None = ISSUE_LABEL
+    if args.open_issues and not args.dry_run and not ensure_label():
+        label = None
+
+    failures = 0
     for result in results:
         title = issue_title(result)
         body = format_issue_body(result)
@@ -246,9 +275,10 @@ def main() -> int:
             if check_existing_issue(result["domain"]):
                 print(f"⏭  Skipping {result['domain']} — open issue already exists")
                 continue
-            if open_issue(title, body):
+            if open_issue(title, body, label):
                 print(f"✅ Opened issue: {title}")
             else:
+                failures += 1
                 print(f"❌ Failed to open issue: {title}", file=sys.stderr)
         else:
             print(f"{title}")
@@ -256,6 +286,9 @@ def main() -> int:
     total_stale = sum(len(r["stale"]) for r in results)
     total_broken = sum(len(r["broken"]) for r in results)
     print(f"\nSummary: {total_stale} stale rows, {total_broken} broken URLs across {len(results)} domain(s)")
+    if failures:
+        print(f"❌ {failures} issue(s) could not be opened", file=sys.stderr)
+        return 1
     return 0
 
 
